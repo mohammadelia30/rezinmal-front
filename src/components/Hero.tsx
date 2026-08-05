@@ -4,7 +4,7 @@ import { HeroGallery } from "@/components/HeroGallery";
 export function Hero() {
   return (
     <section className="relative overflow-x-clip">
-      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-16">
+      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.9fr_1.2fr] lg:gap-10 lg:px-8 lg:py-16">
         <div className="space-y-6 text-right">
           <h1 className="animate-fade-up text-3xl font-extrabold leading-[1.45] text-brand sm:text-4xl lg:text-[2.65rem]">
             زیبایی را خودتان بسازید با کیت‌های آموزش رزین‌مال
@@ -19,7 +19,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="min-w-0 overflow-visible pb-2 pe-2">
+        <div className="min-w-0 overflow-visible">
           <HeroGallery />
         </div>
       </div>
