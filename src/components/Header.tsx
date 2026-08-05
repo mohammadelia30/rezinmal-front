@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { navLinks } from "@/data/home";
@@ -10,16 +11,23 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-soft/50 bg-background/95 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="shrink-0 text-[1.7rem] font-extrabold tracking-tight text-brand sm:text-3xl"
-        >
-          رزین‌مال
+      <div className="mx-auto flex h-16 max-w-6xl flex-row items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
+        <Link href="/" className="flex shrink-0 flex-row items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt="رزین مال"
+            width={48}
+            height={48}
+            priority
+            className="h-11 w-11 rounded-full object-cover sm:h-12 sm:w-12"
+          />
+          <span className="text-lg font-extrabold tracking-tight text-brand sm:text-xl">
+            رزین‌مال
+          </span>
         </Link>
 
         <nav
-          className="hidden items-center gap-8 md:flex"
+          className="hidden flex-row items-center gap-8 md:flex"
           aria-label="منوی اصلی"
         >
           {navLinks.map((link) => (
@@ -49,7 +57,7 @@ export function Header() {
           className="border-t border-brand-soft/40 bg-background px-4 py-3 md:hidden"
           aria-label="منوی موبایل"
         >
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-1 text-right">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link

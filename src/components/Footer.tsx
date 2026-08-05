@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   FacebookIcon,
@@ -22,11 +23,20 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-3">
-            <p className="text-xl font-extrabold text-brand">گروه رزین‌مال</p>
+            <div className="flex flex-row items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="رزین مال"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-full object-cover"
+              />
+              <p className="text-xl font-extrabold text-brand">گروه رزین‌مال</p>
+            </div>
             <p className="text-sm leading-7 text-muted">
               فروشگاه تخصصی مواد، ابزار و آموزش هنر رزین.
             </p>
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex flex-row items-center gap-3 pt-1">
               {socials.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}

@@ -27,7 +27,7 @@ export function FeaturedProducts() {
                   className="object-cover transition duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className="space-y-2 bg-card px-3 py-4 sm:px-4">
+              <div className="space-y-2 bg-card px-3 py-4 text-right sm:px-4">
                 <div>
                   <h3 className="text-sm font-bold text-foreground sm:text-base">
                     {product.title}
@@ -36,16 +36,16 @@ export function FeaturedProducts() {
                     {product.subtitle}
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <span className="text-xs font-semibold text-foreground sm:text-sm">
-                    {product.price}
-                  </span>
+                <div className="flex flex-row items-center justify-between gap-2 pt-1">
                   <button
                     type="button"
                     className="rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-dark sm:px-4 sm:text-sm"
                   >
                     خرید
                   </button>
+                  <span className="text-xs font-semibold text-foreground sm:text-sm">
+                    {product.price}
+                  </span>
                 </div>
               </div>
             </article>

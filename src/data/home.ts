@@ -6,11 +6,28 @@ export const navLinks = [
   { label: "ارتباط با ما", href: "#contact" },
 ] as const;
 
-export const heroImages = {
-  main: "/images/hero-main.jpg",
-  thumb1: "/images/hero-thumb-1.jpg",
-  thumb2: "/images/hero-thumb-2.jpg",
-} as const;
+export const heroSlides = [
+  {
+    id: "h1",
+    src: "/images/hero-main.jpg",
+    alt: "ساخت هنر رزین با دست",
+  },
+  {
+    id: "h2",
+    src: "/images/hero-thumb-1.jpg",
+    alt: "گوشواره رزینی دست‌ساز",
+  },
+  {
+    id: "h3",
+    src: "/images/hero-thumb-2.jpg",
+    alt: "زیورآلات رزینی بنفش",
+  },
+  {
+    id: "h4",
+    src: "/images/product-3.jpg",
+    alt: "محصول رزینی تزئینی",
+  },
+] as const;
 
 export const categories = [
   {
