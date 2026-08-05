@@ -1,45 +1,102 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Container } from "@/components/Container";
 import { categories } from "@/data/home";
 
 export function Categories() {
   return (
-    <section id="shop" className="scroll-mt-24 py-12 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="mb-8 text-center text-2xl font-extrabold text-brand sm:mb-10 sm:text-3xl">
+    <section id="shop" className="scroll-mt-20 bg-background py-12 sm:py-16 lg:py-20">
+      <Container>
+        <h2 className="mb-8 text-right text-2xl font-bold text-foreground sm:mb-10 sm:text-3xl">
           دسته‌بندی‌های اصلی
         </h2>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          {categories.map((category) => (
-            <article
-              key={category.id}
-              className="group overflow-hidden rounded-[1.75rem] bg-white shadow-sm ring-1 ring-brand-soft/35 transition duration-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="relative aspect-square overflow-hidden bg-brand-mist/40">
-                <Image
-                  src={category.image}
-                  alt={category.title}
-                  fill
-                  sizes="(max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="space-y-3 px-3 py-4 text-center sm:px-4">
-                <h3 className="text-sm font-bold text-foreground sm:text-base">
-                  {category.title}
-                </h3>
-                <Link
-                  href="#products"
-                  className="inline-flex rounded-lg bg-brand px-5 py-1.5 text-xs font-bold text-white transition hover:bg-brand-dark sm:text-sm"
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[1fr_1.6fr_1fr] lg:gap-5">
+          {categories.map((category) => {
+            if (category.variant === "product") {
+              return (
+                <article
+                  key={category.id}
+                  className="col-span-1 flex flex-col overflow-hidden rounded-2xl bg-card"
                 >
-                  خرید
-                </Link>
-              </div>
-            </article>
-          ))}
+                  <div className="relative aspect-[6/5] w-full overflow-hidden">
+                    <Image
+                      src={category.image}
+                      alt={category.title}
+                      fill
+                      sizes="280px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5">
+                    <h3 className="text-right text-sm font-bold text-foreground">
+                      {category.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span>{category.subtitle}</span>
+                      <span>{category.price}</span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-4 flex-1 rounded bg-bar" />
+                      <button
+                        type="button"
+                        className="rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-white"
+                      >
+                        خرید
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            }
+
+            if (category.variant === "wide") {
+              return (
+                <article
+                  key={category.id}
+                  className="col-span-2 flex flex-col overflow-hidden rounded-2xl bg-card lg:col-span-1"
+                >
+                  <div className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[2/1] lg:aspect-[16/9]">
+                    <Image
+                      src={category.image}
+                      alt={category.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="px-3 py-3.5 text-center">
+                    <h3 className="text-sm font-bold text-foreground sm:text-base">
+                      {category.title}
+                    </h3>
+                  </div>
+                </article>
+              );
+            }
+
+            return (
+              <article
+                key={category.id}
+                className="col-span-1 flex flex-col overflow-hidden rounded-2xl border border-[#f0e8d5] bg-white"
+              >
+                <div className="relative aspect-[6/5] w-full overflow-hidden">
+                  <Image
+                    src={category.image}
+                    alt={category.title}
+                    fill
+                    sizes="280px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="px-3 py-3.5 text-center">
+                  <h3 className="text-sm font-bold text-foreground">
+                    {category.title}
+                  </h3>
+                </div>
+              </article>
+            );
+          })}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

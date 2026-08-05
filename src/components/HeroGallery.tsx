@@ -1,60 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { heroSlides } from "@/data/home";
 
-const INTERVAL_MS = 4200;
-const ANIMATION_MS = 750;
+const INTERVAL_MS = 4500;
+const ANIMATION_MS = 550;
 
-type Slot = "main" | "next" | "third";
-
-type SwapClone = {
-  src: string;
-  alt: string;
-  fromTop: number;
-  fromLeft: number;
-  fromWidth: number;
-  fromHeight: number;
-  toTop: number;
-  toLeft: number;
-  toWidth: number;
-  toHeight: number;
-  radiusFrom: string;
-  radiusTo: string;
-  zIndex: number;
-};
-
-function initialOrder() {
-  return heroSlides.map((_, index) => index);
-}
+type Slot = "next" | "third";
 
 export function HeroGallery() {
-  const [order, setOrder] = useState<number[]>(initialOrder);
-  const [swapping, setSwapping] = useState<{
-    incoming: SwapClone;
-    outgoing: SwapClone;
-    hide: Slot;
-  } | null>(null);
+  const [order, setOrder] = useState(() => heroSlides.map((_, i) => i));
+  const [activeSlot, setActiveSlot] = useState<Slot | null>(null);
+  const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  const mainRef = useRef<HTMLDivElement>(null);
-  const nextThumbRef = useRef<HTMLButtonElement>(null);
-  const thirdThumbRef = useRef<HTMLButtonElement>(null);
   const animatingRef = useRef(false);
   const orderRef = useRef(order);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     orderRef.current = order;
@@ -64,101 +26,36 @@ export function HeroGallery() {
   const nextSlide = heroSlides[order[1]];
   const thirdSlide = heroSlides[order[2]];
 
-  const swapWith = useCallback((slot: "next" | "third") => {
+  const swapWith = useCallback((slot: Slot) => {
     if (animatingRef.current) return;
 
-    const currentOrder = orderRef.current;
-    const mainEl = mainRef.current;
-    const thumbEl = slot === "next" ? nextThumbRef.current : thirdThumbRef.current;
-    const thumbOrderPos = slot === "next" ? 1 : 2;
-    const mainSlideData = heroSlides[currentOrder[0]];
-    const thumbSlideData = heroSlides[currentOrder[thumbOrderPos]];
+    animatingRef.current = true;
+    setActiveSlot(slot);
+    setFading(true);
 
-    const commitSwap = () => {
+    window.setTimeout(() => {
+      const thumbOrderPos = slot === "next" ? 1 : 2;
       const nextOrder = [...orderRef.current];
       [nextOrder[0], nextOrder[thumbOrderPos]] = [
         nextOrder[thumbOrderPos],
         nextOrder[0],
       ];
       setOrder(nextOrder);
-    };
-
-    if (!mainEl || !thumbEl || !mainSlideData || !thumbSlideData) {
-      commitSwap();
-      return;
-    }
-
-    const mainRect = mainEl.getBoundingClientRect();
-    const thumbRect = thumbEl.getBoundingClientRect();
-
-    if (mainRect.width < 8 || thumbRect.width < 8) {
-      commitSwap();
-      return;
-    }
-
-    animatingRef.current = true;
-
-    setSwapping({
-      hide: slot,
-      incoming: {
-        src: thumbSlideData.src,
-        alt: thumbSlideData.alt,
-        fromTop: thumbRect.top,
-        fromLeft: thumbRect.left,
-        fromWidth: thumbRect.width,
-        fromHeight: thumbRect.height,
-        toTop: mainRect.top,
-        toLeft: mainRect.left,
-        toWidth: mainRect.width,
-        toHeight: mainRect.height,
-        radiusFrom: "1rem",
-        radiusTo: "1.5rem",
-        zIndex: 10001,
-      },
-      outgoing: {
-        src: mainSlideData.src,
-        alt: mainSlideData.alt,
-        fromTop: mainRect.top,
-        fromLeft: mainRect.left,
-        fromWidth: mainRect.width,
-        fromHeight: mainRect.height,
-        toTop: thumbRect.top,
-        toLeft: thumbRect.left,
-        toWidth: thumbRect.width,
-        toHeight: thumbRect.height,
-        radiusFrom: "1.5rem",
-        radiusTo: "1rem",
-        zIndex: 10000,
-      },
-    });
-
-    window.setTimeout(() => {
-      commitSwap();
-      setSwapping(null);
+      setFading(false);
+      setActiveSlot(null);
       animatingRef.current = false;
     }, ANIMATION_MS);
   }, []);
 
   useEffect(() => {
-    if (paused || swapping) return;
+    if (paused || fading) return;
 
     const timer = window.setInterval(() => {
       swapWith("next");
     }, INTERVAL_MS);
 
     return () => window.clearInterval(timer);
-  }, [paused, swapping, swapWith]);
-
-  const swapPortal =
-    swapping && mounted
-      ? createPortal(
-          <>
-            <SwapBox clone={swapping.outgoing} />
-            <SwapBox clone={swapping.incoming} />
-          </>,
-          document.body,
-        )
-      : null;
+  }, [paused, fading, swapWith]);
 
   return (
     <div
@@ -166,107 +63,69 @@ export function HeroGallery() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* مربع بزرگ بزرگ‌تر؛ فضا برای مربع‌های کوچک در سمت راست */}
-      <div className="relative w-[calc(100%-7.5rem)] sm:w-[calc(100%-9.5rem)] lg:w-[calc(100%-10.5rem)]">
-        {/* باکس بنفش از چپ تا حدود نیمه تصویر */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-0 z-0 h-[118%] w-[52%] -translate-x-[10%] -translate-y-1/2 rounded-2xl bg-brand-soft sm:rounded-3xl"
-        />
-
-        <div
-          ref={mainRef}
-          className="relative z-10 aspect-square w-full overflow-hidden rounded-2xl bg-brand-mist shadow-[0_18px_40px_-24px_rgba(78,42,84,0.45)] sm:rounded-3xl"
-        >
+      <div className="relative ms-0 w-full max-w-2xl lg:max-w-none">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-brand-mist shadow-lg sm:aspect-[5/4] lg:aspect-square xl:aspect-[5/4]">
           <Image
+            key={mainSlide.id}
             src={mainSlide.src}
             alt={mainSlide.alt}
             fill
             priority
-            sizes="(max-width: 1024px) 70vw, 520px"
-            className={`object-cover ${swapping ? "opacity-0" : ""}`}
+            sizes="(max-width: 1024px) 90vw, 50vw"
+            className={`object-cover transition-all duration-500 ease-out ${
+              fading
+                ? "scale-105 opacity-0"
+                : "hero-image-enter scale-100 opacity-100"
+            }`}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand/15 via-transparent to-transparent"
           />
         </div>
 
-        {/*
-          گوشه پایین‌راست مربع بزرگ با گوشه پایین‌چپ مربع کوچک مماس است
-          (بدون هم‌پوشانی؛ bottom هم‌تراز، شروع از لبه راست)
-        */}
-        <div
-          className="absolute bottom-0 left-full z-20 flex gap-2.5 sm:gap-3"
-          dir="ltr"
-        >
+        <div className="absolute -bottom-4 start-4 z-10 flex items-end gap-2.5 sm:start-8 sm:gap-3 lg:-bottom-5">
           <button
-            ref={nextThumbRef}
             type="button"
             onClick={() => swapWith("next")}
-            aria-label={`جابه‌جایی با تصویر: ${nextSlide.alt}`}
-            className="group relative aspect-square w-[42%] min-w-[5.75rem] max-w-[9.75rem] overflow-hidden rounded-2xl bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/40 focus-visible:ring-brand sm:min-w-[7rem] sm:max-w-[11rem] sm:rounded-[1.25rem]"
+            aria-label={`نمایش تصویر: ${nextSlide.alt}`}
+            className="group relative h-24 w-24 overflow-hidden rounded-xl bg-brand-mist shadow-md ring-[3px] ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-28 sm:w-28 lg:h-32 lg:w-32"
           >
             <Image
+              key={nextSlide.id}
               src={nextSlide.src}
               alt={nextSlide.alt}
               fill
-              sizes="176px"
-              className={`object-cover transition duration-500 group-hover:scale-105 ${
-                swapping?.hide === "next" ? "opacity-0" : ""
+              sizes="128px"
+              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+                activeSlot === "next" && fading
+                  ? "scale-95 opacity-0"
+                  : "opacity-100"
               }`}
             />
           </button>
 
           <button
-            ref={thirdThumbRef}
             type="button"
             onClick={() => swapWith("third")}
-            aria-label={`جابه‌جایی با تصویر: ${thirdSlide.alt}`}
-            className="group relative aspect-square w-[42%] min-w-[5.75rem] max-w-[9.75rem] overflow-hidden rounded-2xl bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/40 focus-visible:ring-brand sm:min-w-[7rem] sm:max-w-[11rem] sm:rounded-[1.25rem]"
+            aria-label={`نمایش تصویر: ${thirdSlide.alt}`}
+            className="group relative h-16 w-16 overflow-hidden rounded-xl bg-brand-mist shadow-md ring-[3px] ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-20 sm:w-20 lg:h-24 lg:w-24"
           >
             <Image
+              key={thirdSlide.id}
               src={thirdSlide.src}
               alt={thirdSlide.alt}
               fill
-              sizes="176px"
-              className={`object-cover transition duration-500 group-hover:scale-105 ${
-                swapping?.hide === "third" ? "opacity-0" : ""
+              sizes="96px"
+              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+                activeSlot === "third" && fading
+                  ? "scale-95 opacity-0"
+                  : "opacity-100"
               }`}
             />
           </button>
         </div>
       </div>
-
-      {swapPortal}
-    </div>
-  );
-}
-
-function SwapBox({ clone }: { clone: SwapClone }) {
-  return (
-    <div
-      dir="ltr"
-      className="hero-swap-box pointer-events-none fixed overflow-hidden shadow-xl shadow-brand/25"
-      style={
-        {
-          zIndex: clone.zIndex,
-          "--from-top": `${clone.fromTop}px`,
-          "--from-left": `${clone.fromLeft}px`,
-          "--from-w": `${clone.fromWidth}px`,
-          "--from-h": `${clone.fromHeight}px`,
-          "--to-top": `${clone.toTop}px`,
-          "--to-left": `${clone.toLeft}px`,
-          "--to-w": `${clone.toWidth}px`,
-          "--to-h": `${clone.toHeight}px`,
-          "--hero-radius-from": clone.radiusFrom,
-          "--hero-radius-to": clone.radiusTo,
-        } as CSSProperties
-      }
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element -- swap clone needs plain img */}
-      <img
-        src={clone.src}
-        alt={clone.alt}
-        className="h-full w-full object-cover"
-        draggable={false}
-      />
     </div>
   );
 }

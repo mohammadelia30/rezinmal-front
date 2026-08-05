@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Container } from "@/components/Container";
 import {
   FacebookIcon,
   InstagramIcon,
   TwitterIcon,
   YoutubeIcon,
 } from "@/components/icons";
+import { footerContacts } from "@/data/home";
 
 const socials = [
   { label: "اینستاگرام", href: "#", icon: InstagramIcon },
@@ -16,67 +18,65 @@ const socials = [
 
 export function Footer() {
   return (
-    <footer
-      id="contact"
-      className="scroll-mt-24 border-t border-brand-soft/40 bg-surface"
-    >
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-3">
-            <div className="flex flex-row items-center gap-3">
+    <footer id="contact" className="scroll-mt-20 bg-surface">
+      <Container className="py-10 sm:py-14">
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2 text-right text-sm">
+            <p className="font-bold text-foreground">تماس</p>
+            <div className="flex items-center justify-end gap-2 text-muted">
+              <span dir="ltr">{footerContacts.phone}</span>
               <Image
-                src="/logo.png"
-                alt="رزین مال"
-                width={56}
-                height={56}
-                className="h-14 w-14 rounded-full object-cover"
+                src="/images/figma/icon-phone.svg"
+                alt=""
+                width={14}
+                height={14}
+                className="size-3.5"
               />
-              <p className="text-xl font-extrabold text-brand">گروه رزین‌مال</p>
             </div>
-            <p className="text-sm leading-7 text-muted">
-              فروشگاه تخصصی مواد، ابزار و آموزش هنر رزین.
-            </p>
-            <div className="flex flex-row items-center gap-3 pt-1">
-              {socials.map(({ label, href, icon: Icon }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="rounded-full bg-white p-2 text-brand shadow-sm ring-1 ring-brand-soft/40 transition hover:bg-brand hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                </Link>
-              ))}
+            <div className="flex items-center justify-end gap-2 text-muted">
+              <span>{footerContacts.address}</span>
+              <Image
+                src="/images/figma/icon-location.svg"
+                alt=""
+                width={14}
+                height={14}
+                className="size-3.5"
+              />
             </div>
           </div>
 
-          <div className="space-y-2 text-sm leading-7 text-muted">
-            <p className="font-bold text-foreground">آدرس</p>
-            <p>تهران، خیابان ولیعصر، پلاک ۱۲۳</p>
+          <div className="space-y-2 text-right text-sm">
+            <p className="font-bold text-foreground">تلفن:</p>
+            <p className="text-muted">فروشگاه محصولات</p>
           </div>
 
-          <div className="space-y-2 text-sm leading-7 text-muted">
-            <p className="font-bold text-foreground">تلفن</p>
-            <p dir="ltr" className="text-right">
-              ۰۲۱-۸۸۷۷۶۶۵۵
-            </p>
-            <p dir="ltr" className="text-right">
-              ۰۹۱۲-۳۴۵-۶۷۸۹
+          <div className="space-y-2 text-right text-sm">
+            <p className="font-bold text-foreground">تلفن:</p>
+            <p className="text-muted">{footerContacts.addressLine}</p>
+            <p className="text-muted" dir="ltr">
+              ایمیل: {footerContacts.email}
             </p>
           </div>
 
-          <div className="space-y-2 text-sm leading-7 text-muted">
-            <p className="font-bold text-foreground">ایمیل</p>
-            <p dir="ltr" className="text-right">
-              info@resinmal.ir
-            </p>
+          <div className="flex items-start gap-2 sm:justify-start">
+            {socials.map(({ label, href, icon: Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                aria-label={label}
+                className="flex size-7 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark"
+              >
+                <Icon className="h-3.5 w-3.5" />
+              </Link>
+            ))}
           </div>
         </div>
 
-        <div className="mt-10 border-t border-brand-soft/40 pt-5 text-center text-xs text-muted sm:text-sm">
-          © کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.
+        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-footer-line pt-4 text-xs text-[#8a7a6a] sm:flex-row">
+          <p>گروه رزینمال</p>
+          <p>© کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.</p>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

@@ -7,7 +7,7 @@ import { Hero } from "@/components/Hero";
 
 export default function Home() {
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-dvh w-full flex-col bg-background">
       <Header />
       <main className="flex-1">
         <Hero />

@@ -1,28 +1,36 @@
 import Link from "next/link";
+import { Container } from "@/components/Container";
 import { HeroGallery } from "@/components/HeroGallery";
+import { hero } from "@/data/home";
 
 export function Hero() {
   return (
-    <section className="relative overflow-x-clip">
-      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.9fr_1.2fr] lg:gap-10 lg:px-8 lg:py-16">
-        <div className="space-y-6 text-right">
-          <h1 className="animate-fade-up text-3xl font-extrabold leading-[1.45] text-brand sm:text-4xl lg:text-[2.65rem]">
-            زیبایی را خودتان بسازید با کیت‌های آموزش رزین‌مال
+    <section className="relative min-h-[min(85vh,760px)] overflow-x-clip bg-surface">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-[38%] bg-brand-soft sm:w-[40%] lg:w-[42%]"
+      />
+
+      <Container className="relative grid min-h-[min(85vh,760px)] items-center gap-10 py-10 pb-16 sm:py-14 sm:pb-20 lg:grid-cols-2 lg:gap-12 lg:py-16 lg:pb-20">
+        <div className="order-2 space-y-7 text-right lg:order-1">
+          <h1 className="animate-fade-up text-3xl font-bold leading-[1.65] text-foreground sm:text-4xl lg:text-5xl xl:text-[3.25rem]">
+            <span className="block">{hero.titleLine1}</span>
+            <span className="block">{hero.titleLine2}</span>
           </h1>
-          <div className="animate-fade-up-delay-2 flex justify-start">
+          <div className="animate-fade-up-delay-2">
             <Link
               href="#articles"
-              className="inline-flex items-center justify-center rounded-xl bg-brand px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-brand/20 transition hover:bg-brand-dark"
+              className="inline-flex rounded-lg bg-brand px-7 py-3 text-base font-bold text-white transition hover:bg-brand-dark"
             >
-              شروع یادگیری
+              {hero.cta}
             </Link>
           </div>
         </div>
 
-        <div className="min-w-0 overflow-visible">
+        <div className="animate-fade-up-delay-1 relative order-1 w-full overflow-visible lg:order-2">
           <HeroGallery />
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

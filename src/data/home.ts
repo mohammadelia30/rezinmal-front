@@ -1,68 +1,74 @@
 export const navLinks = [
-  { label: "فروشگاه", href: "#shop" },
-  { label: "آموزش", href: "#articles" },
-  { label: "گالری", href: "#gallery" },
-  { label: "محصولات", href: "#products" },
-  { label: "ارتباط با ما", href: "#contact" },
+  { label: "سبک کلات", href: "#shop" },
+  { label: "مهموره", href: "#products" },
+  { label: "خاص آموزی", href: "#articles" },
+  { label: "سنتلی", href: "#gallery" },
+  { label: "منیبک", href: "#contact" },
 ] as const;
+
+export const hero = {
+  titleLine1: "زیبایی را خودتان بسازید",
+  titleLine2: "با کیت‌های آموزش رزینمال",
+  cta: "شروع یادگیری",
+} as const;
 
 export const heroSlides = [
   {
     id: "h1",
     src: "/images/hero-main.jpg",
-    alt: "ساخت هنر رزین با دست",
+    alt: "ریختن رزین",
   },
   {
     id: "h2",
     src: "/images/hero-thumb-1.jpg",
-    alt: "گوشواره رزینی دست‌ساز",
+    alt: "گوشواره رزین",
   },
   {
     id: "h3",
     src: "/images/hero-thumb-2.jpg",
-    alt: "زیورآلات رزینی بنفش",
+    alt: "زیورآلات رزینی",
   },
   {
     id: "h4",
-    src: "/images/product-3.jpg",
-    alt: "محصول رزینی تزئینی",
+    src: "/images/hero-extra.jpg",
+    alt: "هنر رزین دست‌ساز",
   },
 ] as const;
 
 export const categories = [
   {
     id: "resin",
-    title: "رنگ و رزین بوردش",
+    title: "رنگ و رزین پورینگ",
+    subtitle: "مورینگ",
+    price: "تومان",
     image: "/images/cat-resin.jpg",
+    variant: "product" as const,
   },
   {
     id: "molds",
     title: "قالب‌های سیلیکونی",
     image: "/images/cat-molds.jpg",
+    variant: "wide" as const,
   },
   {
     id: "tools",
     title: "ابزارآلات",
     image: "/images/cat-tools.jpg",
-  },
-  {
-    id: "kits",
-    title: "کیت‌های آموزشی",
-    image: "/images/cat-kits.jpg",
+    variant: "simple" as const,
   },
 ] as const;
 
 export const products = [
   {
     id: "p1",
-    title: "تکنیک‌های آمتیست",
+    title: "دلمان لالب رزین",
     subtitle: "مورینگ",
     price: "۵۰۰ تومان",
     image: "/images/product-1.jpg",
   },
   {
     id: "p2",
-    title: "هنر ویترای",
+    title: "هنر قالب سیلیکونی",
     subtitle: "مورینگ",
     price: "۵۰۰ تومان",
     image: "/images/product-2.jpg",
@@ -78,7 +84,7 @@ export const products = [
     id: "p4",
     title: "هرم رزینی دکوراتیو",
     subtitle: "مورینگ",
-    price: "۵۰۰ تومان",
+    price: "۳۰۰ تومان",
     image: "/images/product-4.jpg",
   },
 ] as const;
@@ -96,7 +102,14 @@ export const articles = [
   },
   {
     id: "a3",
-    title: "ترکیب رنگ در هنر رزین",
+    title: "تکنیک‌های پیشرفته پورینگ",
     image: "/images/article-3.jpg",
   },
 ] as const;
+
+export const footerContacts = {
+  phone: "۰۲۱ ۳۴۴۲ ۳۶۰",
+  address: "گروه رزینمال، تهران",
+  email: "info@resinmal.com",
+  addressLine: "آدرس: تهران، ولیعصر",
+} as const;
