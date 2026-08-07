@@ -9,6 +9,9 @@ type BlogArticleCardProps = {
   author: string;
   price: string | null;
   image: string;
+  label?: string;
+  /** compact = Figma mobile blog card */
+  variant?: "full" | "compact";
 };
 
 export function BlogArticleCard({
@@ -19,10 +22,52 @@ export function BlogArticleCard({
   author,
   price,
   image,
+  label,
+  variant = "full",
 }: BlogArticleCardProps) {
+  if (variant === "compact") {
+    return (
+      <article className="flex h-full flex-col overflow-hidden rounded-[10px] bg-white p-1.5 shadow-[0px_3px_10px_rgba(80,40,120,0.18)]">
+        <Link
+          href={`/blog/${id}`}
+          className="relative block aspect-[120/82] w-full overflow-hidden rounded-[7px] bg-[#f7f2fa]"
+        >
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="50vw"
+            className="object-cover"
+          />
+        </Link>
+
+        <div className="flex flex-1 flex-col px-0.5 pt-1.5 pb-1">
+          <Link href={`/blog/${id}`}>
+            <h3 className="line-clamp-2 min-h-[2.1rem] text-right text-[12.5px] font-bold leading-[1.35] text-[#2b2b33]">
+              {title}
+            </h3>
+          </Link>
+          <div className="mt-auto flex items-center justify-end gap-1 pt-1.5 text-[11px] text-[#6b5b7b]">
+            <Image
+              src="/images/figma/icon-author-blog-m.svg"
+              alt=""
+              width={12}
+              height={12}
+              className="size-3 shrink-0"
+            />
+            <span className="truncate">{label ?? category}</span>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-xl border border-[#efe6f4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <Link href={`/blog/${id}`} className="relative block aspect-[16/9] w-full overflow-hidden bg-[#f7f2fa]">
+      <Link
+        href={`/blog/${id}`}
+        className="relative block aspect-[16/9] w-full overflow-hidden bg-[#f7f2fa]"
+      >
         <Image
           src={image}
           alt={title}
