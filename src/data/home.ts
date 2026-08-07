@@ -1,7 +1,7 @@
 export const navLinks = [
   { label: "سبک کلات", href: "/categories" },
   { label: "مهموره", href: "/products" },
-  { label: "خاص آموزی", href: "#articles" },
+  { label: "خاص آموزی", href: "/blog" },
   { label: "سنتلی", href: "#gallery" },
   { label: "منیبک", href: "#contact" },
 ] as const;
@@ -9,7 +9,7 @@ export const navLinks = [
 export const shopNavLinks = [
   { label: "فروشگاه", href: "/products" },
   { label: "مسوری", href: "/categories" },
-  { label: "آموزش", href: "/#articles" },
+  { label: "آموزش", href: "/blog" },
   { label: "گالری", href: "/#gallery" },
   { label: "ارتباط با ما", href: "/#contact" },
 ] as const;

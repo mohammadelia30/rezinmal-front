@@ -7,15 +7,23 @@ export function Articles() {
   return (
     <section id="articles" className="scroll-mt-20 bg-background py-12 sm:py-16 lg:py-20">
       <Container>
-        <h2 className="mb-8 text-right text-2xl font-bold text-foreground sm:mb-10 sm:text-3xl">
-          آخرین مقالات آموزشی
-        </h2>
+        <div className="mb-8 flex items-center justify-between sm:mb-10">
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-brand transition hover:text-brand-dark"
+          >
+            مشاهده همه
+          </Link>
+          <h2 className="text-right text-2xl font-bold text-foreground sm:text-3xl">
+            آخرین مقالات آموزشی
+          </h2>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {articles.map((article) => (
             <Link
               key={article.id}
-              href="#articles"
+              href="/blog"
               className="group overflow-hidden rounded-2xl bg-[#f4eee2] transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
