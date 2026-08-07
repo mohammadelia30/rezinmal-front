@@ -1,17 +1,16 @@
 import Image from "next/image";
-import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Container } from "@/components/Container";
 
 export function CategoryHeader() {
   return (
     <header className="border-b border-[#efe6f4] bg-white">
       <Container className="flex h-16 items-center justify-between sm:h-[64px]">
-        <Link
-          href="/"
-          className="text-2xl font-bold text-brand sm:text-[26px]"
-        >
-          رزینمال
-        </Link>
+        <BrandLogo
+          size={40}
+          imageClassName="h-9 w-9 rounded-full object-cover sm:h-10 sm:w-10"
+          textClassName="text-xl font-bold text-brand sm:text-[26px]"
+        />
 
         <div className="flex items-center gap-3.5">
           <button

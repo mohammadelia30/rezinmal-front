@@ -72,8 +72,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-footer-line pt-4 text-xs text-[#8a7a6a] sm:flex-row">
-          <p>گروه رزینمال</p>
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-footer-line pt-4 text-xs text-[#8a7a6a] sm:flex-row sm:text-sm">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="رزین‌مال"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-full object-cover"
+            />
+            <p className="font-bold text-brand">گروه رزین‌مال</p>
+          </div>
           <p>© کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.</p>
         </div>
       </Container>

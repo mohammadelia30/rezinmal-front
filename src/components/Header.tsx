@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Container } from "@/components/Container";
 import { navLinks } from "@/data/home";
 
@@ -16,19 +16,7 @@ export function Header({ links = navLinks }: HeaderProps) {
   return (
     <header className="bg-background">
       <Container className="relative flex h-16 items-center justify-between sm:h-20">
-        <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2.5">
-          <Image
-            src="/logo.png"
-            alt="رزینمال"
-            width={48}
-            height={48}
-            priority
-            className="h-10 w-10 rounded-full object-cover sm:h-12 sm:w-12"
-          />
-          <span className="text-xl font-bold text-brand sm:text-2xl">
-            رزینمال
-          </span>
-        </Link>
+        <BrandLogo className="relative z-10" />
 
         <nav
           className="absolute inset-x-0 hidden items-center justify-center gap-5 sm:gap-8 lg:gap-10 md:flex"
