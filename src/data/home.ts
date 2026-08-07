@@ -1,5 +1,5 @@
 export const navLinks = [
-  { label: "سبک کلات", href: "#shop" },
+  { label: "سبک کلات", href: "/categories" },
   { label: "مهموره", href: "/products" },
   { label: "خاص آموزی", href: "#articles" },
   { label: "سنتلی", href: "#gallery" },
@@ -8,7 +8,7 @@ export const navLinks = [
 
 export const shopNavLinks = [
   { label: "فروشگاه", href: "/products" },
-  { label: "مسوری", href: "/#gallery" },
+  { label: "مسوری", href: "/categories" },
   { label: "آموزش", href: "/#articles" },
   { label: "گالری", href: "/#gallery" },
   { label: "ارتباط با ما", href: "/#contact" },
