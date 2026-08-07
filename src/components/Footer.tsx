@@ -18,8 +18,63 @@ const socials = [
 
 export function Footer() {
   return (
-    <footer id="contact" className="scroll-mt-20 bg-surface">
-      <Container className="py-10 sm:py-14">
+    <footer id="contact" className="scroll-mt-20 bg-[#f6f1e7] md:bg-surface">
+      {/* Mobile — Figma 25:5 */}
+      <div className="border-t border-[#e6ddcd] px-4 py-4 md:hidden">
+        <div className="space-y-1.5 text-right text-[11px] text-[#4a3a55]">
+          <div className="flex items-center justify-end gap-1.5">
+            <span dir="ltr">تماس: {footerContacts.phone}</span>
+            <Image
+              src="/images/figma/icon-phone.svg"
+              alt=""
+              width={12}
+              height={12}
+              className="size-3 shrink-0"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <span>{footerContacts.addressLine}</span>
+            <Image
+              src="/images/figma/icon-location.svg"
+              alt=""
+              width={12}
+              height={12}
+              className="size-3 shrink-0"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <span dir="ltr">ایمیل: {footerContacts.email}</span>
+            <Image
+              src="/images/figma/icon-mail.svg"
+              alt=""
+              width={12}
+              height={12}
+              className="size-3 shrink-0"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-end gap-1.5">
+          {socials.map(({ label, href, icon: Icon }) => (
+            <Link
+              key={label}
+              href={href}
+              aria-label={label}
+              className="flex size-3.5 items-center justify-center rounded-full bg-[#6e4b7c] text-white"
+            >
+              <Icon className="h-2 w-2" />
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between border-t border-[#e6ddcd] pt-2 text-[10px] text-[#7a6a80]">
+          <p>© کلیه حقوق محفوظ است</p>
+          <p>گروه رزینمال</p>
+        </div>
+      </div>
+
+      {/* Desktop */}
+      <Container className="hidden py-10 md:block md:py-14">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           <div className="space-y-2 text-right text-sm">
             <p className="font-bold text-foreground">تماس</p>
@@ -64,7 +119,7 @@ export function Footer() {
                 key={label}
                 href={href}
                 aria-label={label}
-                className="flex size-8 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark sm:size-7"
+                className="flex size-7 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark"
               >
                 <Icon className="h-3.5 w-3.5" />
               </Link>

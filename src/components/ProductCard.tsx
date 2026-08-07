@@ -17,8 +17,11 @@ export function ProductCard({
   image,
 }: ProductCardProps) {
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-card">
-      <Link href={`/products/${id}`} className="relative block aspect-square w-full overflow-hidden">
+    <article className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)] md:rounded-2xl md:bg-card md:shadow-none">
+      <Link
+        href={`/products/${id}`}
+        className="relative block aspect-[111/88] w-full overflow-hidden md:aspect-square"
+      >
         <Image
           src={image}
           alt={title}
@@ -28,21 +31,21 @@ export function ProductCard({
         />
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5 sm:px-4">
+      <div className="flex flex-1 flex-col gap-1 px-1.5 pb-2 pt-1.5 md:px-4 md:pb-3 md:pt-2.5">
         <Link href={`/products/${id}`}>
-          <h3 className="text-right text-sm font-bold text-foreground sm:text-base">
+          <h3 className="line-clamp-1 text-right text-[11px] font-bold text-[#3d2447] md:line-clamp-none md:text-sm md:text-foreground lg:text-base">
             {title}
           </h3>
         </Link>
-        <div className="flex items-center justify-between text-xs text-muted sm:text-sm">
-          <span>{subtitle}</span>
+        <div className="flex items-center justify-between text-[10px] text-[#7a6a80] md:text-xs md:text-muted lg:text-sm">
           <span>{price}</span>
+          <span>{subtitle}</span>
         </div>
-        <div className="mt-2 flex items-center gap-2">
-          <div className="h-4 flex-1 rounded bg-bar" />
+        <div className="mt-1.5 md:mt-2 md:flex md:items-center md:gap-2">
+          <div className="hidden h-4 flex-1 rounded bg-bar md:block" />
           <button
             type="button"
-            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-dark sm:px-4 sm:text-sm"
+            className="w-full rounded bg-[#e8dcc4] py-1 text-[10px] font-bold text-[#4a2a55] transition hover:bg-[#dfd0b0] md:w-auto md:rounded-lg md:bg-brand md:px-4 md:py-1.5 md:text-sm md:text-white md:hover:bg-brand-dark"
           >
             خرید
           </button>

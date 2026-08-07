@@ -66,6 +66,42 @@ export const categories = [
   },
 ] as const;
 
+/** Mobile homepage quick categories (Figma 25:93) */
+export const mobileCategories = [
+  {
+    id: "clock",
+    title: "ساعت",
+    subtitle: "محصولات رزینی دست‌ساز",
+    image: "/images/product-1.jpg",
+    layout: "row" as const,
+    href: "/categories",
+  },
+  {
+    id: "molds",
+    title: "قالب‌های سیلیکونی",
+    subtitle: null,
+    image: "/images/cat-molds.jpg",
+    layout: "tile" as const,
+    href: "/categories",
+  },
+  {
+    id: "tools",
+    title: "ابزارآلات",
+    subtitle: null,
+    image: "/images/cat-tools.jpg",
+    layout: "tile" as const,
+    href: "/categories",
+  },
+  {
+    id: "accessories",
+    title: "اکسسوری",
+    subtitle: "زیورآلات و اکسسوری رزینی",
+    image: "/images/product-3.jpg",
+    layout: "row" as const,
+    href: "/categories",
+  },
+] as const;
+
 export const products = [
   {
     id: "p1",

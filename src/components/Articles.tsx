@@ -5,7 +5,10 @@ import { articles } from "@/data/home";
 
 export function Articles() {
   return (
-    <section id="articles" className="scroll-mt-20 bg-background py-12 sm:py-16 lg:py-20">
+    <section
+      id="articles"
+      className="hidden scroll-mt-20 bg-background py-12 sm:py-16 md:block lg:py-20"
+    >
       <Container>
         <div className="mb-8 flex flex-wrap items-center justify-between gap-2 sm:mb-10">
           <Link
