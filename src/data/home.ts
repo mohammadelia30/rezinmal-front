@@ -1,9 +1,17 @@
 export const navLinks = [
   { label: "سبک کلات", href: "#shop" },
-  { label: "مهموره", href: "#products" },
+  { label: "مهموره", href: "/products" },
   { label: "خاص آموزی", href: "#articles" },
   { label: "سنتلی", href: "#gallery" },
   { label: "منیبک", href: "#contact" },
+] as const;
+
+export const shopNavLinks = [
+  { label: "فروشگاه", href: "/products" },
+  { label: "مسوری", href: "/#gallery" },
+  { label: "آموزش", href: "/#articles" },
+  { label: "گالری", href: "/#gallery" },
+  { label: "ارتباط با ما", href: "/#contact" },
 ] as const;
 
 export const hero = {
@@ -61,29 +69,29 @@ export const categories = [
 export const products = [
   {
     id: "p1",
-    title: "دلمان لالب رزین",
-    subtitle: "مورینگ",
+    title: "ساعت دیواری رزین",
+    subtitle: "مورنینگ",
     price: "۵۰۰ تومان",
     image: "/images/product-1.jpg",
   },
   {
     id: "p2",
     title: "هنر قالب سیلیکونی",
-    subtitle: "مورینگ",
+    subtitle: "مورنینگ",
     price: "۵۰۰ تومان",
     image: "/images/product-2.jpg",
   },
   {
     id: "p3",
     title: "زیورآلات رزینی",
-    subtitle: "مورینگ",
+    subtitle: "مورنینگ",
     price: "۵۰۰ تومان",
     image: "/images/product-3.jpg",
   },
   {
     id: "p4",
     title: "هرم رزینی دکوراتیو",
-    subtitle: "مورینگ",
+    subtitle: "مورنینگ",
     price: "۳۰۰ تومان",
     image: "/images/product-4.jpg",
   },

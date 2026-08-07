@@ -3,7 +3,16 @@ import Link from "next/link";
 import { Container } from "@/components/Container";
 import { navLinks } from "@/data/home";
 
-export function Header() {
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+type HeaderProps = {
+  links?: readonly NavItem[];
+};
+
+export function Header({ links = navLinks }: HeaderProps) {
   return (
     <header className="bg-background">
       <Container className="relative flex h-16 items-center justify-between sm:h-20">
@@ -25,9 +34,9 @@ export function Header() {
           className="absolute inset-x-0 hidden items-center justify-center gap-5 sm:gap-8 lg:gap-10 md:flex"
           aria-label="منوی اصلی"
         >
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <Link
-              key={link.href}
+              key={`${link.href}-${link.label}`}
               href={link.href}
               className="text-sm text-[#4a3a50] transition-colors hover:text-brand sm:text-base"
             >
@@ -36,17 +45,19 @@ export function Header() {
           ))}
         </nav>
 
-        {/* spacer to keep logo on the right with justify-between in RTL */}
-        <div className="pointer-events-none invisible hidden w-[140px] md:block" aria-hidden />
+        <div
+          className="pointer-events-none invisible hidden w-[140px] md:block"
+          aria-hidden
+        />
       </Container>
 
       <nav
         className="flex flex-wrap items-center justify-center gap-4 px-5 pb-3 md:hidden"
         aria-label="منوی موبایل"
       >
-        {navLinks.map((link) => (
+        {links.map((link) => (
           <Link
-            key={link.href}
+            key={`${link.href}-${link.label}-m`}
             href={link.href}
             className="text-sm text-[#4a3a50] transition-colors hover:text-brand"
           >
