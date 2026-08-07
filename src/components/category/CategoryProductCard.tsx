@@ -37,7 +37,7 @@ export function CategoryProductCard({
         <span className="font-semibold text-[#3d2246]">{price}</span>
       </div>
 
-      <div className="mt-3 flex items-center gap-1.5">
+      <div className="mt-3 flex flex-col gap-1.5 sm:flex-row sm:items-center">
         <button
           type="button"
           className="flex-1 rounded-lg bg-brand px-2 py-2 text-[10px] font-bold text-white transition hover:bg-brand-dark sm:text-xs"

@@ -20,7 +20,7 @@ export function Footer() {
   return (
     <footer id="contact" className="scroll-mt-20 bg-surface">
       <Container className="py-10 sm:py-14">
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           <div className="space-y-2 text-right text-sm">
             <p className="font-bold text-foreground">تماس</p>
             <div className="flex items-center justify-end gap-2 text-muted">
@@ -30,17 +30,17 @@ export function Footer() {
                 alt=""
                 width={14}
                 height={14}
-                className="size-3.5"
+                className="size-3.5 shrink-0"
               />
             </div>
-            <div className="flex items-center justify-end gap-2 text-muted">
-              <span>{footerContacts.address}</span>
+            <div className="flex items-start justify-end gap-2 text-muted">
+              <span className="leading-6">{footerContacts.address}</span>
               <Image
                 src="/images/figma/icon-location.svg"
                 alt=""
                 width={14}
                 height={14}
-                className="size-3.5"
+                className="mt-1 size-3.5 shrink-0"
               />
             </div>
           </div>
@@ -52,19 +52,19 @@ export function Footer() {
 
           <div className="space-y-2 text-right text-sm">
             <p className="font-bold text-foreground">تلفن:</p>
-            <p className="text-muted">{footerContacts.addressLine}</p>
-            <p className="text-muted" dir="ltr">
+            <p className="break-words text-muted">{footerContacts.addressLine}</p>
+            <p className="break-all text-muted" dir="ltr">
               ایمیل: {footerContacts.email}
             </p>
           </div>
 
-          <div className="flex items-start gap-2 sm:justify-start">
+          <div className="flex items-start justify-end gap-2 lg:justify-start">
             {socials.map(({ label, href, icon: Icon }) => (
               <Link
                 key={label}
                 href={href}
                 aria-label={label}
-                className="flex size-7 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark"
+                className="flex size-8 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark sm:size-7"
               >
                 <Icon className="h-3.5 w-3.5" />
               </Link>
@@ -72,7 +72,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-footer-line pt-4 text-xs text-[#8a7a6a] sm:flex-row sm:text-sm">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-footer-line pt-4 text-center text-xs text-[#8a7a6a] sm:flex-row sm:text-right sm:text-sm">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.png"
@@ -83,7 +83,7 @@ export function Footer() {
             />
             <p className="font-bold text-brand">گروه رزین‌مال</p>
           </div>
-          <p>© کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.</p>
+          <p className="leading-6">© کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.</p>
         </div>
       </Container>
     </footer>

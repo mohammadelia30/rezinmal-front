@@ -62,11 +62,13 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             {post.price ? <span>{post.price}</span> : null}
           </div>
 
-          <h1 className="mb-4 text-2xl font-bold leading-10 text-[#3d2246] sm:text-3xl">
+          <h1 className="mb-4 text-xl font-bold leading-9 text-[#3d2246] sm:text-2xl sm:leading-10 md:text-3xl">
             {post.title}
           </h1>
-          <p className="text-base leading-8 text-[#4a4050]">{post.excerpt}</p>
-          <p className="mt-6 text-base leading-8 text-[#4a4050]">
+          <p className="text-sm leading-7 text-[#4a4050] sm:text-base sm:leading-8">
+            {post.excerpt}
+          </p>
+          <p className="mt-6 text-sm leading-7 text-[#4a4050] sm:text-base sm:leading-8">
             این مقاله بخشی از مجموعه آموزش‌های تخصصی رزین‌مال است. به‌زودی متن
             کامل و گام‌به‌گام این آموزش در همین صفحه منتشر می‌شود.
           </p>

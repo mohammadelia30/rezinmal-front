@@ -35,9 +35,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <div className="flex min-h-dvh w-full flex-col bg-background">
       <Header links={shopNavLinks} />
-      <main className="flex-1 py-10 sm:py-14">
+      <main className="flex-1 py-8 sm:py-14">
         <Container>
-          <div className="mb-6">
+          <div className="mb-5 sm:mb-6">
             <Link
               href="/products"
               className="text-sm text-muted transition hover:text-brand"
@@ -46,8 +46,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </Link>
           </div>
 
-          <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
-            <div className="relative aspect-square overflow-hidden rounded-2xl bg-card">
+          <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
+            <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-card lg:max-w-none">
               <Image
                 src={product.image}
                 alt={product.title}
@@ -58,24 +58,28 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               />
             </div>
 
-            <div className="space-y-5 text-right">
+            <div className="space-y-4 text-right sm:space-y-5">
               <div>
-                <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
+                <h1 className="text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
                   {product.title}
                 </h1>
-                <p className="mt-2 text-muted">{product.subtitle}</p>
+                <p className="mt-2 text-sm text-muted sm:text-base">
+                  {product.subtitle}
+                </p>
               </div>
 
-              <p className="text-2xl font-bold text-brand">{product.price}</p>
+              <p className="text-xl font-bold text-brand sm:text-2xl">
+                {product.price}
+              </p>
 
-              <p className="leading-8 text-foreground/80">
+              <p className="text-sm leading-7 text-foreground/80 sm:text-base sm:leading-8">
                 محصول دست‌ساز رزینی از مجموعه ویژه رزینمال؛ مناسب هدیه، دکور و
                 استفاده روزمره.
               </p>
 
               <button
                 type="button"
-                className="inline-flex rounded-lg bg-brand px-8 py-3 text-base font-bold text-white transition hover:bg-brand-dark"
+                className="inline-flex w-full rounded-lg bg-brand px-8 py-3 text-base font-bold text-white transition hover:bg-brand-dark sm:w-auto"
               >
                 خرید
               </button>

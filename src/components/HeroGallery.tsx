@@ -84,12 +84,12 @@ export function HeroGallery() {
           />
         </div>
 
-        <div className="absolute -bottom-4 start-4 z-10 flex items-end gap-2.5 sm:start-8 sm:gap-3 lg:-bottom-5">
+        <div className="absolute -bottom-3 start-3 z-10 flex items-end gap-2 sm:start-6 sm:gap-3 lg:-bottom-5 lg:start-8">
           <button
             type="button"
             onClick={() => swapWith("next")}
             aria-label={`نمایش تصویر: ${nextSlide.alt}`}
-            className="group relative h-24 w-24 overflow-hidden rounded-xl bg-brand-mist shadow-md ring-[3px] ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-28 sm:w-28 lg:h-32 lg:w-32"
+            className="group relative h-16 w-16 overflow-hidden rounded-lg bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-24 sm:w-24 sm:rounded-xl sm:ring-[3px] lg:h-32 lg:w-32"
           >
             <Image
               key={nextSlide.id}
@@ -109,7 +109,7 @@ export function HeroGallery() {
             type="button"
             onClick={() => swapWith("third")}
             aria-label={`نمایش تصویر: ${thirdSlide.alt}`}
-            className="group relative h-16 w-16 overflow-hidden rounded-xl bg-brand-mist shadow-md ring-[3px] ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-20 sm:w-20 lg:h-24 lg:w-24"
+            className="group relative h-12 w-12 overflow-hidden rounded-lg bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-16 sm:w-16 sm:rounded-xl sm:ring-[3px] lg:h-24 lg:w-24"
           >
             <Image
               key={thirdSlide.id}

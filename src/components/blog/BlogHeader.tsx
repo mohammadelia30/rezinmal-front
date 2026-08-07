@@ -12,7 +12,7 @@ export function BlogHeader() {
           textClassName="text-xl font-bold text-brand sm:text-2xl"
         />
 
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-2 sm:gap-3.5">
           <button type="button" aria-label="جستجو" className="size-[26px]">
             <Image
               src="/images/figma/icon-search.svg"
@@ -62,7 +62,7 @@ export function BlogHeader() {
             aria-label="پروفایل کاربر"
             className="flex items-center gap-1"
           >
-            <span className="relative size-[34px] overflow-hidden rounded-full bg-brand-mist">
+            <span className="relative size-8 overflow-hidden rounded-full bg-brand-mist sm:size-[34px]">
               <Image
                 src="/images/figma/avatar-user.png"
                 alt="کاربر"
@@ -71,7 +71,7 @@ export function BlogHeader() {
                 className="object-cover"
               />
             </span>
-            <span className="text-xs text-[#6b5b73]">▾</span>
+            <span className="hidden text-xs text-[#6b5b73] sm:inline">▾</span>
           </button>
         </div>
       </Container>

@@ -56,7 +56,7 @@ export function BlogSidebar({
   onExtraChange,
 }: BlogSidebarProps) {
   return (
-    <aside className="h-full border-e border-[#efe6f4] bg-[#f7f4f9] px-3.5 py-3 lg:min-h-[680px]">
+    <aside className="h-full bg-[#f7f4f9] px-3.5 py-3 lg:min-h-[680px] lg:border-e lg:border-[#efe6f4]">
       <h2 className="mb-2 text-right text-[12.5px] font-bold text-[#3d2246]">
         دسته‌بندی مقالات
       </h2>

@@ -12,7 +12,7 @@ export function CategoryHeader() {
           textClassName="text-xl font-bold text-brand sm:text-[26px]"
         />
 
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-2 sm:gap-3.5">
           <button
             type="button"
             aria-label="اعلان‌ها"

@@ -7,14 +7,14 @@ export function Categories() {
   return (
     <section id="shop" className="scroll-mt-20 bg-background py-12 sm:py-16 lg:py-20">
       <Container>
-        <div className="mb-8 flex items-center justify-between sm:mb-10">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-2 sm:mb-10">
           <Link
             href="/categories"
             className="text-sm font-medium text-brand transition hover:text-brand-dark"
           >
             مشاهده همه
           </Link>
-          <h2 className="text-right text-2xl font-bold text-foreground sm:text-3xl">
+          <h2 className="text-right text-xl font-bold text-foreground sm:text-2xl md:text-3xl">
             دسته‌بندی‌های اصلی
           </h2>
         </div>

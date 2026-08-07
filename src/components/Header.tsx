@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Container } from "@/components/Container";
+import { MenuIcon } from "@/components/icons";
 import { navLinks } from "@/data/home";
 
 type NavItem = {
@@ -13,46 +17,68 @@ type HeaderProps = {
 };
 
 export function Header({ links = navLinks }: HeaderProps) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <header className="bg-background">
-      <Container className="relative flex h-16 items-center justify-between sm:h-20">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm">
+      <Container className="relative flex h-14 items-center justify-between sm:h-16 md:h-20">
         <BrandLogo className="relative z-10" />
 
         <nav
-          className="absolute inset-x-0 hidden items-center justify-center gap-5 sm:gap-8 lg:gap-10 md:flex"
+          className="absolute inset-x-0 hidden items-center justify-center gap-4 px-24 lg:gap-8 xl:gap-10 md:flex"
           aria-label="منوی اصلی"
         >
           {links.map((link) => (
             <Link
               key={`${link.href}-${link.label}`}
               href={link.href}
-              className="text-sm text-[#4a3a50] transition-colors hover:text-brand sm:text-base"
+              className="whitespace-nowrap text-sm text-[#4a3a50] transition-colors hover:text-brand lg:text-base"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div
-          className="pointer-events-none invisible hidden w-[140px] md:block"
-          aria-hidden
-        />
+        <button
+          type="button"
+          className="relative z-10 rounded-lg p-2 text-foreground transition hover:bg-brand-mist hover:text-brand md:hidden"
+          aria-label={open ? "بستن منو" : "باز کردن منو"}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <MenuIcon className="h-5 w-5" />
+        </button>
       </Container>
 
-      <nav
-        className="flex flex-wrap items-center justify-center gap-4 px-5 pb-3 md:hidden"
-        aria-label="منوی موبایل"
-      >
-        {links.map((link) => (
-          <Link
-            key={`${link.href}-${link.label}-m`}
-            href={link.href}
-            className="text-sm text-[#4a3a50] transition-colors hover:text-brand"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
+      {open ? (
+        <nav
+          className="border-t border-brand-soft/40 bg-background px-4 py-3 md:hidden"
+          aria-label="منوی موبایل"
+        >
+          <ul className="flex flex-col gap-1">
+            {links.map((link) => (
+              <li key={`${link.href}-${link.label}-m`}>
+                <Link
+                  href={link.href}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-[#4a3a50] transition hover:bg-brand-mist hover:text-brand"
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
     </header>
   );
 }

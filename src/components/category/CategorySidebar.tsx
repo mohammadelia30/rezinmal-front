@@ -9,7 +9,7 @@ type CategorySidebarProps = {
 
 export function CategorySidebar({ activeId, onSelect }: CategorySidebarProps) {
   return (
-    <aside className="h-full border-e border-[#efe6f4] bg-white px-3.5 py-4 lg:min-h-[604px]">
+    <aside className="h-full bg-white px-3.5 py-4 lg:min-h-[604px] lg:border-e lg:border-[#efe6f4]">
       <h2 className="mb-3 text-right text-[12.5px] font-bold text-[#3d2246]">
         دسته‌بندی اصلی
       </h2>

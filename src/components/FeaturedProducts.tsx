@@ -12,7 +12,7 @@ export function FeaturedProducts({
   return (
     <section id="products" className="scroll-mt-20 bg-background py-12 sm:py-16 lg:py-20">
       <Container>
-        <h2 className="mb-8 text-right text-2xl font-bold text-foreground sm:mb-10 sm:text-3xl">
+        <h2 className="mb-8 text-right text-xl font-bold text-foreground sm:mb-10 sm:text-2xl md:text-3xl">
           {title}
         </h2>
 

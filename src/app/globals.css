@@ -79,6 +79,7 @@
 html {
   direction: rtl;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -87,4 +88,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-vazirmatn), Tahoma, sans-serif;
   text-align: right;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
 }

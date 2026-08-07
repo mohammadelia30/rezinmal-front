@@ -43,10 +43,10 @@ export function BlogArticleCard({
         </p>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#efe6f4] px-3 py-2 text-[11px] text-[#6b5b73]">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-[#efe6f4] px-3 py-2 text-[11px] text-[#6b5b73]">
         <span className="shrink-0 font-medium text-[#5b2a63]">{category}</span>
 
-        <span className="flex min-w-0 items-center gap-1">
+        <span className="flex min-w-0 max-w-[45%] items-center gap-1 sm:max-w-none">
           <span className="truncate">{author}</span>
           <Image
             src="/images/figma/icon-author.svg"
@@ -58,10 +58,10 @@ export function BlogArticleCard({
         </span>
 
         {price ? (
-          <span className="shrink-0 text-[#4a4050]">{price}</span>
-        ) : (
-          <span className="shrink-0 opacity-0">—</span>
-        )}
+          <span className="w-full shrink-0 text-left text-[#4a4050] sm:w-auto">
+            {price}
+          </span>
+        ) : null}
       </div>
     </article>
   );

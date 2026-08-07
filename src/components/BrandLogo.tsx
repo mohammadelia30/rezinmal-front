@@ -10,12 +10,12 @@ type BrandLogoProps = {
 
 export function BrandLogo({
   className = "",
-  textClassName = "text-xl font-bold text-brand sm:text-2xl",
-  imageClassName = "h-10 w-10 rounded-full object-cover sm:h-12 sm:w-12",
+  textClassName = "text-lg font-bold text-brand sm:text-xl md:text-2xl",
+  imageClassName = "h-8 w-8 rounded-full object-cover sm:h-10 sm:w-10 md:h-12 md:w-12",
   size = 48,
 }: BrandLogoProps) {
   return (
-    <Link href="/" className={`flex shrink-0 items-center gap-2.5 ${className}`}>
+    <Link href="/" className={`flex shrink-0 items-center gap-2 sm:gap-2.5 ${className}`}>
       <Image
         src="/logo.png"
         alt="رزین‌مال"

@@ -12,12 +12,12 @@ export function BlogPageContent() {
   const [levelId, setLevelId] = useState("beginner");
   const [extraId, setExtraId] = useState("kit");
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const byCategory = blogPosts.filter(
       (post) => post.categoryId === categoryId,
     );
-    // Keep grid full: if filter is sparse, fall back to all posts
     return byCategory.length >= 3 ? byCategory : blogPosts;
   }, [categoryId]);
 
@@ -37,7 +37,10 @@ export function BlogPageContent() {
         className="overflow-hidden bg-[#f4f0f6] lg:grid lg:grid-cols-[220px_1fr] xl:grid-cols-[240px_1fr]"
         style={{ direction: "ltr" }}
       >
-        <div dir="rtl">
+        <div
+          dir="rtl"
+          className={`${filtersOpen ? "block" : "hidden"} border-b border-[#efe6f4] lg:block lg:border-b-0`}
+        >
           <BlogSidebar
             categoryId={categoryId}
             levelId={levelId}
@@ -45,6 +48,7 @@ export function BlogPageContent() {
             onCategoryChange={(id) => {
               setCategoryId(id);
               setPage(1);
+              setFiltersOpen(false);
             }}
             onLevelChange={setLevelId}
             onExtraChange={setExtraId}
@@ -52,14 +56,24 @@ export function BlogPageContent() {
         </div>
 
         <section dir="rtl" className="bg-white">
-          <div className="bg-[#e8d9f0] px-4 py-2 text-center text-sm text-[#5b2a63] sm:text-[13px]">
+          <div className="bg-[#e8d9f0] px-3 py-2 text-center text-xs leading-5 text-[#5b2a63] sm:px-4 sm:text-[13px]">
             وبلاگ تخصصی رزین‌مال: الهام، هنر، زندگی
           </div>
 
           <div className="px-4 py-4 sm:px-5 sm:py-5">
-            <h1 className="mb-5 text-right text-lg font-bold text-[#3d2246] sm:text-xl">
-              آخرین مقالات و آموزش‌ها
-            </h1>
+            <div className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((value) => !value)}
+                className="rounded-lg border border-[#d9c6e3] bg-[#f7f4f9] px-3 py-2 text-xs font-bold text-[#5b2a63] transition hover:bg-[#f0e6f6] lg:hidden"
+                aria-expanded={filtersOpen}
+              >
+                {filtersOpen ? "بستن فیلترها" : "فیلترها"}
+              </button>
+              <h1 className="flex-1 text-right text-lg font-bold text-[#3d2246] sm:text-xl">
+                آخرین مقالات و آموزش‌ها
+              </h1>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visible.map((post) => (
