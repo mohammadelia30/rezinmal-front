@@ -67,38 +67,11 @@
   animation: hero-image-enter 0.55s ease-out both;
 }
 
-@keyframes hero-swap {
-  from {
-    top: var(--from-top);
-    left: var(--from-left);
-    width: var(--from-w);
-    height: var(--from-h);
-    border-radius: var(--hero-radius-from);
-  }
-  to {
-    top: var(--to-top);
-    left: var(--to-left);
-    width: var(--to-w);
-    height: var(--to-h);
-    border-radius: var(--hero-radius-to);
-  }
-}
-
-.hero-swap-box {
-  top: var(--from-top);
-  left: var(--from-left);
-  width: var(--from-w);
-  height: var(--from-h);
-  will-change: top, left, width, height, border-radius;
-  animation: hero-swap 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-up-delay-1,
   .animate-fade-up-delay-2,
-  .hero-image-enter,
-  .hero-swap-box {
+  .hero-image-enter {
     animation: none;
   }
 }
