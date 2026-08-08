@@ -64,7 +64,7 @@ export function Header({ links = navLinks }: HeaderProps) {
                 className="size-[17px]"
               />
             </button>
-            <button type="button" aria-label="حساب کاربری" className="p-1">
+            <Link href="/dashboard" aria-label="حساب کاربری" className="p-1">
               <Image
                 src="/images/figma/icon-user-mobile.svg"
                 alt=""
@@ -72,7 +72,7 @@ export function Header({ links = navLinks }: HeaderProps) {
                 height={17}
                 className="size-[17px]"
               />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -126,13 +126,13 @@ export function Header({ links = navLinks }: HeaderProps) {
           >
             <CartIcon className="h-5 w-5" />
           </button>
-          <button
-            type="button"
+          <Link
+            href="/dashboard"
             aria-label="حساب کاربری"
             className="rounded-lg p-2 transition hover:bg-brand-mist hover:text-brand"
           >
             <UserIcon className="h-5 w-5" />
-          </button>
+          </Link>
         </div>
       </Container>
     </header>
