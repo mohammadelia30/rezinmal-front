@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { ProductDetailActions } from "@/components/ProductDetailActions";
 import { products, shopNavLinks } from "@/data/home";
 
 type ProductPageProps = {
@@ -77,12 +78,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 استفاده روزمره.
               </p>
 
-              <button
-                type="button"
-                className="inline-flex w-full rounded-lg bg-brand px-8 py-3 text-base font-bold text-white transition hover:bg-brand-dark sm:w-auto"
-              >
-                خرید
-              </button>
+              <ProductDetailActions product={product} />
             </div>
           </div>
         </Container>

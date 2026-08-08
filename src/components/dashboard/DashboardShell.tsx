@@ -16,6 +16,7 @@ import {
 const navItems = [
   { href: "/dashboard", label: "خلاصه", exact: true },
   { href: "/dashboard/orders", label: "سفارش‌ها", exact: false },
+  { href: "/dashboard/favorites", label: "علاقه‌مندی‌ها", exact: false },
   { href: "/dashboard/profile", label: "پروفایل", exact: false },
 ] as const;
 

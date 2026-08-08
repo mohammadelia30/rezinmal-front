@@ -37,6 +37,24 @@ export function UserIcon({ className }: IconProps) {
   );
 }
 
+export function HeartIcon({ className, filled = false }: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M12 20.5s-6.8-4.3-9.2-8.4C.8 8.8 2.6 5.5 6.1 5.1c2-.3 3.8.8 4.9 2.3 1.1-1.5 2.9-2.6 4.9-2.3 3.5.4 5.3 3.7 3.3 7-2.4 4.1-9.2 8.4-9.2 8.4Z"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function CartIcon({ className }: IconProps) {
   return (
     <svg

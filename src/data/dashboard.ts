@@ -94,5 +94,4 @@ export const dashboardStats = {
   ).length,
   deliveredOrders: dashboardOrders.filter((order) => order.status === "delivered")
     .length,
-  favorites: 4,
 };

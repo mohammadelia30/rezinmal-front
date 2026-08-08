@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FavoritesStatCard } from "@/components/dashboard/FavoritesStatCard";
 import {
   dashboardOrders,
   dashboardStats,
@@ -46,11 +47,7 @@ export function DashboardOverview() {
           value={dashboardStats.deliveredOrders}
           hint="سفارش‌های تکمیل‌شده"
         />
-        <StatCard
-          label="علاقه‌مندی‌ها"
-          value={dashboardStats.favorites}
-          hint="محصولات ذخیره‌شده"
-        />
+        <FavoritesStatCard />
       </div>
 
       <div className="rounded-2xl bg-white p-5 shadow-[0_4px_20px_rgba(78,42,84,0.06)] sm:p-6">

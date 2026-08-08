@@ -12,6 +12,7 @@ import {
   readRegisterData,
   saveUserSession,
 } from "@/lib/auth-flow";
+import { mergeGuestCartIntoUser } from "@/lib/cart";
 
 export function RegisterVerifyForm() {
   const router = useRouter();
@@ -57,6 +58,7 @@ export function RegisterVerifyForm() {
         firstName: registerData.firstName,
         lastName: registerData.lastName,
       });
+      mergeGuestCartIntoUser(registerData.phone);
     }
     router.push("/dashboard");
   };

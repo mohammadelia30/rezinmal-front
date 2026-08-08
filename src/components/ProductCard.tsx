@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AddToCartButton } from "@/components/AddToCartButton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 type ProductCardProps = {
   id: string;
@@ -18,18 +20,24 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)] md:rounded-2xl md:bg-card md:shadow-none">
-      <Link
-        href={`/products/${id}`}
-        className="relative block aspect-[111/88] w-full overflow-hidden md:aspect-square"
-      >
-        <Image
-          src={image}
-          alt={title}
-          fill
-          sizes="(max-width: 1024px) 50vw, 25vw"
-          className="object-cover transition duration-500 hover:scale-105"
+      <div className="relative aspect-[111/88] w-full md:aspect-square">
+        <Link
+          href={`/products/${id}`}
+          className="relative block h-full w-full overflow-hidden"
+        >
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="(max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition duration-500 hover:scale-105"
+          />
+        </Link>
+        <FavoriteButton
+          product={{ id, title, subtitle, price, image }}
+          className="absolute end-2 top-2 z-10"
         />
-      </Link>
+      </div>
 
       <div className="flex flex-1 flex-col gap-1 px-1.5 pb-2 pt-1.5 md:px-4 md:pb-3 md:pt-2.5">
         <Link href={`/products/${id}`}>
@@ -43,12 +51,10 @@ export function ProductCard({
         </div>
         <div className="mt-1.5 md:mt-2 md:flex md:items-center md:gap-2">
           <div className="hidden h-4 flex-1 rounded bg-bar md:block" />
-          <button
-            type="button"
+          <AddToCartButton
+            productId={id}
             className="w-full rounded bg-[#e8dcc4] py-1 text-[10px] font-bold text-[#4a2a55] transition hover:bg-[#dfd0b0] md:w-auto md:rounded-lg md:bg-brand md:px-4 md:py-1.5 md:text-sm md:text-white md:hover:bg-brand-dark"
-          >
-            خرید
-          </button>
+          />
         </div>
       </div>
     </article>

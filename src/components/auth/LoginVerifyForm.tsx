@@ -12,6 +12,7 @@ import {
   readLoginPhone,
   saveUserSession,
 } from "@/lib/auth-flow";
+import { mergeGuestCartIntoUser } from "@/lib/cart";
 
 export function LoginVerifyForm() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export function LoginVerifyForm() {
 
     clearLoginPhone();
     saveUserSession({ phone });
+    mergeGuestCartIntoUser(phone);
     router.push("/dashboard");
   };
 
