@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { BlogHeader } from "@/components/blog/BlogHeader";
 import { BlogPageContent } from "@/components/blog/BlogPageContent";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "بلاگ | رزین‌مال",
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function BlogPage() {
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-white">
-      <BlogHeader />
+    <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
+      <Header />
       <main className="flex-1">
         <BlogPageContent />
       </main>
