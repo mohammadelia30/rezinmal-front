@@ -11,7 +11,12 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# آدرس داخلی بک‌اند روی شبکه داکر (نام کانتینر Rozinweb)
+ARG API_INTERNAL_URL=http://rozinmall_web:8000
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
 FROM base AS runner
@@ -19,6 +24,10 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+
+# همان مقدار پیش‌فرض برای runtime / rewrite
+ARG API_INTERNAL_URL=http://rozinmall_web:8000
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs

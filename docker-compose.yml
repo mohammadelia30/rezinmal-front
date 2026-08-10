@@ -3,11 +3,25 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rezinmal-front
+      args:
+        # کانتینر gunicorn بک‌اند (container_name در Rozinweb)
+        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://rozinmall_web:8000}
+    container_name: rezinmal_front
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://rozinmall_web:8000}
+      # برای درخواست‌های مرورگر در صورت نیاز به آدرس عمومی بک‌اند (nginx)
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
     restart: unless-stopped
+    networks:
+      - rozinmall_network
+
+networks:
+  # شبکه مشترک با پروژه Rozinweb
+  rozinmall_network:
+    external: true
+    name: rozinmall_network
