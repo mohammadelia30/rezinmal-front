@@ -11,6 +11,7 @@ import {
   AdminCard,
   AdminPageHeader,
 } from "@/components/admin/AdminUI";
+import { adminDemoAccounts } from "@/lib/admin-auth";
 import { readRoles, writeRoles } from "@/lib/admin-store";
 
 export function AdminRolesPage() {
@@ -56,6 +57,22 @@ export function AdminRolesPage() {
         title="نقش‌ها و دسترسی‌ها"
         description="تعریف نقش‌های مدیریتی و سطح دسترسی هر نقش"
       />
+
+      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+        {adminDemoAccounts.map((account) => (
+          <AdminCard key={account.username} className="p-4">
+            <p className="text-right font-bold text-foreground">
+              {account.displayName}
+            </p>
+            <p className="mt-1 text-right text-xs leading-6 text-muted">
+              {account.description}
+            </p>
+            <p className="mt-2 text-right text-[11px] text-brand" dir="ltr">
+              {account.username} / {account.password}
+            </p>
+          </AdminCard>
+        ))}
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
         <AdminCard className="h-fit p-3">

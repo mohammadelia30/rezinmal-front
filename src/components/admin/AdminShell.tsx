@@ -5,27 +5,21 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import {
+  adminNavItems,
   clearAdminSession,
+  getDefaultAdminRoute,
+  getPermissionForPath,
+  hasAdminPermission,
   readAdminSession,
   type AdminSession,
 } from "@/lib/admin-auth";
-
-const navItems = [
-  { href: "/admin", label: "داشبورد", exact: true },
-  { href: "/admin/orders", label: "سفارش‌ها", exact: false },
-  { href: "/admin/invoices", label: "فاکتورها", exact: false },
-  { href: "/admin/products", label: "محصولات", exact: false },
-  { href: "/admin/discounts", label: "کد تخفیف", exact: false },
-  { href: "/admin/users", label: "کاربران", exact: false },
-  { href: "/admin/roles", label: "نقش‌ها و دسترسی‌ها", exact: false },
-  { href: "/admin/settings", label: "تنظیمات", exact: false },
-] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [session, setSession] = useState<AdminSession | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const current = readAdminSession();
@@ -33,8 +27,21 @@ export function AdminShell({ children }: { children: ReactNode }) {
       router.replace("/admin/login");
       return;
     }
+
     setSession(current);
-  }, [router]);
+
+    const needed = getPermissionForPath(pathname);
+    if (needed && !hasAdminPermission(current, needed)) {
+      setForbidden(true);
+      const fallback = getDefaultAdminRoute(current.permissions);
+      if (fallback !== pathname) {
+        router.replace(fallback);
+      }
+      return;
+    }
+
+    setForbidden(false);
+  }, [pathname, router]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -53,6 +60,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
+  const visibleNav = adminNavItems.filter((item) =>
+    hasAdminPermission(session, item.permission),
+  );
+
   return (
     <div className="flex min-h-dvh bg-[#f6f1e7]">
       <aside
@@ -67,11 +78,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
             textClassName="text-lg font-bold text-brand"
           />
           <p className="mt-2 text-xs text-muted">پنل مدیریت فروشگاه</p>
+          <span className="mt-3 inline-flex rounded-full bg-brand-mist px-2.5 py-1 text-[11px] font-bold text-brand">
+            {session.roleName}
+          </span>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3" aria-label="منوی ادمین">
           <ul className="space-y-1">
-            {navItems.map((item) => {
+            {visibleNav.map((item) => {
               const active = item.exact
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
@@ -82,7 +96,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     href={item.href}
                     className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition ${
                       active
-                        ? "bg-brand text-white"
+                        ? "bg-brand text-white shadow-md shadow-brand/20"
                         : "text-[#4a3a50] hover:bg-brand-mist hover:text-brand"
                     }`}
                   >
@@ -95,8 +109,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="border-t border-[#efe6d4] p-3">
-          <p className="mb-2 px-2 text-xs text-muted">
-            ورود: {session.username}
+          <p className="mb-1 px-2 text-sm font-bold text-foreground">
+            {session.displayName}
+          </p>
+          <p className="mb-2 px-2 text-xs text-muted" dir="ltr">
+            @{session.username}
           </p>
           <button
             type="button"
@@ -143,14 +160,25 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </svg>
           </button>
           <p className="text-sm font-bold text-foreground lg:text-base">
-            پنل ادمین رزین‌مال
+            پنل {session.roleName}
           </p>
-          <span className="hidden text-xs text-muted lg:inline">
-            نسخه دمو
+          <span className="hidden rounded-full bg-white px-3 py-1 text-xs font-medium text-muted shadow-sm lg:inline">
+            {session.displayName}
           </span>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {forbidden ? (
+            <div className="rounded-2xl bg-white p-8 text-center shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
+              <p className="text-lg font-bold text-foreground">دسترسی ندارید</p>
+              <p className="mt-2 text-sm text-muted">
+                این بخش برای نقش شما فعال نیست.
+              </p>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );

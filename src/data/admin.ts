@@ -176,19 +176,39 @@ export const ordersByMonth = [
 
 /** توزیع وضعیت سفارش‌ها */
 export const ordersByStatus = [
-  { status: "pending" as const, value: 7, color: "#d4a017" },
-  { status: "paid" as const, value: 18, color: "#5b2a63" },
-  { status: "shipped" as const, value: 12, color: "#3b7bb8" },
-  { status: "delivered" as const, value: 45, color: "#2f6b45" },
-  { status: "cancelled" as const, value: 4, color: "#9b3d3d" },
+  { status: "pending" as const, value: 7, color: "#f59e0b" },
+  { status: "paid" as const, value: 18, color: "#8b5cf6" },
+  { status: "shipped" as const, value: 12, color: "#0ea5e9" },
+  { status: "delivered" as const, value: 45, color: "#10b981" },
+  { status: "cancelled" as const, value: 4, color: "#f43f5e" },
 ];
 
 /** فروش محصولات (تومان) */
 export const productSalesChart = [
-  { label: "ساعت دیواری", value: 43_000_000 },
-  { label: "قالب سیلیکونی", value: 26_000_000 },
-  { label: "زیورآلات", value: 20_500_000 },
-  { label: "هرم دکوراتیو", value: 20_100_000 },
+  {
+    label: "ساعت دیواری",
+    value: 43_000_000,
+    from: "#7c3aed",
+    to: "#c4b5fd",
+  },
+  {
+    label: "قالب سیلیکونی",
+    value: 26_000_000,
+    from: "#0891b2",
+    to: "#67e8f9",
+  },
+  {
+    label: "زیورآلات",
+    value: 20_500_000,
+    from: "#db2777",
+    to: "#f9a8d4",
+  },
+  {
+    label: "هرم دکوراتیو",
+    value: 20_100_000,
+    from: "#059669",
+    to: "#6ee7b7",
+  },
 ] as const;
 
 export const adminOrders: AdminOrder[] = [
