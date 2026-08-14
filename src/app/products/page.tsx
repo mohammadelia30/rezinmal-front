@@ -4,18 +4,21 @@ import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { shopNavLinks } from "@/data/home";
+import { getStoreProducts } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "محصولات | رزینمال",
   description: "مجموعه محصولات ویژه رزینمال؛ زیورآلات، قالب و آثار رزینی.",
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await getStoreProducts();
+
   return (
     <div className="flex min-h-dvh w-full flex-col bg-background">
       <Header links={shopNavLinks} />
       <main className="flex-1">
-        <FeaturedProducts />
+        <FeaturedProducts items={products} />
         <Articles />
       </main>
       <Footer />

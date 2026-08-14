@@ -1,19 +1,36 @@
 import { Container } from "@/components/Container";
 import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/data/home";
+import type { ProductCardModel } from "@/lib/api/types";
+import { products as mockProducts } from "@/data/home";
 
 type FeaturedProductsProps = {
   title?: string;
   mobileTitle?: string;
   /** home = Figma 25:5 educational pair; all = full 2-col grid */
   mobileMode?: "home" | "all";
+  items?: ProductCardModel[];
 };
+
+function toCards(
+  items?: ProductCardModel[],
+): ProductCardModel[] {
+  if (items?.length) return items;
+  return mockProducts.map((product) => ({
+    id: product.id,
+    title: product.title,
+    subtitle: product.subtitle,
+    price: product.price,
+    image: product.image,
+  }));
+}
 
 export function FeaturedProducts({
   title = "مجموعه محصولات ویژه",
   mobileTitle = "مجموعه محصولات آموزشی",
   mobileMode = "all",
+  items,
 }: FeaturedProductsProps) {
+  const products = toCards(items);
   const mobileItems =
     mobileMode === "home"
       ? products.slice(2, 4).length

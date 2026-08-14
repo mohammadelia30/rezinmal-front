@@ -5,32 +5,44 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { products, shopNavLinks } from "@/data/home";
+import { shopNavLinks } from "@/data/home";
+import { getStoreProduct, getStoreProducts } from "@/lib/api";
 
 type ProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
-  return products.map((product) => ({ id: product.id }));
+  try {
+    const products = await getStoreProducts({ fallbackToMock: true });
+    return products.map((product) => ({ id: product.id }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
-  const product = products.find((item) => item.id === id);
+  const product = await getStoreProduct(id);
   if (!product) return { title: "محصول | رزینمال" };
   return {
     title: `${product.title} | رزینمال`,
-    description: `${product.title} از برند ${product.subtitle} — ${product.price}`,
+    description:
+      product.description ||
+      `${product.title} از برند ${product.subtitle} — ${product.price}`,
   };
 }
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const product = products.find((item) => item.id === id);
+  const product = await getStoreProduct(id);
   if (!product) notFound();
+
+  const isRemote = product.image.startsWith("http");
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-background">
@@ -53,6 +65,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 alt={product.title}
                 fill
                 priority
+                unoptimized={isRemote}
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
@@ -73,8 +86,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </p>
 
               <p className="text-sm leading-7 text-foreground/80 sm:text-base sm:leading-8">
-                محصول دست‌ساز رزینی از مجموعه ویژه رزینمال؛ مناسب هدیه، دکور و
-                استفاده روزمره.
+                {product.description ||
+                  "محصول دست‌ساز رزینی از مجموعه ویژه رزینمال؛ مناسب هدیه، دکور و استفاده روزمره."}
               </p>
 
               <button

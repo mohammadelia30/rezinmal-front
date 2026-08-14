@@ -1,13 +1,23 @@
 "use client";
 
-import { categoryFilters, filterMeta } from "@/data/categories";
+import { filterMeta } from "@/data/categories";
+
+export type CategoryFilterItem = {
+  id: string;
+  label: string;
+};
 
 type CategorySidebarProps = {
   activeId: string;
   onSelect: (id: string) => void;
+  filters: CategoryFilterItem[];
 };
 
-export function CategorySidebar({ activeId, onSelect }: CategorySidebarProps) {
+export function CategorySidebar({
+  activeId,
+  onSelect,
+  filters,
+}: CategorySidebarProps) {
   return (
     <aside className="h-full bg-white px-3.5 py-4 lg:min-h-[604px] lg:border-e lg:border-[#efe6f4]">
       <h2 className="mb-3 text-right text-[12.5px] font-bold text-[#3d2246]">
@@ -15,7 +25,7 @@ export function CategorySidebar({ activeId, onSelect }: CategorySidebarProps) {
       </h2>
 
       <ul className="space-y-1">
-        {categoryFilters.map((item) => {
+        {filters.map((item) => {
           const active = item.id === activeId;
           return (
             <li key={item.id}>

@@ -5,8 +5,11 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { MobileCategories } from "@/components/MobileCategories";
+import { getStoreProducts } from "@/lib/api";
 
-export default function Home() {
+export default async function Home() {
+  const products = await getStoreProducts({ featuredOnly: true });
+
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
       <Header />
@@ -14,9 +17,9 @@ export default function Home() {
         <Hero />
         <MobileCategories />
         <Categories />
-          <div id="gallery">
-            <FeaturedProducts mobileMode="home" />
-          </div>
+        <div id="gallery">
+          <FeaturedProducts mobileMode="home" items={products} />
+        </div>
         <Articles />
       </main>
       <Footer />

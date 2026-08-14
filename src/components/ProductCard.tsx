@@ -16,6 +16,8 @@ export function ProductCard({
   price,
   image,
 }: ProductCardProps) {
+  const isRemote = image.startsWith("http");
+
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)] md:rounded-2xl md:bg-card md:shadow-none">
       <Link
@@ -26,6 +28,7 @@ export function ProductCard({
           src={image}
           alt={title}
           fill
+          unoptimized={isRemote}
           sizes="(max-width: 1024px) 50vw, 25vw"
           className="object-cover transition duration-500 hover:scale-105"
         />
