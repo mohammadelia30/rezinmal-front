@@ -24,4 +24,4 @@ networks:
   # شبکه مشترک با پروژه Rozinweb
   rozinmall_network:
     external: true
-    name: rozinmall_network
+    name: rozinweb_backend
