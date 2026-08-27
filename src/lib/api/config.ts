@@ -1,7 +1,18 @@
+/**
+ * پایهٔ آدرس API.
+ *
+ * مرورگر: آدرس نسبی (خالی) تا درخواست به همان دامنهٔ فرانت برود و
+ * از طریق rewrite در next.config.ts به بک‌اند داخل شبکهٔ داکر پروکسی شود.
+ * سرور (SSR): آدرس کانتینر بک‌اند روی شبکهٔ داکر.
+ */
 export function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
+  }
+
   return (
+    process.env.API_INTERNAL_URL?.replace(/\/$/, "") ||
     process.env.API_BASE_URL?.replace(/\/$/, "") ||
-    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
     "http://127.0.0.1:8080"
   );
 }

@@ -1,44 +1,110 @@
 # استقرار با بک‌اند Rozinweb
 
-فرانت روی همان شبکه داکر بک‌اند (`rozinmall_network`) اجرا می‌شود و درخواست‌های `/api/*` به کانتینر `rozinmall_web` پروکسی می‌شوند.
+فرانت و بک‌اند روی یک شبکهٔ داکر مشترک (`rozinmall_network`) اجرا می‌شوند.
+بک‌اند **هیچ پورتی روی هاست منتشر نمی‌کند** و فقط از داخل شبکه در دسترس است؛
+مرورگر فقط با فرانت (پورت ۳۰۰۰) حرف می‌زند.
 
-## پیش‌نیاز
+## توپولوژی
 
-۱. اول بک‌اند را بالا بیاورید تا شبکه ساخته شود:
-
-```bash
-cd /home/mohammad/Rozinweb
-docker compose up -d --build
+```
+مرورگر ──▶ rezinmal_front:3000 ──▶ rozinmall_nginx:80 ──┬──▶ rozinmall_web:8000 (gunicorn)
+           (Next.js + rewrite)      (داخل شبکه)          ├──▶ /static/  (volume)
+                                                         └──▶ /media/   (volume)
 ```
 
-شبکه باید با نام `rozinmall_network` ساخته شود.
+مسیرهای `‎/api/*`، `‎/media/*` و `‎/static/*` در `next.config.ts` به بک‌اند rewrite می‌شوند.
+یعنی هیچ درخواستی از مرورگر مستقیماً به بک‌اند نمی‌رود و به CORS هم نیازی نیست.
+
+## اجرا
+
+۱. اول بک‌اند (شبکه را می‌سازد):
+
+```bash
+cd /home/mohammad/Rozinweb && docker compose up -d --build
+```
 
 ۲. سپس فرانت:
 
 ```bash
-cd /home/mohammad/rezinmal-front
-cp .env.example .env   # در صورت نیاز
-docker compose up -d --build
+cd /home/mohammad/rezinmal-front && docker compose up -d --build
 ```
 
 ## آدرس‌ها
 
 | سرویس | آدرس |
 |--------|------|
-| فرانت مستقیم | http://localhost:3000 |
-| از طریق nginx بک‌اند | http://localhost:8080 |
-| API بک‌اند | http://localhost:8080/api/... |
+| فرانت | http://localhost:3000 |
+| API از طریق فرانت | http://localhost:3000/api/... |
+| Swagger از طریق فرانت | http://localhost:3000/api/docs/swagger/ |
+| بک‌اند مستقیم | ❌ منتشر نشده (فقط داخل شبکه) |
 
 ## متغیرها
 
-- `API_INTERNAL_URL` — داخل شبکه داکر (پیش‌فرض `http://rozinmall_web:8000`)
-- `FRONTEND_PORT` — پورت هاست برای فرانت (پیش‌فرض `3000`)
-- `NEXT_PUBLIC_API_URL` — اختیاری؛ اگر خالی باشد کلاینت از `/api` نسبی استفاده می‌کند
+| متغیر | توضیح |
+|--------|-------|
+| `API_INTERNAL_URL` | آدرس بک‌اند داخل شبکه (پیش‌فرض `http://rozinmall_nginx`) |
+| `FRONTEND_PORT` | پورت هاست برای فرانت (پیش‌فرض `3000`) |
+| `NEXT_PUBLIC_API_BASE_URL` | اختیاری؛ خالی بماند تا مرورگر از مسیر نسبی استفاده کند |
 
-## نکته شبکه
+در توسعهٔ محلی بدون داکر، `API_INTERNAL_URL` را در `.env.local` به آدرس بک‌اند روی
+هاست (مثلاً `http://127.0.0.1:8080`) تنظیم کنید.
 
-اگر شبکه از قبل با نام دیگری ساخته شده، یا بک‌اند را دوباره با compose جدید بالا بیاورید، یا موقتاً در `docker-compose.yml` فرانت نام `external` را با خروجی زیر هماهنگ کنید:
+## چک‌لیست پروداکشن
+
+قبل از انتشار روی دامنهٔ واقعی:
+
+۱. در `.env` بک‌اند دامنه را اضافه کنید — بدون این، جنگو با ۴۰۰ جواب می‌دهد:
+
+```
+ALLOWED_HOSTS=127.0.0.1,localhost,web,nginx,example.com,www.example.com
+CSRF_TRUSTED_ORIGINS=https://example.com,https://www.example.com
+```
+
+۲. بعد از فعال کردن گواهی TLS روی `nginx-proxy-manager` (پنل: `http://127.0.0.1:81`)
+این‌ها را در `.env` بک‌اند `True` کنید:
+
+```
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+SECURE_HSTS_SECONDS=31536000
+```
+
+۳. در `.env` فرانت، پورت را از دسترس عمومی خارج کنید (NPM از داخل شبکه وصل می‌شود):
+
+```
+FRONTEND_BIND=127.0.0.1
+```
+
+۴. در `nginx-proxy-manager` یک Proxy Host بسازید که به `rezinmal_front` روی پورت
+`3000` اشاره کند. کل ترافیک (صفحات، `/api`، `/media`) از همان‌جا عبور می‌کند.
+
+۵. کد بک‌اند از داخل ایمیج اجرا می‌شود (bind mount حذف شده)، پس بعد از هر تغییر کد:
 
 ```bash
-docker network ls | grep rozin
+docker compose up -d --build web celery_worker celery_beat
+```
+
+## نکات مهم (هرکدام یک بار ما را زمین زد)
+
+- **آندرلاین در نام هاست ممنوع است.** جنگو هدر `Host` دارای `_` را مستقل از
+  `ALLOWED_HOSTS` رد می‌کند (regex اعتبارسنجی هاست). برای همین مقصد باید
+  `http://nginx` باشد (نام سرویس) نه `http://rozinmall_nginx` (نام کانتینر).
+- **rewriteها موقع build ثبت می‌شوند.** مقدار `API_INTERNAL_URL` در
+  `routes-manifest` پخته می‌شود؛ عوض کردن آن فقط در `environment` کافی نیست و
+  باید در `build.args` هم باشد (در `docker-compose.yml` هر دو ست شده‌اند).
+- **اسلش انتهایی.** Next مسیر را بدون اسلش فوروارد می‌کند و `APPEND_SLASH`
+  جنگو حلقهٔ ریدایرکت می‌سازد؛ برای همین مقصد `/api/:path*/` اسلش دارد
+  ولی مقصد media/static ندارد (فایل‌ها نباید اسلش بگیرند).
+- **مالکیت volume استاتیک.** کانتینر با کاربر `django` اجرا می‌شود ولی volume
+  مال root است و `collectstatic` خطای permission می‌دهد. یک بار:
+
+```bash
+docker exec -u root rozinmall_web chown -R django:django /app/static /app/media
+```
+
+- اگر شبکه پیدا نشد، یعنی بک‌اند هنوز بالا نیامده:
+
+```bash
+docker network ls | grep rozinmall_network
 ```

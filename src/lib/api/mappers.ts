@@ -1,11 +1,10 @@
-import { getApiBaseUrl } from "@/lib/api/config";
 import type {
   ProductCardModel,
   ProductDetail,
   ProductImage,
   ProductVariantDetail,
 } from "@/lib/api/types";
-import { absoluteMediaUrl, formatPrice } from "@/lib/format";
+import { formatPrice, publicMediaUrl } from "@/lib/format";
 import { products as mockProducts } from "@/data/home";
 
 const PLACEHOLDER_IMAGE = "/images/product-1.jpg";
@@ -25,7 +24,7 @@ export function getPrimaryImage(
   const primary =
     images.find((img) => img.is_primary) ??
     [...images].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0];
-  const url = absoluteMediaUrl(primary?.image, getApiBaseUrl());
+  const url = publicMediaUrl(primary?.image);
   return url ?? PLACEHOLDER_IMAGE;
 }
 

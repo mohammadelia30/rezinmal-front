@@ -4,24 +4,24 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # کانتینر gunicorn بک‌اند (container_name در Rozinweb)
-        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://rozinmall_web:8000}
+        # nginx داخلیِ بک‌اند روی شبکهٔ داکر (api + media + static)
+        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://nginx}
     container_name: rezinmal_front
+    # در پروداکشن پشت nginx-proxy-manager: FRONTEND_BIND=127.0.0.1 بگذارید
+    # تا پورت مستقیم از بیرون در دسترس نباشد (NPM از داخل شبکه وصل می‌شود).
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
-      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://rozinmall_web:8000}
-      # برای درخواست‌های مرورگر در صورت نیاز به آدرس عمومی بک‌اند (nginx)
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://nginx}
     restart: unless-stopped
     networks:
       - rozinmall_network
 
 networks:
-  # شبکه مشترک با پروژه Rozinweb
+  # شبکه مشترک با پروژه Rozinweb (در docker-compose بک‌اند ساخته می‌شود)
   rozinmall_network:
     external: true
-    name: rozinweb_backend
+    name: rozinmall_network
