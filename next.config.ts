@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
-const apiHost =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/^https?:\/\//, "").replace(
-    /\/$/,
-    "",
-  ) || "127.0.0.1:8080";
+const apiInternalUrl =
+  process.env.API_INTERNAL_URL?.replace(/\/$/, "") ||
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:8080";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -24,11 +23,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  /**
+   * درخواست‌های /api/* از فرانت به کانتینر بک‌اند Rozinweb پروکسی می‌شوند.
+   * روی شبکه داکر: http://rozinmall_web:8000
+   */
   async rewrites() {
     return [
       {
-        source: "/backend/:path*",
-        destination: `http://${apiHost}/:path*`,
+        source: "/api/:path*",
+        destination: `${apiInternalUrl}/api/:path*`,
       },
     ];
   },
