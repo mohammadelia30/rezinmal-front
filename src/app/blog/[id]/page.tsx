@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogHeader } from "@/components/blog/BlogHeader";
 import { Container } from "@/components/Container";
+import { Header } from "@/components/Header";
 import { blogPosts } from "@/data/blog";
 
 type BlogDetailProps = {
@@ -32,8 +32,8 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
   if (!post) notFound();
 
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-white">
-      <BlogHeader />
+    <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
+      <Header />
       <main className="flex-1 py-8 sm:py-12">
         <Container className="max-w-3xl">
           <Link

@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { CartLink } from "@/components/CartLink";
 import { Container } from "@/components/Container";
-import { CartIcon, MenuIcon, UserIcon } from "@/components/icons";
+import { MenuIcon, UserIcon } from "@/components/icons";
 import { navLinks } from "@/data/home";
 
 type NavItem = {
@@ -55,16 +56,8 @@ export function Header({ links = navLinks }: HeaderProps) {
           />
 
           <div className="flex items-center gap-2.5 text-[#33203c]">
-            <button type="button" aria-label="سبد خرید" className="p-1">
-              <Image
-                src="/images/figma/icon-cart-mobile.svg"
-                alt=""
-                width={17}
-                height={17}
-                className="size-[17px]"
-              />
-            </button>
-            <button type="button" aria-label="حساب کاربری" className="p-1">
+            <CartLink mobile />
+            <Link href="/dashboard" aria-label="حساب کاربری" className="p-1">
               <Image
                 src="/images/figma/icon-user-mobile.svg"
                 alt=""
@@ -72,7 +65,7 @@ export function Header({ links = navLinks }: HeaderProps) {
                 height={17}
                 className="size-[17px]"
               />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -119,20 +112,14 @@ export function Header({ links = navLinks }: HeaderProps) {
         </nav>
 
         <div className="relative z-10 flex items-center gap-3 text-foreground">
-          <button
-            type="button"
-            aria-label="سبد خرید"
-            className="rounded-lg p-2 transition hover:bg-brand-mist hover:text-brand"
-          >
-            <CartIcon className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
+          <CartLink />
+          <Link
+            href="/dashboard"
             aria-label="حساب کاربری"
             className="rounded-lg p-2 transition hover:bg-brand-mist hover:text-brand"
           >
             <UserIcon className="h-5 w-5" />
-          </button>
+          </Link>
         </div>
       </Container>
     </header>
