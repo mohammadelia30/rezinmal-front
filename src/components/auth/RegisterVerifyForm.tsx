@@ -49,18 +49,52 @@ export function RegisterVerifyForm() {
     setLoading(true);
     setError("");
 
-    await new Promise((resolve) => window.setTimeout(resolve, 600));
-
-    clearRegisterData();
-    if (registerData) {
-      saveUserSession({
-        phone: registerData.phone,
-        firstName: registerData.firstName,
-        lastName: registerData.lastName,
+    try {
+      const response = await fetch("/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ phone_number: phone, code }),
       });
-      mergeGuestCartIntoUser(registerData.phone);
+
+      const data = (await response.json().catch(() => null)) as {
+        detail?: string;
+      } | null;
+
+      if (!response.ok) {
+        setError(data?.detail ?? "کد تایید نادرست است.");
+        return;
+      }
+
+      // نام و نام خانوادگی روی پروفایل بک‌اند ذخیره می‌شود
+      if (registerData) {
+        await fetch("/api/accounts/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            first_name: registerData.firstName,
+            last_name: registerData.lastName,
+          }),
+        }).catch(() => null);
+      }
+
+      clearRegisterData();
+      if (registerData) {
+        saveUserSession({
+          phone: registerData.phone,
+          firstName: registerData.firstName,
+          lastName: registerData.lastName,
+        });
+        mergeGuestCartIntoUser(registerData.phone);
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setLoading(false);
     }
-    router.push("/dashboard");
   };
 
   if (!phone) return null;

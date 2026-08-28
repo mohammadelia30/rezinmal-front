@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { CategoryPageContent } from "@/components/category/CategoryPageContent";
 import { Header } from "@/components/Header";
-import { categoryFilters, categoryProducts } from "@/data/categories";
 import { getStoreCatalog, getStoreCategories } from "@/lib/api";
 
 export const metadata: Metadata = {
@@ -17,26 +16,12 @@ export default async function CategoriesPage() {
     getStoreCatalog(),
   ]);
 
-  const filters =
-    apiCategories.length > 0
-      ? apiCategories.map((item) => ({
-          id: String(item.id),
-          label: item.title,
-        }))
-      : categoryFilters.map((item) => ({
-          id: item.id,
-          label: item.label,
-        }));
+  const filters = apiCategories.map((item) => ({
+    id: String(item.id),
+    label: item.title,
+  }));
 
-  const products = catalog.fromApi
-    ? catalog.products
-    : categoryProducts.map((item) => ({
-        id: item.id,
-        title: item.title,
-        subtitle: "",
-        price: item.price,
-        image: item.image,
-      }));
+  const products = catalog.products;
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">

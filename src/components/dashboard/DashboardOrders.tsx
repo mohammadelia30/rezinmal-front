@@ -1,11 +1,11 @@
 import Image from "next/image";
 import {
-  dashboardOrders,
   orderStatusLabels,
   orderStatusStyles,
+  type DashboardOrder,
 } from "@/data/dashboard";
 
-export function DashboardOrders() {
+export function DashboardOrders({ orders }: { orders: DashboardOrder[] }) {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-white p-5 shadow-[0_4px_20px_rgba(78,42,84,0.06)] sm:p-6">
@@ -17,7 +17,13 @@ export function DashboardOrders() {
         </p>
       </div>
 
-      {dashboardOrders.map((order) => (
+      {orders.length === 0 ? (
+        <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
+          هنوز سفارشی ثبت نکرده‌اید.
+        </p>
+      ) : null}
+
+      {orders.map((order) => (
         <article
           key={order.id}
           className="rounded-2xl bg-white p-5 shadow-[0_4px_20px_rgba(78,42,84,0.06)] sm:p-6"

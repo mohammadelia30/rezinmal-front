@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  adminInvoices,
   invoiceStatusLabels,
   invoiceStatusStyles,
   type AdminInvoice,
@@ -15,7 +14,7 @@ import {
 } from "@/components/admin/AdminUI";
 import { formatProductPrice } from "@/lib/price";
 
-export function AdminInvoicesPage() {
+export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
   const [selected, setSelected] = useState<AdminInvoice | null>(null);
 
   return (
@@ -36,7 +35,7 @@ export function AdminInvoicesPage() {
           "عملیات",
         ]}
       >
-        {adminInvoices.map((invoice) => (
+        {invoices.map((invoice) => (
           <tr
             key={invoice.id}
             className="border-b border-[#efe6d4] text-right last:border-b-0"

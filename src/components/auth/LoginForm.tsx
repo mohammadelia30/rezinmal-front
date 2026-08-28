@@ -10,8 +10,9 @@ export function LoginForm() {
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const normalized = normalizePhone(phone);
 
@@ -20,8 +21,34 @@ export function LoginForm() {
       return;
     }
 
-    saveLoginPhone(normalized);
-    router.push("/login/verify");
+    setLoading(true);
+    setError("");
+
+    try {
+      // کد واقعاً از بک‌اند درخواست می‌شود؛ قبلاً این مرحله ساختگی بود.
+      const response = await fetch("/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ phone_number: normalized }),
+      });
+
+      const data = (await response.json().catch(() => null)) as {
+        detail?: string;
+      } | null;
+
+      if (!response.ok) {
+        setError(data?.detail ?? "ارسال کد ناموفق بود.");
+        return;
+      }
+
+      saveLoginPhone(normalized);
+      router.push("/login/verify");
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +80,9 @@ export function LoginForm() {
           maxLength={11}
         />
 
-        <AuthSubmitButton>دریافت کد تایید</AuthSubmitButton>
+        <AuthSubmitButton disabled={loading}>
+          {loading ? "در حال ارسال کد..." : "دریافت کد تایید"}
+        </AuthSubmitButton>
       </form>
     </AuthShell>
   );

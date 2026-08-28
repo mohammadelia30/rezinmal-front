@@ -5,7 +5,6 @@ import type {
   ProductVariantDetail,
 } from "@/lib/api/types";
 import { formatPrice, publicMediaUrl } from "@/lib/format";
-import { products as mockProducts } from "@/data/home";
 
 const PLACEHOLDER_IMAGE = "/images/product-1.jpg";
 
@@ -55,12 +54,3 @@ export function mapProductDetailToCard(
   };
 }
 
-export function mockProductsAsCards(): ProductCardModel[] {
-  return mockProducts.map((product) => ({
-    id: product.id,
-    title: product.title,
-    subtitle: product.subtitle,
-    price: product.price,
-    image: product.image,
-  }));
-}

@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   try {
-    const products = await getStoreProducts({ fallbackToMock: true });
+    const products = await getStoreProducts();
     return products.map((product) => ({ id: product.id }));
   } catch {
     return [];

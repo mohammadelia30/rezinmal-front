@@ -2,10 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { FavoritesStatCard } from "@/components/dashboard/FavoritesStatCard";
 import {
-  dashboardOrders,
-  dashboardStats,
   orderStatusLabels,
   orderStatusStyles,
+  type DashboardOrder,
 } from "@/data/dashboard";
 
 function StatCard({
@@ -26,25 +25,31 @@ function StatCard({
   );
 }
 
-export function DashboardOverview() {
-  const recentOrders = dashboardOrders.slice(0, 2);
+export function DashboardOverview({
+  orders,
+  stats,
+}: {
+  orders: DashboardOrder[];
+  stats: { totalOrders: number; activeOrders: number; deliveredOrders: number };
+}) {
+  const recentOrders = orders.slice(0, 2);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="کل سفارش‌ها"
-          value={dashboardStats.totalOrders}
+          value={stats.totalOrders}
           hint="تمام سفارش‌های ثبت‌شده"
         />
         <StatCard
           label="سفارش فعال"
-          value={dashboardStats.activeOrders}
+          value={stats.activeOrders}
           hint="در حال پردازش یا ارسال"
         />
         <StatCard
           label="تحویل‌شده"
-          value={dashboardStats.deliveredOrders}
+          value={stats.deliveredOrders}
           hint="سفارش‌های تکمیل‌شده"
         />
         <FavoritesStatCard />

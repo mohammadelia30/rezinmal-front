@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import type { AdminDiscount, DiscountType } from "@/data/admin";
 import {
   AdminBadge,
@@ -9,11 +10,22 @@ import {
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
-import { readDiscounts, writeDiscounts } from "@/lib/admin-store";
+import {
+  AdminActionError,
+  createCoupon,
+  deleteCoupon,
+  setCouponActive,
+} from "@/lib/admin-store";
 import { formatProductPrice } from "@/lib/price";
 
-export function AdminDiscountsPage() {
-  const [items, setItems] = useState<AdminDiscount[]>([]);
+export function AdminDiscountsPage({
+  discounts,
+}: {
+  discounts: AdminDiscount[];
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const items = discounts;
   const [showForm, setShowForm] = useState(false);
   const [code, setCode] = useState("");
   const [type, setType] = useState<DiscountType>("percent");
@@ -22,15 +34,9 @@ export function AdminDiscountsPage() {
   const [expiresAt, setExpiresAt] = useState("");
   const [error, setError] = useState("");
 
-  const refresh = useCallback(() => {
-    setItems(readDiscounts());
-  }, []);
+  const refresh = () => startTransition(() => router.refresh());
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  const handleAdd = (event: React.FormEvent) => {
+  const handleAdd = async (event: React.FormEvent) => {
     event.preventDefault();
     const trimmedCode = code.trim().toUpperCase();
     const numericValue = Number(value);
@@ -53,18 +59,23 @@ export function AdminDiscountsPage() {
       return;
     }
 
-    const next: AdminDiscount = {
-      id: `d-${Date.now()}`,
-      code: trimmedCode,
-      type,
-      value: numericValue,
-      maxUses: numericMax,
-      used: 0,
-      expiresAt: expiresAt.trim() || "—",
-      active: true,
-    };
+    try {
+      await createCoupon({
+        code: trimmedCode,
+        type,
+        value: numericValue,
+        maxUses: numericMax,
+        expiresAt: expiresAt.trim(),
+      });
+    } catch (creationError) {
+      setError(
+        creationError instanceof AdminActionError
+          ? creationError.message
+          : "ثبت کد تخفیف ناموفق بود.",
+      );
+      return;
+    }
 
-    writeDiscounts([next, ...items]);
     refresh();
     setShowForm(false);
     setCode("");
@@ -74,18 +85,32 @@ export function AdminDiscountsPage() {
     setError("");
   };
 
-  const toggleActive = (id: string) => {
-    writeDiscounts(
-      items.map((item) =>
-        item.id === id ? { ...item, active: !item.active } : item,
-      ),
-    );
-    refresh();
+  const toggleActive = async (id: string) => {
+    const item = items.find((entry) => entry.id === id);
+    if (!item) return;
+    try {
+      await setCouponActive(id, !item.active);
+      refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof AdminActionError
+          ? actionError.message
+          : "تغییر وضعیت ناموفق بود.",
+      );
+    }
   };
 
-  const removeItem = (id: string) => {
-    writeDiscounts(items.filter((item) => item.id !== id));
-    refresh();
+  const removeItem = async (id: string) => {
+    try {
+      await deleteCoupon(id);
+      refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof AdminActionError
+          ? actionError.message
+          : "حذف کد تخفیف ناموفق بود.",
+      );
+    }
   };
 
   return (

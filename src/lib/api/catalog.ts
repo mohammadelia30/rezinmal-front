@@ -1,6 +1,6 @@
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 import { API_PATHS } from "@/lib/api/config";
-import { mapProductDetailToCard, mockProductsAsCards } from "@/lib/api/mappers";
+import { mapProductDetailToCard } from "@/lib/api/mappers";
 import type {
   BrandList,
   CategoryDetail,
@@ -34,10 +34,9 @@ export async function listBrands(): Promise<BrandList[]> {
   return apiFetch<BrandList[]>(API_PATHS.brands, revalidate);
 }
 
-/** List products enriched with detail (price/images). Falls back to mock if API empty/unreachable. */
+/** فهرست محصولات همراه با جزئیات (قیمت و تصویر) مستقیماً از بک‌اند. */
 export async function getStoreProducts(options?: {
   featuredOnly?: boolean;
-  fallbackToMock?: boolean;
 }): Promise<ProductCardModel[]> {
   const result = await getStoreCatalog(options);
   return result.products;
@@ -45,14 +44,11 @@ export async function getStoreProducts(options?: {
 
 export async function getStoreCatalog(options?: {
   featuredOnly?: boolean;
-  fallbackToMock?: boolean;
 }): Promise<{
   products: ProductCardModel[];
   productsByCategory: Record<string, string[]>;
   fromApi: boolean;
 }> {
-  const useFallback = options?.fallbackToMock !== false;
-
   try {
     const list = await listProducts();
     const active = list.filter((item) => item.is_active !== false);
@@ -60,14 +56,6 @@ export async function getStoreCatalog(options?: {
       ? active.filter((item) => item.is_featured)
       : active;
     const source = scoped.length ? scoped : active;
-
-    if (!source.length) {
-      return {
-        products: useFallback ? mockProductsAsCards() : [],
-        productsByCategory: {},
-        fromApi: false,
-      };
-    }
 
     const details = await Promise.all(
       source.map(async (item) => {
@@ -91,65 +79,33 @@ export async function getStoreCatalog(options?: {
       }
     }
 
-    if (!cards.length && useFallback) {
-      return {
-        products: mockProductsAsCards(),
-        productsByCategory: {},
-        fromApi: false,
-      };
-    }
-
     return { products: cards, productsByCategory, fromApi: true };
-  } catch (error) {
-    if (error instanceof ApiError || error instanceof TypeError) {
-      if (useFallback) {
-        return {
-          products: mockProductsAsCards(),
-          productsByCategory: {},
-          fromApi: false,
-        };
-      }
-    }
-    throw error;
+  } catch {
+    // بک‌اند در دسترس نیست: حالت خالیِ واقعی، نه دادهٔ نمونه
+    return { products: [], productsByCategory: {}, fromApi: false };
   }
 }
 
 export async function getStoreProduct(
   id: string,
-  options?: { fallbackToMock?: boolean },
 ): Promise<ProductCardModel | null> {
-  const useFallback = options?.fallbackToMock !== false;
+  if (!/^\d+$/.test(id)) return null;
 
-  // numeric API id
-  if (/^\d+$/.test(id)) {
-    try {
-      const detail = await getProduct(id);
-      return mapProductDetailToCard(detail);
-    } catch (error) {
-      if (!(error instanceof ApiError) || error.status !== 404) {
-        if (!useFallback) throw error;
-      }
-    }
+  try {
+    const detail = await getProduct(id);
+    return mapProductDetailToCard(detail);
+  } catch {
+    return null;
   }
-
-  if (useFallback) {
-    return mockProductsAsCards().find((item) => item.id === id) ?? null;
-  }
-  return null;
 }
 
-export async function getStoreCategories(options?: {
-  fallbackToMock?: boolean;
-}): Promise<CategoryList[]> {
-  const useFallback = options?.fallbackToMock !== false;
+export async function getStoreCategories(): Promise<CategoryList[]> {
   try {
     const categories = await listCategories();
-    const active = categories
+    return categories
       .filter((item) => item.is_active !== false)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    if (active.length) return active;
-    return useFallback ? [] : [];
   } catch {
-    return useFallback ? [] : [];
+    return [];
   }
 }

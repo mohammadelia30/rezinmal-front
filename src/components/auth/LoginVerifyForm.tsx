@@ -41,12 +41,34 @@ export function LoginVerifyForm() {
     setLoading(true);
     setError("");
 
-    await new Promise((resolve) => window.setTimeout(resolve, 600));
+    try {
+      // تأیید واقعی روی بک‌اند؛ در صورت موفقیت نشست در کوکی httpOnly ساخته می‌شود.
+      const response = await fetch("/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ phone_number: phone, code }),
+      });
 
-    clearLoginPhone();
-    saveUserSession({ phone });
-    mergeGuestCartIntoUser(phone);
-    router.push("/dashboard");
+      const data = (await response.json().catch(() => null)) as {
+        detail?: string;
+      } | null;
+
+      if (!response.ok) {
+        setError(data?.detail ?? "کد تایید نادرست است.");
+        return;
+      }
+
+      clearLoginPhone();
+      saveUserSession({ phone });
+      mergeGuestCartIntoUser(phone);
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!phone) return null;

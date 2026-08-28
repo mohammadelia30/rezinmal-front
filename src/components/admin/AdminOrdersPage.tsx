@@ -1,7 +1,7 @@
 import {
-  adminOrders,
   orderStatusLabels,
   orderStatusStyles,
+  type AdminOrder,
 } from "@/data/admin";
 import {
   AdminBadge,
@@ -10,7 +10,7 @@ import {
 } from "@/components/admin/AdminUI";
 import { formatProductPrice } from "@/lib/price";
 
-export function AdminOrdersPage() {
+export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
   return (
     <div>
       <AdminPageHeader
@@ -29,7 +29,7 @@ export function AdminOrdersPage() {
           "وضعیت",
         ]}
       >
-        {adminOrders.map((order) => (
+        {orders.map((order) => (
           <tr
             key={order.id}
             className="border-b border-[#efe6d4] text-right last:border-b-0"

@@ -1,15 +1,10 @@
-"use client";
-
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
 
+/**
+ * لایهٔ بیرونی پنل مدیریت. عمداً خالی است تا صفحهٔ ورود
+ * (/admin/login) پشت دروازهٔ احراز هویت قرار نگیرد؛ دروازه در
+ * گروه (dashboard) اعمال می‌شود.
+ */
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-
-  if (pathname === "/admin/login") {
-    return children;
-  }
-
-  return <AdminShell>{children}</AdminShell>;
+  return children;
 }

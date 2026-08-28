@@ -2,50 +2,74 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import {
-  adminDemoAccounts,
-  findAdminAccount,
+  fetchSessionUser,
   getDefaultAdminRoute,
-  isAdminLoggedIn,
-  readAdminSession,
-  saveAdminSession,
+  logout,
+  toAdminSession,
 } from "@/lib/admin-auth";
+import { isValidPhone, normalizePhone } from "@/lib/auth-flow";
 
 export function AdminLoginForm() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isAdminLoggedIn()) return;
-    const session = readAdminSession();
-    if (session) {
-      router.replace(getDefaultAdminRoute(session.permissions));
-    }
-  }, [router]);
-
-  const loginAs = async (user: string, pass: string) => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
-    const account = findAdminAccount(user, pass);
-    if (!account) {
-      setError("نام کاربری یا رمز عبور نادرست است.");
+
+    if (!isValidPhone(phone)) {
+      setError("شماره موبایل معتبر نیست.");
+      return;
+    }
+    if (!password) {
+      setError("رمز عبور را وارد کنید.");
       return;
     }
 
     setLoading(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
-    saveAdminSession(account.username);
-    const session = readAdminSession();
-    router.push(getDefaultAdminRoute(session?.permissions ?? []));
-  };
+    try {
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          phone_number: normalizePhone(phone),
+          password,
+        }),
+      });
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    await loginAs(username, password);
+      const data = (await response.json().catch(() => null)) as {
+        detail?: string;
+      } | null;
+
+      if (!response.ok) {
+        setError(data?.detail ?? "شماره موبایل یا رمز عبور نادرست است.");
+        return;
+      }
+
+      const user = await fetchSessionUser();
+      const session = user ? toAdminSession(user) : null;
+
+      if (!session) {
+        // کاربر معتبر است ولی دسترسی مدیریت ندارد؛ نشست را باطل می‌کنیم.
+        await logout();
+        setError("این حساب دسترسی به پنل مدیریت ندارد.");
+        return;
+      }
+
+      router.replace(getDefaultAdminRoute(session.permissions));
+      router.refresh();
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,56 +83,38 @@ export function AdminLoginForm() {
       </header>
 
       <main className="flex flex-1 items-start justify-center px-4 pb-10 pt-2">
-        <div className="w-full max-w-3xl space-y-5">
+        <div className="w-full max-w-md space-y-5">
           <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(78,42,84,0.08)] sm:p-8">
             <div className="mb-6 text-right">
               <h1 className="text-xl font-bold text-foreground sm:text-2xl">
-                ورود به پنل ادمین
+                ورود به پنل مدیریت
               </h1>
               <p className="mt-2 text-sm leading-7 text-muted">
-                نقش خود را انتخاب کنید یا با نام کاربری وارد شوید.
+                با شماره موبایل و رمز عبور حساب مدیریتی خود وارد شوید.
               </p>
-            </div>
-
-            <div className="mb-6 grid gap-3 sm:grid-cols-3">
-              {adminDemoAccounts.map((account) => (
-                <button
-                  key={account.username}
-                  type="button"
-                  disabled={loading}
-                  onClick={() => loginAs(account.username, account.password)}
-                  className="rounded-2xl border border-[#efe6d4] bg-[#fbf9f1] p-4 text-right transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md disabled:opacity-60"
-                >
-                  <p className="font-bold text-foreground">{account.displayName}</p>
-                  <p className="mt-1 text-xs leading-6 text-muted">
-                    {account.description}
-                  </p>
-                  <p className="mt-3 text-[11px] text-brand" dir="ltr">
-                    {account.username} / {account.password}
-                  </p>
-                </button>
-              ))}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="text-right">
                 <label
-                  htmlFor="admin-username"
+                  htmlFor="admin-phone"
                   className="mb-2 block text-sm font-medium text-foreground"
                 >
-                  نام کاربری
+                  شماره موبایل
                 </label>
                 <input
-                  id="admin-username"
-                  type="text"
+                  id="admin-phone"
+                  type="tel"
+                  inputMode="numeric"
                   autoComplete="username"
-                  value={username}
+                  dir="ltr"
+                  value={phone}
                   onChange={(event) => {
-                    setUsername(event.target.value);
+                    setPhone(event.target.value);
                     setError("");
                   }}
                   className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
-                  placeholder="admin"
+                  placeholder="09xxxxxxxxx"
                 />
               </div>
 

@@ -4,65 +4,45 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
-import {
-  adminNavItems,
-  clearAdminSession,
-  getDefaultAdminRoute,
-  getPermissionForPath,
-  hasAdminPermission,
-  readAdminSession,
-  type AdminSession,
-} from "@/lib/admin-auth";
+import { adminNavItems, logout } from "@/lib/admin-auth";
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export type AdminShellSession = {
+  phoneNumber: string;
+  displayName: string;
+  isStaff: boolean;
+  isSuperuser: boolean;
+};
+
+/**
+ * پوستهٔ پنل مدیریت.
+ *
+ * نشست به‌صورت prop از لایهٔ سرور می‌آید؛ اینجا هیچ تصمیم امنیتی گرفته
+ * نمی‌شود و ورود غیرمجاز پیش از رندر روی سرور رد شده است.
+ */
+export function AdminShell({
+  session,
+  children,
+}: {
+  session: AdminShellSession;
+  children: ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const [session, setSession] = useState<AdminSession | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [forbidden, setForbidden] = useState(false);
-
-  useEffect(() => {
-    const current = readAdminSession();
-    if (!current) {
-      router.replace("/admin/login");
-      return;
-    }
-
-    setSession(current);
-
-    const needed = getPermissionForPath(pathname);
-    if (needed && !hasAdminPermission(current, needed)) {
-      setForbidden(true);
-      const fallback = getDefaultAdminRoute(current.permissions);
-      if (fallback !== pathname) {
-        router.replace(fallback);
-      }
-      return;
-    }
-
-    setForbidden(false);
-  }, [pathname, router]);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    clearAdminSession();
-    router.push("/admin/login");
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logout();
+    router.replace("/admin/login");
+    router.refresh();
   };
 
-  if (!session) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#f6f1e7] text-sm text-muted">
-        در حال بارگذاری...
-      </div>
-    );
-  }
-
-  const visibleNav = adminNavItems.filter((item) =>
-    hasAdminPermission(session, item.permission),
-  );
+  const roleLabel = session.isSuperuser ? "مدیر کل" : "مدیر";
 
   return (
     <div className="flex min-h-dvh bg-[#f6f1e7]">
@@ -79,13 +59,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
           />
           <p className="mt-2 text-xs text-muted">پنل مدیریت فروشگاه</p>
           <span className="mt-3 inline-flex rounded-full bg-brand-mist px-2.5 py-1 text-[11px] font-bold text-brand">
-            {session.roleName}
+            {roleLabel}
           </span>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3" aria-label="منوی ادمین">
           <ul className="space-y-1">
-            {visibleNav.map((item) => {
+            {adminNavItems.map((item) => {
               const active = item.exact
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
@@ -112,15 +92,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <p className="mb-1 px-2 text-sm font-bold text-foreground">
             {session.displayName}
           </p>
-          <p className="mb-2 px-2 text-xs text-muted" dir="ltr">
-            @{session.username}
-          </p>
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full rounded-xl border border-[#e6dcc2] px-4 py-2.5 text-sm font-medium text-[#8a3a3a] transition hover:bg-[#fff5f5]"
+            disabled={loggingOut}
+            className="w-full rounded-xl border border-[#e6dcc2] px-4 py-2.5 text-sm font-medium text-[#8a3a3a] transition hover:bg-[#fff5f5] disabled:opacity-60"
           >
-            خروج از پنل
+            {loggingOut ? "در حال خروج..." : "خروج از پنل"}
           </button>
           <Link
             href="/"
@@ -160,25 +138,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </svg>
           </button>
           <p className="text-sm font-bold text-foreground lg:text-base">
-            پنل {session.roleName}
+            پنل {roleLabel}
           </p>
           <span className="hidden rounded-full bg-white px-3 py-1 text-xs font-medium text-muted shadow-sm lg:inline">
             {session.displayName}
           </span>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {forbidden ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
-              <p className="text-lg font-bold text-foreground">دسترسی ندارید</p>
-              <p className="mt-2 text-sm text-muted">
-                این بخش برای نقش شما فعال نیست.
-              </p>
-            </div>
-          ) : (
-            children
-          )}
-        </main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

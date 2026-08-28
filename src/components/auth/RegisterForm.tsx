@@ -11,13 +11,14 @@ export function RegisterForm() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     firstName?: string;
     lastName?: string;
     phone?: string;
   }>({});
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const nextErrors: typeof errors = {};
@@ -40,12 +41,36 @@ export function RegisterForm() {
       return;
     }
 
-    saveRegisterData({
-      firstName: trimmedFirst,
-      lastName: trimmedLast,
-      phone: normalized,
-    });
-    router.push("/register/verify");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ phone_number: normalized }),
+      });
+
+      const data = (await response.json().catch(() => null)) as {
+        detail?: string;
+      } | null;
+
+      if (!response.ok) {
+        setErrors({ phone: data?.detail ?? "ارسال کد ناموفق بود." });
+        return;
+      }
+
+      saveRegisterData({
+        firstName: trimmedFirst,
+        lastName: trimmedLast,
+        phone: normalized,
+      });
+      router.push("/register/verify");
+    } catch {
+      setErrors({ phone: "ارتباط با سرور برقرار نشد." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -103,7 +128,9 @@ export function RegisterForm() {
           maxLength={11}
         />
 
-        <AuthSubmitButton>دریافت کد تایید</AuthSubmitButton>
+        <AuthSubmitButton disabled={loading}>
+          {loading ? "در حال ارسال کد..." : "دریافت کد تایید"}
+        </AuthSubmitButton>
       </form>
     </AuthShell>
   );

@@ -1,50 +1,44 @@
-import {
-  allPermissions,
-  defaultRoles,
-  type AdminPermission,
-} from "@/data/admin";
+import type { AdminPermission } from "@/data/admin";
 
-const ADMIN_SESSION_KEY = "admin:session";
+/**
+ * هویت ادمین کاملاً از بک‌اند می‌آید.
+ *
+ * قبلاً حساب‌ها و دسترسی‌ها در همین فایل hardcode بودند و نشست در
+ * sessionStorage ذخیره می‌شد؛ یعنی هر کاربری می‌توانست با ویرایش
+ * sessionStorage خودش را مدیر کل کند. حالا تنها منبع حقیقت،
+ * فیلد is_staff در پاسخ بک‌اند است و بررسی نهایی سمت سرور انجام می‌شود.
+ */
 
 export type AdminSession = {
-  username: string;
+  phoneNumber: string;
   displayName: string;
-  roleId: string;
-  roleName: string;
+  isStaff: boolean;
+  isSuperuser: boolean;
   permissions: AdminPermission[];
-  loggedInAt: string;
 };
 
-export type AdminDemoAccount = {
-  username: string;
-  password: string;
-  displayName: string;
-  roleId: string;
-  description: string;
+export type SessionUserPayload = {
+  phoneNumber: string;
+  firstName: string | null;
+  lastName: string | null;
+  isStaff: boolean;
+  isSuperuser: boolean;
+  isCompleted: boolean;
 };
 
-export const adminDemoAccounts: AdminDemoAccount[] = [
-  {
-    username: "admin",
-    password: "admin123",
-    displayName: "مدیر کل",
-    roleId: "role-super",
-    description: "دسترسی کامل به همه بخش‌ها",
-  },
-  {
-    username: "sales",
-    password: "sales123",
-    displayName: "مدیر فروش",
-    roleId: "role-sales",
-    description: "سفارش، فاکتور، محصول و تخفیف",
-  },
-  {
-    username: "support",
-    password: "support123",
-    displayName: "پشتیبانی",
-    roleId: "role-support",
-    description: "سفارش‌ها و کاربران",
-  },
+/**
+ * دسترسی‌های ادمین.
+ *
+ * بک‌اند فعلاً نقش‌های ریزدانه ندارد (فقط is_staff/is_superuser)، پس هر
+ * کاربر staff به همهٔ بخش‌های پیاده‌سازی‌شده دسترسی دارد. «کاربران» و
+ * «نقش‌ها» عمداً اینجا نیستند چون هیچ اندپوینتی برایشان وجود ندارد.
+ */
+const STAFF_PERMISSIONS: AdminPermission[] = [
+  "dashboard",
+  "orders",
+  "invoices",
+  "products",
+  "discounts",
 ];
 
 export const adminNavItems: {
@@ -73,20 +67,21 @@ export const adminNavItems: {
     exact: false,
     permission: "discounts",
   },
-  { href: "/admin/users", label: "کاربران", exact: false, permission: "users" },
-  {
-    href: "/admin/roles",
-    label: "نقش‌ها و دسترسی‌ها",
-    exact: false,
-    permission: "roles",
-  },
-  {
-    href: "/admin/settings",
-    label: "تنظیمات",
-    exact: false,
-    permission: "settings",
-  },
 ];
+
+export function toAdminSession(user: SessionUserPayload): AdminSession | null {
+  if (!user.isStaff && !user.isSuperuser) return null;
+
+  const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+  return {
+    phoneNumber: user.phoneNumber,
+    displayName: name || user.phoneNumber,
+    isStaff: user.isStaff,
+    isSuperuser: user.isSuperuser,
+    permissions: [...STAFF_PERMISSIONS],
+  };
+}
 
 export function getPermissionForPath(pathname: string): AdminPermission | null {
   if (pathname === "/admin" || pathname === "/admin/") return "dashboard";
@@ -105,76 +100,35 @@ export function getDefaultAdminRoute(permissions: AdminPermission[]) {
   return first?.href ?? "/admin/login";
 }
 
-function resolveRole(roleId: string) {
-  return (
-    defaultRoles.find((role) => role.id === roleId) ?? {
-      id: roleId,
-      name: "بدون نقش",
-      description: "",
-      permissions: ["dashboard"] as AdminPermission[],
-    }
-  );
-}
-
-export function findAdminAccount(username: string, password: string) {
-  return adminDemoAccounts.find(
-    (account) =>
-      account.username === username.trim() && account.password === password,
-  );
-}
-
-export function validateAdminCredentials(username: string, password: string) {
-  return Boolean(findAdminAccount(username, password));
-}
-
-export function saveAdminSession(username: string) {
-  const account = adminDemoAccounts.find(
-    (item) => item.username === username.trim(),
-  );
-  if (!account) return;
-
-  const role = resolveRole(account.roleId);
-  const session: AdminSession = {
-    username: account.username,
-    displayName: account.displayName,
-    roleId: role.id,
-    roleName: role.name,
-    permissions:
-      role.id === "role-super" ? [...allPermissions] : [...role.permissions],
-    loggedInAt: new Date().toISOString(),
-  };
-  sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
-}
-
-export function readAdminSession(): AdminSession | null {
-  if (typeof window === "undefined") return null;
-
-  const raw = sessionStorage.getItem(ADMIN_SESSION_KEY);
-  if (!raw) return null;
-
-  try {
-    const parsed = JSON.parse(raw) as AdminSession;
-    if (!parsed.roleId || !parsed.permissions) {
-      clearAdminSession();
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function clearAdminSession() {
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
-}
-
-export function isAdminLoggedIn() {
-  return Boolean(readAdminSession());
-}
-
 export function hasAdminPermission(
   session: AdminSession | null,
   permission: AdminPermission,
 ) {
   return Boolean(session?.permissions.includes(permission));
+}
+
+/** نشست فعلی را از سرور می‌پرسد؛ توکن هرگز به کلاینت داده نمی‌شود. */
+export async function fetchSessionUser(): Promise<SessionUserPayload | null> {
+  try {
+    const response = await fetch("/auth/session", {
+      cache: "no-store",
+      credentials: "same-origin",
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as { user: SessionUserPayload | null };
+    return data.user;
+  } catch {
+    return null;
+  }
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch("/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+  } catch {
+    // حتی اگر شبکه قطع باشد، هدایت به صفحهٔ ورود انجام می‌شود
+  }
 }

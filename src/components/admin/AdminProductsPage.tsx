@@ -1,35 +1,34 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import { adminProducts } from "@/data/admin";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import type { AdminProduct } from "@/data/admin";
 import {
   AdminBadge,
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
-import {
-  readProductActiveMap,
-  writeProductActive,
-} from "@/lib/admin-store";
+import { AdminActionError, setProductActive } from "@/lib/admin-store";
 import { formatProductPrice } from "@/lib/price";
 
-export function AdminProductsPage() {
-  const [activeMap, setActiveMap] = useState<Record<string, boolean>>({});
+export function AdminProductsPage({ products }: { products: AdminProduct[] }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
 
-  const refresh = useCallback(() => {
-    setActiveMap(readProductActiveMap());
-  }, []);
-
-  useEffect(() => {
-    refresh();
-    const onChange = () => refresh();
-    window.addEventListener("admin:store-change", onChange);
-    return () => window.removeEventListener("admin:store-change", onChange);
-  }, [refresh]);
-
-  const isActive = (id: string, fallback: boolean) =>
-    activeMap[id] ?? fallback;
+  const toggleActive = async (id: string, next: boolean) => {
+    setError("");
+    try {
+      await setProductActive(id, next);
+      router.refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof AdminActionError
+          ? actionError.message
+          : "تغییر وضعیت محصول ناموفق بود.",
+      );
+    }
+  };
 
   return (
     <div>
@@ -38,19 +37,15 @@ export function AdminProductsPage() {
         description="مدیریت موجودی و وضعیت نمایش محصولات"
       />
 
+      {error ? (
+        <p className="mb-4 text-right text-sm text-red-500">{error}</p>
+      ) : null}
+
       <AdminTable
-        headers={[
-          "محصول",
-          "قیمت",
-          "موجودی",
-          "فروش",
-          "وضعیت",
-          "عملیات",
-        ]}
+        headers={["محصول", "قیمت", "وضعیت", "عملیات"]}
       >
-        {adminProducts.map((product) => {
-          const active = isActive(product.id, product.active);
-          const lowStock = product.stock <= 3;
+        {products.map((product) => {
+          const active = product.active;
 
           return (
             <tr
@@ -61,9 +56,6 @@ export function AdminProductsPage() {
                 <div className="flex items-center justify-end gap-3">
                   <div>
                     <p className="font-bold text-foreground">{product.title}</p>
-                    {lowStock ? (
-                      <p className="mt-0.5 text-xs text-[#9b3d3d]">موجودی کم</p>
-                    ) : null}
                   </div>
                   <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-brand-mist">
                     <Image
@@ -80,12 +72,6 @@ export function AdminProductsPage() {
                 {formatProductPrice(product.price)}
               </td>
               <td className="px-4 py-3">
-                {product.stock.toLocaleString("fa-IR")}
-              </td>
-              <td className="px-4 py-3">
-                {product.sold.toLocaleString("fa-IR")}
-              </td>
-              <td className="px-4 py-3">
                 <AdminBadge
                   className={
                     active
@@ -99,10 +85,7 @@ export function AdminProductsPage() {
               <td className="px-4 py-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    writeProductActive(product.id, !active);
-                    refresh();
-                  }}
+                  onClick={() => toggleActive(product.id, !active)}
                   className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7]"
                 >
                   {active ? "غیرفعال کردن" : "فعال کردن"}

@@ -1,7 +1,6 @@
 import { Container } from "@/components/Container";
 import { ProductCard } from "@/components/ProductCard";
 import type { ProductCardModel } from "@/lib/api/types";
-import { products as mockProducts } from "@/data/home";
 
 type FeaturedProductsProps = {
   title?: string;
@@ -11,17 +10,8 @@ type FeaturedProductsProps = {
   items?: ProductCardModel[];
 };
 
-function toCards(
-  items?: ProductCardModel[],
-): ProductCardModel[] {
-  if (items?.length) return items;
-  return mockProducts.map((product) => ({
-    id: product.id,
-    title: product.title,
-    subtitle: product.subtitle,
-    price: product.price,
-    image: product.image,
-  }));
+function toCards(items?: ProductCardModel[]): ProductCardModel[] {
+  return items ?? [];
 }
 
 export function FeaturedProducts({
