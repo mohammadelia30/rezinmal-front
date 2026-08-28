@@ -17,16 +17,25 @@
 
 ## اجرا
 
-۱. اول بک‌اند (شبکه را می‌سازد):
+ساده‌ترین راه، اسکریپت استقرار در ریپو بک‌اند است که هر دو پروژه را به‌ترتیب
+درست بالا می‌آورد، migration می‌زند و در پایان سلامت سایت را بررسی می‌کند:
 
 ```bash
-cd /home/mohammad/Rozinweb && docker compose up -d --build
+cd ~/Rozinweb && ./deploy.sh
 ```
 
-۲. سپس فرانت:
+اگر کد را دستی روی سرور گذاشته‌اید و نمی‌خواهید `git pull` بزند از
+`./deploy.sh --no-pull` استفاده کنید؛ مسیر فرانت هم با متغیر `FRONTEND_DIR`
+قابل تغییر است.
+
+یا دستی — که ترتیبش مهم است، چون بک‌اند شبکهٔ مشترک را می‌سازد:
 
 ```bash
-cd /home/mohammad/rezinmal-front && docker compose up -d --build
+cd ~/Rozinweb && docker compose up -d --build
+```
+
+```bash
+cd ~/rezinmal-front && docker compose up -d --build
 ```
 
 ## آدرس‌ها
