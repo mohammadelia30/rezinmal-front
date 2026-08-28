@@ -86,4 +86,75 @@ export async function setProductActive(
   });
 }
 
+export async function setUserActive(
+  id: string,
+  active: boolean,
+): Promise<void> {
+  await send(API_PATHS.adminUser(id), {
+    method: "PATCH",
+    body: { is_active: active },
+  });
+}
+
+export async function setUserStaff(
+  id: string,
+  staff: boolean,
+): Promise<void> {
+  await send(API_PATHS.adminUser(id), {
+    method: "PATCH",
+    body: { is_staff: staff },
+  });
+}
+
+export async function setUserRoles(
+  id: string,
+  roleIds: string[],
+): Promise<void> {
+  await send(API_PATHS.adminUser(id), {
+    method: "PATCH",
+    body: { role_ids: roleIds.map(Number) },
+  });
+}
+
+export async function createRole(name: string): Promise<void> {
+  await send(API_PATHS.adminRoles, {
+    method: "POST",
+    body: { name, permissions: [] },
+  });
+}
+
+export async function setRolePermissions(
+  id: string,
+  permissions: string[],
+): Promise<void> {
+  await send(API_PATHS.adminRole(id), {
+    method: "PATCH",
+    body: { permissions },
+  });
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  await send(API_PATHS.adminRole(id), { method: "DELETE" });
+}
+
+export type SiteSettingsInput = {
+  shop_name: string;
+  phone: string;
+  email: string;
+  address: string;
+  shipping_cost: number;
+  free_shipping_min: number;
+  payment_enabled: boolean;
+  maintenance_mode: boolean;
+};
+
+export async function saveSiteSettings(
+  input: SiteSettingsInput,
+): Promise<void> {
+  await send(API_PATHS.siteSettings, {
+    method: "PATCH",
+    body: input,
+  });
+}
+
 export type { AdminDiscount };

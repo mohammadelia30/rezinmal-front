@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { getSessionUser, isStaff } from "@/lib/auth/session";
+import { toPanelPermission } from "@/lib/admin-auth";
+import type { AdminPermission } from "@/data/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +39,9 @@ export default async function AdminProtectedLayout({
         displayName,
         isStaff: Boolean(user.is_staff),
         isSuperuser: Boolean(user.is_superuser),
+        permissions: (user.panel_permissions ?? []).map(
+          (codename) => toPanelPermission(codename) as AdminPermission,
+        ),
       }}
     >
       {children}

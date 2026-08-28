@@ -53,4 +53,10 @@ export const API_PATHS = {
   customerMe: "/api/customers/me/",
   notifications: "/api/notifications/",
   searchProducts: "/api/search/products/",
+  adminUsers: "/api/accounts/users/",
+  adminUser: (id: string | number) => `/api/accounts/users/${id}/`,
+  adminRoles: "/api/accounts/roles/",
+  adminRole: (id: string | number) => `/api/accounts/roles/${id}/`,
+  panelPermissions: "/api/accounts/panel-permissions/",
+  siteSettings: "/api/core/settings/",
 } as const;

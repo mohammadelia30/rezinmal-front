@@ -5,12 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { adminNavItems, logout } from "@/lib/admin-auth";
+import type { AdminPermission } from "@/data/admin";
 
 export type AdminShellSession = {
   phoneNumber: string;
   displayName: string;
   isStaff: boolean;
   isSuperuser: boolean;
+  permissions: AdminPermission[];
 };
 
 /**
@@ -44,6 +46,12 @@ export function AdminShell({
 
   const roleLabel = session.isSuperuser ? "مدیر کل" : "مدیر";
 
+  // منو فقط بخش‌هایی را نشان می‌دهد که کاربر واقعاً دسترسی دارد؛
+  // بررسی اصلی روی سرور و در بک‌اند انجام می‌شود.
+  const visibleNav = adminNavItems.filter((item) =>
+    session.permissions.includes(item.permission),
+  );
+
   return (
     <div className="flex min-h-dvh bg-[#f6f1e7]">
       <aside
@@ -65,7 +73,7 @@ export function AdminShell({
 
         <nav className="flex-1 overflow-y-auto p-3" aria-label="منوی ادمین">
           <ul className="space-y-1">
-            {adminNavItems.map((item) => {
+            {visibleNav.map((item) => {
               const active = item.exact
                 ? pathname === item.href
                 : pathname.startsWith(item.href);

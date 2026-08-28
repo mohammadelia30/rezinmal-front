@@ -185,3 +185,94 @@ export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
     active: coupon.is_active !== false,
   }));
 }
+
+
+// ==========================================================
+// کاربران، نقش‌ها و تنظیمات
+// ==========================================================
+
+type ApiAdminUser = {
+  id: number;
+  phone_number: string;
+  first_name?: string;
+  last_name?: string;
+  is_active: boolean;
+  is_staff: boolean;
+  is_verified?: boolean;
+  orders_count?: number;
+  total_spent?: number;
+  role_ids?: number[];
+  created_at?: string;
+};
+
+export type AdminUserRow = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  ordersCount: number;
+  totalSpent: number;
+  isActive: boolean;
+  isStaff: boolean;
+  roleIds: string[];
+  joinedAt: string;
+};
+
+export async function getAdminUsers(): Promise<AdminUserRow[]> {
+  const users = await serverApiFetch<ApiAdminUser[]>(API_PATHS.adminUsers);
+  if (!Array.isArray(users)) return [];
+
+  return users.map((user) => ({
+    id: String(user.id),
+    firstName: user.first_name ?? "",
+    lastName: user.last_name ?? "",
+    phone: user.phone_number,
+    ordersCount: user.orders_count ?? 0,
+    totalSpent: user.total_spent ?? 0,
+    isActive: user.is_active,
+    isStaff: user.is_staff,
+    roleIds: (user.role_ids ?? []).map(String),
+    joinedAt: formatDate(user.created_at),
+  }));
+}
+
+type ApiRole = {
+  id: number;
+  name: string;
+  permissions?: string[];
+  users_count?: number;
+};
+
+export type AdminRoleRow = {
+  id: string;
+  name: string;
+  permissions: string[];
+  usersCount: number;
+};
+
+export async function getAdminRoles(): Promise<AdminRoleRow[]> {
+  const roles = await serverApiFetch<ApiRole[]>(API_PATHS.adminRoles);
+  if (!Array.isArray(roles)) return [];
+
+  return roles.map((role) => ({
+    id: String(role.id),
+    name: role.name,
+    permissions: role.permissions ?? [],
+    usersCount: role.users_count ?? 0,
+  }));
+}
+
+export type SiteSettingsModel = {
+  shop_name: string;
+  phone: string;
+  email: string;
+  address: string;
+  shipping_cost: number;
+  free_shipping_min: number;
+  payment_enabled: boolean;
+  maintenance_mode: boolean;
+};
+
+export async function getSiteSettings(): Promise<SiteSettingsModel | null> {
+  return serverApiFetch<SiteSettingsModel>(API_PATHS.siteSettings);
+}

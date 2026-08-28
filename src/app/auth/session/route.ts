@@ -22,6 +22,7 @@ export async function GET() {
       isStaff: Boolean(user.is_staff || user.is_superuser),
       isSuperuser: Boolean(user.is_superuser),
       isCompleted: Boolean(user.is_completed),
+      panelPermissions: user.panel_permissions ?? [],
     },
   });
 }

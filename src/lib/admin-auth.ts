@@ -24,22 +24,25 @@ export type SessionUserPayload = {
   isStaff: boolean;
   isSuperuser: boolean;
   isCompleted: boolean;
+  panelPermissions: string[];
 };
 
-/**
- * دسترسی‌های ادمین.
- *
- * بک‌اند فعلاً نقش‌های ریزدانه ندارد (فقط is_staff/is_superuser)، پس هر
- * کاربر staff به همهٔ بخش‌های پیاده‌سازی‌شده دسترسی دارد. «کاربران» و
- * «نقش‌ها» عمداً اینجا نیستند چون هیچ اندپوینتی برایشان وجود ندارد.
- */
-const STAFF_PERMISSIONS: AdminPermission[] = [
-  "dashboard",
-  "orders",
-  "invoices",
-  "products",
-  "discounts",
-];
+/** codenameهای بک‌اند؛ ترتیبشان ترتیب نمایش در صفحهٔ نقش‌هاست. */
+export const PANEL_PERMISSIONS = [
+  "panel_dashboard",
+  "panel_orders",
+  "panel_invoices",
+  "panel_products",
+  "panel_discounts",
+  "panel_users",
+  "panel_roles",
+  "panel_settings",
+] as const;
+
+/** panel_orders → orders */
+export function toPanelPermission(codename: string): string {
+  return codename.replace(/^panel_/, "");
+}
 
 export const adminNavItems: {
   href: string;
@@ -67,6 +70,19 @@ export const adminNavItems: {
     exact: false,
     permission: "discounts",
   },
+  { href: "/admin/users", label: "کاربران", exact: false, permission: "users" },
+  {
+    href: "/admin/roles",
+    label: "نقش‌ها و دسترسی‌ها",
+    exact: false,
+    permission: "roles",
+  },
+  {
+    href: "/admin/settings",
+    label: "تنظیمات",
+    exact: false,
+    permission: "settings",
+  },
 ];
 
 export function toAdminSession(user: SessionUserPayload): AdminSession | null {
@@ -79,7 +95,10 @@ export function toAdminSession(user: SessionUserPayload): AdminSession | null {
     displayName: name || user.phoneNumber,
     isStaff: user.isStaff,
     isSuperuser: user.isSuperuser,
-    permissions: [...STAFF_PERMISSIONS],
+    // دسترسی‌ها از نقش‌های واقعی کاربر در بک‌اند می‌آید
+    permissions: (user.panelPermissions ?? []).map(
+      (codename) => toPanelPermission(codename) as AdminPermission,
+    ),
   };
 }
 
