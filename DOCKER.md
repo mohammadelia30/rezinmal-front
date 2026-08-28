@@ -85,6 +85,26 @@ FRONTEND_BIND=127.0.0.1
 docker compose up -d --build web celery_worker celery_beat
 ```
 
+## جست‌وجو (Elasticsearch) اختیاری است
+
+`elasticsearch` و `kibana` پشت profile هستند و با `docker compose up -d`
+بالا نمی‌آیند. دلیلش این است که فرانت از جست‌وجو استفاده نمی‌کند و رجیستری
+`docker.elastic.co` از داخل ایران در دسترس نیست.
+
+بدون آن‌ها همه‌چیز کار می‌کند و فقط `/api/search/*` پاسخ ۵۰۳ می‌دهد.
+اگر خواستید فعالشان کنید:
+
+```bash
+docker compose --profile search up -d
+```
+
+اگر کشیدن ایمیج از Docker Hub هم روی سرور شکست خورد، یک registry mirror
+داخلی در `/etc/docker/daemon.json` تنظیم کنید:
+
+```json
+{ "registry-mirrors": ["https://docker.arvancloud.ir"] }
+```
+
 ## نکات مهم (هرکدام یک بار ما را زمین زد)
 
 - **آندرلاین در نام هاست ممنوع است.** جنگو هدر `Host` دارای `_` را مستقل از
