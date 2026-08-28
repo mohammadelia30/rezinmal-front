@@ -1,82 +1,123 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { heroSlides } from "@/data/home";
 
-const INTERVAL_MS = 4500;
-const ANIMATION_MS = 550;
+/** مدت نمایش هر تصویر، شامل زمان محو شدن */
+const SLIDE_MS = 5000;
+/** مدت cross-fade بین دو تصویر */
+const FADE_MS = 600;
 
 type Slot = "next" | "third";
 
+/**
+ * تصاویر روی هم چیده می‌شوند و فقط شفافیت‌شان عوض می‌شود.
+ *
+ * قبلاً تصویر فعلی تا صفر محو می‌شد و بعد از پایان انیمیشن، عنصر جدید
+ * mount می‌شد؛ نتیجه‌اش دیده شدن پس‌زمینهٔ خالی بین دو عکس بود. با این
+ * روش تصویر بعدی از زیر ظاهر می‌شود و شکافی باقی نمی‌ماند.
+ */
+function SlideStack({
+  activeId,
+  sizes,
+  priorityId,
+}: {
+  activeId: string;
+  sizes: string;
+  priorityId?: string;
+}) {
+  return (
+    <>
+      {heroSlides.map((slide) => {
+        const isActive = slide.id === activeId;
+
+        return (
+          <Image
+            key={slide.id}
+            src={slide.src}
+            alt={isActive ? slide.alt : ""}
+            aria-hidden={!isActive}
+            fill
+            priority={slide.id === priorityId}
+            sizes={sizes}
+            className="hero-slide object-cover"
+            style={{
+              opacity: isActive ? 1 : 0,
+              transform: isActive ? "scale(1)" : "scale(1.04)",
+            }}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 export function HeroGallery() {
   const [order, setOrder] = useState(() => heroSlides.map((_, i) => i));
-  const [activeSlot, setActiveSlot] = useState<Slot | null>(null);
-  const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
-
-  const animatingRef = useRef(false);
-  const orderRef = useRef(order);
-
-  useEffect(() => {
-    orderRef.current = order;
-  }, [order]);
+  // با هر تعامل کاربر تایمر از نو شروع می‌شود تا بلافاصله بعد از
+  // کلیک، تصویر عوض نشود.
+  const [restartKey, setRestartKey] = useState(0);
 
   const mainSlide = heroSlides[order[0]];
   const nextSlide = heroSlides[order[1]];
   const thirdSlide = heroSlides[order[2]];
 
-  const swapWith = useCallback((slot: Slot) => {
-    if (animatingRef.current) return;
+  /**
+   * چرخش خودکار: کل صف یک قدم جلو می‌رود.
+   *
+   * قبلاً هر بار جای موقعیت ۰ و ۱ عوض می‌شد، یعنی نمایش خودکار فقط بین
+   * دو تصویر اول رفت‌وبرگشت می‌کرد و دو تصویر دیگر هرگز خودشان نمی‌آمدند.
+   */
+  const advance = useCallback(() => {
+    setOrder((current) => [...current.slice(1), current[0]]);
+  }, []);
 
-    animatingRef.current = true;
-    setActiveSlot(slot);
-    setFading(true);
+  /** کلیک روی بندانگشتی: همان تصویر به جایگاه اصلی می‌آید. */
+  const handleThumbClick = (slot: Slot) => {
+    setOrder((current) => {
+      const position = slot === "next" ? 1 : 2;
+      const next = [...current];
+      [next[0], next[position]] = [next[position], next[0]];
+      return next;
+    });
+    setRestartKey((value) => value + 1);
+  };
 
-    window.setTimeout(() => {
-      const thumbOrderPos = slot === "next" ? 1 : 2;
-      const nextOrder = [...orderRef.current];
-      [nextOrder[0], nextOrder[thumbOrderPos]] = [
-        nextOrder[thumbOrderPos],
-        nextOrder[0],
-      ];
-      setOrder(nextOrder);
-      setFading(false);
-      setActiveSlot(null);
-      animatingRef.current = false;
-    }, ANIMATION_MS);
+  // وقتی تب پنهان است تایمر متوقف می‌شود؛ وگرنه مرورگر در بازگشت،
+  // چند تعویض عقب‌افتاده را پشت‌سرهم اجرا می‌کند.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setPaused(document.visibilityState === "hidden");
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
   useEffect(() => {
-    if (paused || fading) return;
+    if (paused) return;
 
-    const timer = window.setInterval(() => {
-      swapWith("next");
-    }, INTERVAL_MS);
-
+    // وابستگی‌ها ثابت‌اند، پس فاصلهٔ تعویض دقیقاً SLIDE_MS می‌ماند.
+    const timer = window.setInterval(advance, SLIDE_MS);
     return () => window.clearInterval(timer);
-  }, [paused, fading, swapWith]);
+  }, [paused, advance, restartKey]);
 
   return (
     <div
       className="relative w-full"
+      style={{ "--hero-fade": `${FADE_MS}ms` } as React.CSSProperties}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       <div className="relative ms-0 w-full max-w-2xl lg:max-w-none">
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-brand-mist shadow-lg sm:aspect-[5/4] lg:aspect-square xl:aspect-[5/4]">
-          <Image
-            key={mainSlide.id}
-            src={mainSlide.src}
-            alt={mainSlide.alt}
-            fill
-            priority
+          <SlideStack
+            activeId={mainSlide.id}
             sizes="(max-width: 1024px) 90vw, 50vw"
-            className={`object-cover transition-all duration-500 ease-out ${
-              fading
-                ? "scale-105 opacity-0"
-                : "hero-image-enter scale-100 opacity-100"
-            }`}
+            priorityId={heroSlides[0].id}
           />
           <div
             aria-hidden
@@ -87,42 +128,20 @@ export function HeroGallery() {
         <div className="absolute -bottom-3 start-3 z-10 flex items-end gap-2 sm:start-6 sm:gap-3 lg:-bottom-5 lg:start-8">
           <button
             type="button"
-            onClick={() => swapWith("next")}
+            onClick={() => handleThumbClick("next")}
             aria-label={`نمایش تصویر: ${nextSlide.alt}`}
             className="group relative h-16 w-16 overflow-hidden rounded-lg bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-24 sm:w-24 sm:rounded-xl sm:ring-[3px] lg:h-32 lg:w-32"
           >
-            <Image
-              key={nextSlide.id}
-              src={nextSlide.src}
-              alt={nextSlide.alt}
-              fill
-              sizes="128px"
-              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
-                activeSlot === "next" && fading
-                  ? "scale-95 opacity-0"
-                  : "opacity-100"
-              }`}
-            />
+            <SlideStack activeId={nextSlide.id} sizes="128px" />
           </button>
 
           <button
             type="button"
-            onClick={() => swapWith("third")}
+            onClick={() => handleThumbClick("third")}
             aria-label={`نمایش تصویر: ${thirdSlide.alt}`}
             className="group relative h-12 w-12 overflow-hidden rounded-lg bg-brand-mist shadow-md ring-2 ring-white outline-none transition hover:ring-brand/50 focus-visible:ring-brand sm:h-16 sm:w-16 sm:rounded-xl sm:ring-[3px] lg:h-24 lg:w-24"
           >
-            <Image
-              key={thirdSlide.id}
-              src={thirdSlide.src}
-              alt={thirdSlide.alt}
-              fill
-              sizes="96px"
-              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
-                activeSlot === "third" && fading
-                  ? "scale-95 opacity-0"
-                  : "opacity-100"
-              }`}
-            />
+            <SlideStack activeId={thirdSlide.id} sizes="96px" />
           </button>
         </div>
       </div>

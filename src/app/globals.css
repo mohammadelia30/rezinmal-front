@@ -52,19 +52,15 @@
   animation: fade-up 0.65s ease-out 0.2s both;
 }
 
-@keyframes hero-image-enter {
-  from {
-    opacity: 0;
-    transform: scale(1.04);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.hero-image-enter {
-  animation: hero-image-enter 0.55s ease-out both;
+/*
+ * اسلایدهای Hero روی هم چیده می‌شوند و فقط شفافیتشان عوض می‌شود؛
+ * مدت زمان را کامپوننت با متغیر --hero-fade می‌دهد تا عدد فقط یک جا باشد.
+ */
+.hero-slide {
+  transition:
+    opacity var(--hero-fade, 600ms) ease-out,
+    transform var(--hero-fade, 600ms) ease-out;
+  will-change: opacity;
 }
 
 @keyframes admin-bar-rise {
@@ -106,7 +102,7 @@
   .animate-fade-up,
   .animate-fade-up-delay-1,
   .animate-fade-up-delay-2,
-  .hero-image-enter,
+  .hero-slide,
   .admin-chart-bar,
   .admin-chart-fade,
   .admin-chart-draw {
