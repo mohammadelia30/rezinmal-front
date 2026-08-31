@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AdminBadge,
+  AdminButton,
+  AdminError,
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
@@ -57,9 +59,7 @@ export function AdminUsersPage({
         description="لیست مشتریان ثبت‌نام‌شده و سطح دسترسی آن‌ها"
       />
 
-      {error ? (
-        <p className="mb-4 text-right text-sm text-red-500">{error}</p>
-      ) : null}
+      <AdminError message={error} />
 
       {users.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
@@ -67,6 +67,7 @@ export function AdminUsersPage({
         </p>
       ) : (
         <AdminTable
+          minWidth={900}
           headers={[
             "نام",
             "موبایل",
@@ -141,30 +142,30 @@ export function AdminUsersPage({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap justify-end gap-1.5">
-                    <button
-                      type="button"
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
                       disabled={busy}
                       onClick={() =>
                         run(user.id, () =>
                           setUserActive(user.id, !user.isActive),
                         )
                       }
-                      className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7] disabled:opacity-60"
                     >
                       {user.isActive ? "مسدود کردن" : "رفع مسدودی"}
-                    </button>
-                    <button
-                      type="button"
+                    </AdminButton>
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
                       disabled={busy}
                       onClick={() =>
                         run(user.id, () =>
                           setUserStaff(user.id, !user.isStaff),
                         )
                       }
-                      className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7] disabled:opacity-60"
                     >
                       {user.isStaff ? "سلب دسترسی مدیر" : "دسترسی مدیر"}
-                    </button>
+                    </AdminButton>
                   </div>
                 </td>
               </tr>

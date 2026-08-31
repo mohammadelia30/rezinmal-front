@@ -154,6 +154,7 @@ export function AdminCategoriesPage({
                 <div className="flex flex-wrap justify-end gap-1.5">
                   <AdminButton
                     variant="ghost"
+                    size="sm"
                     disabled={busy}
                     onClick={() => openEdit(row)}
                   >
@@ -161,6 +162,7 @@ export function AdminCategoriesPage({
                   </AdminButton>
                   <AdminButton
                     variant="danger"
+                    size="sm"
                     disabled={busy}
                     onClick={() => handleDelete(row)}
                   >

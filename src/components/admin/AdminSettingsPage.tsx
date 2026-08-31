@@ -132,7 +132,7 @@ export function AdminSettingsPage({
               </span>
             ) : null}
             {error ? (
-              <span className="text-sm text-red-500">{error}</span>
+              <span className="text-sm text-[#9b3d3d]">{error}</span>
             ) : null}
           </div>
         </form>

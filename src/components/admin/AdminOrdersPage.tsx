@@ -89,6 +89,7 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
         </p>
       ) : (
         <AdminTable
+          minWidth={860}
           headers={[
             "کد سفارش",
             "مشتری",
@@ -133,6 +134,7 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
                       <AdminButton
                         key={action.key}
                         variant={action.danger ? "danger" : "ghost"}
+                        size="sm"
                         disabled={busy}
                         onClick={() => run(order.id, action.key, action.label)}
                       >
@@ -143,7 +145,7 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
                       href={API_PATHS.orderPrint(order.id)}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-xl border border-[#e6dcc2] px-4 py-2 text-sm font-medium text-foreground transition hover:bg-[#f6f1e7]"
+                      className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap text-foreground transition hover:bg-[#f6f1e7]"
                     >
                       چاپ
                     </a>

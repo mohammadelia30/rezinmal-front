@@ -75,13 +75,16 @@ export function AdminCard({
 export function AdminTable({
   headers,
   children,
+  minWidth = 640,
 }: {
   headers: string[];
   children: ReactNode;
+  /** عرض حداقلی جدول؛ جدول‌های پرستون به فضای بیشتری نیاز دارند */
+  minWidth?: number;
 }) {
   return (
-    <div className="overflow-x-auto rounded-2xl bg-white shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
-      <table className="w-full min-w-[640px] text-sm">
+    <div className="overflow-x-auto overscroll-x-contain rounded-2xl bg-white shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
+      <table className="w-full text-sm" style={{ minWidth: `${minWidth}px` }}>
         <thead>
           <tr className="border-b border-[#efe6d4] bg-[#fbf9f1] text-right">
             {headers.map((header) => (
@@ -115,6 +118,7 @@ export function AdminButton({
   onClick,
   type = "button",
   variant = "primary",
+  size = "md",
   disabled,
   title,
 }: {
@@ -122,6 +126,8 @@ export function AdminButton({
   onClick?: () => void;
   type?: "button" | "submit";
   variant?: "primary" | "ghost" | "danger";
+  /** sm برای عملیات داخل جدول، md برای دکمه‌های اصلی */
+  size?: "sm" | "md";
   disabled?: boolean;
   title?: string;
 }) {
@@ -131,13 +137,19 @@ export function AdminButton({
     danger: "border border-[#e6dcc2] text-[#8a3a3a] hover:bg-[#fff5f5]",
   }[variant];
 
+  // روی موبایل هدف لمس نباید کوچک‌تر از ۳۶ پیکسل شود
+  const sizing =
+    size === "sm"
+      ? "min-h-9 rounded-lg px-3 py-1.5 text-xs"
+      : "min-h-10 rounded-xl px-4 py-2.5 text-sm";
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`rounded-xl px-4 py-2 text-sm font-medium transition disabled:opacity-60 ${styles}`}
+      className={`inline-flex items-center justify-center font-medium whitespace-nowrap transition disabled:opacity-60 ${sizing} ${styles}`}
     >
       {children}
     </button>
@@ -272,14 +284,14 @@ export function AdminModal({
   children: ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-3 sm:p-8">
+      <div className="my-auto w-full max-w-2xl rounded-2xl bg-white p-4 shadow-xl sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={onClose}
             aria-label="بستن"
-            className="rounded-lg p-1.5 text-muted transition hover:bg-[#f6f1e7]"
+            className="flex size-9 items-center justify-center rounded-lg text-muted transition hover:bg-[#f6f1e7]"
           >
             ✕
           </button>

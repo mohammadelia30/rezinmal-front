@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { permissionLabels, type AdminPermission } from "@/data/admin";
-import { AdminCard, AdminPageHeader } from "@/components/admin/AdminUI";
+import {
+  AdminButton,
+  AdminCard,
+  AdminError,
+  AdminPageHeader,
+} from "@/components/admin/AdminUI";
 import { PANEL_PERMISSIONS, toPanelPermission } from "@/lib/admin-auth";
 import type { AdminRoleRow } from "@/lib/api/admin";
 import {
@@ -75,9 +80,7 @@ export function AdminRolesPage({ roles }: { roles: AdminRoleRow[] }) {
         description="تعریف نقش‌های مدیریتی و سطح دسترسی هر نقش"
       />
 
-      {error ? (
-        <p className="mb-4 text-right text-sm text-red-500">{error}</p>
-      ) : null}
+      <AdminError message={error} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <AdminCard className="lg:col-span-1">
@@ -123,7 +126,7 @@ export function AdminRolesPage({ roles }: { roles: AdminRoleRow[] }) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark disabled:opacity-60"
+              className="min-h-10 w-full rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-dark disabled:opacity-60"
             >
               افزودن نقش
             </button>
@@ -135,8 +138,9 @@ export function AdminRolesPage({ roles }: { roles: AdminRoleRow[] }) {
             <>
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex gap-1.5">
-                  <button
-                    type="button"
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
                     disabled={busy}
                     onClick={() => {
                       const name = window.prompt("نام جدید نقش:", selected.name);
@@ -144,22 +148,21 @@ export function AdminRolesPage({ roles }: { roles: AdminRoleRow[] }) {
                         run(() => renameRole(selected.id, name.trim()));
                       }
                     }}
-                    className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7] disabled:opacity-60"
                   >
                     تغییر نام
-                  </button>
-                  <button
-                    type="button"
+                  </AdminButton>
+                  <AdminButton
+                    variant="danger"
+                    size="sm"
                     disabled={busy}
                     onClick={() => {
                       if (window.confirm(`نقش «${selected.name}» حذف شود؟`)) {
                         run(() => deleteRole(selected.id));
                       }
                     }}
-                    className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium text-[#8a3a3a] transition hover:bg-[#fff5f5] disabled:opacity-60"
                   >
                     حذف نقش
-                  </button>
+                  </AdminButton>
                 </div>
                 <h2 className="text-lg font-bold text-foreground">
                   دسترسی‌های «{selected.name}»

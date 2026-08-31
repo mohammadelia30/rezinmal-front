@@ -384,7 +384,7 @@ export function AdminProductsPage({
           هنوز محصولی ثبت نشده است. با دکمهٔ «افزودن محصول» شروع کنید.
         </p>
       ) : (
-        <AdminTable headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
+        <AdminTable minWidth={720} headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
           {products.map((product) => (
             <tr
               key={product.id}
@@ -426,6 +426,7 @@ export function AdminProductsPage({
                 <div className="flex flex-wrap justify-end gap-1.5">
                   <AdminButton
                     variant="ghost"
+                    size="sm"
                     disabled={busy}
                     onClick={() => openEdit(product)}
                   >
@@ -433,6 +434,7 @@ export function AdminProductsPage({
                   </AdminButton>
                   <AdminButton
                     variant="ghost"
+                    size="sm"
                     disabled={busy}
                     onClick={() =>
                       run(() => setProductActive(product.id, !product.isActive))
@@ -442,6 +444,7 @@ export function AdminProductsPage({
                   </AdminButton>
                   <AdminButton
                     variant="danger"
+                    size="sm"
                     disabled={busy}
                     onClick={() => handleDelete(product)}
                   >

@@ -130,6 +130,7 @@ export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
                 <div className="flex flex-wrap justify-end gap-1.5">
                   <AdminButton
                     variant="ghost"
+                    size="sm"
                     disabled={busy}
                     onClick={() => openEdit(row)}
                   >
@@ -137,6 +138,7 @@ export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
                   </AdminButton>
                   <AdminButton
                     variant="danger"
+                    size="sm"
                     disabled={busy}
                     onClick={() => handleDelete(row)}
                   >

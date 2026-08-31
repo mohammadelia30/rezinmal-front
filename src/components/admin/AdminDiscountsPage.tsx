@@ -268,21 +268,21 @@ export function AdminDiscountsPage({
                       setShowForm(true);
                       setError("");
                     }}
-                    className="rounded-lg border border-[#e6dcc2] px-2.5 py-1 text-xs"
+                    className="inline-flex min-h-9 items-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition hover:bg-[#f6f1e7]"
                   >
                     ویرایش
                   </button>
                   <button
                     type="button"
                     onClick={() => toggleActive(item.id)}
-                    className="rounded-lg border border-[#e6dcc2] px-2.5 py-1 text-xs"
+                    className="inline-flex min-h-9 items-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition hover:bg-[#f6f1e7]"
                   >
                     {item.active ? "غیرفعال" : "فعال"}
                   </button>
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}
-                    className="rounded-lg border border-[#f0cfcf] px-2.5 py-1 text-xs text-[#8a3a3a]"
+                    className="inline-flex min-h-9 items-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap text-[#8a3a3a] transition hover:bg-[#fff5f5]"
                   >
                     حذف
                   </button>
