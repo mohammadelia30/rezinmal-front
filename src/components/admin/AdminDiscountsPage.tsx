@@ -15,6 +15,7 @@ import {
   createCoupon,
   deleteCoupon,
   setCouponActive,
+  updateCoupon,
 } from "@/lib/admin-store";
 import { formatProductPrice } from "@/lib/price";
 
@@ -27,6 +28,7 @@ export function AdminDiscountsPage({
   const [pending, startTransition] = useTransition();
   const items = discounts;
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [type, setType] = useState<DiscountType>("percent");
   const [value, setValue] = useState("");
@@ -60,13 +62,18 @@ export function AdminDiscountsPage({
     }
 
     try {
-      await createCoupon({
+      const payload = {
         code: trimmedCode,
         type,
         value: numericValue,
         maxUses: numericMax,
         expiresAt: expiresAt.trim(),
-      });
+      };
+      if (editingId) {
+        await updateCoupon(editingId, payload);
+      } else {
+        await createCoupon(payload);
+      }
     } catch (creationError) {
       setError(
         creationError instanceof AdminActionError
@@ -78,6 +85,7 @@ export function AdminDiscountsPage({
 
     refresh();
     setShowForm(false);
+    setEditingId(null);
     setCode("");
     setValue("");
     setMaxUses("100");
@@ -248,6 +256,22 @@ export function AdminDiscountsPage({
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(item.id);
+                      setCode(item.code);
+                      setType(item.type);
+                      setValue(String(item.value));
+                      setMaxUses(String(item.maxUses));
+                      setExpiresAt("");
+                      setShowForm(true);
+                      setError("");
+                    }}
+                    className="rounded-lg border border-[#e6dcc2] px-2.5 py-1 text-xs"
+                  >
+                    ویرایش
+                  </button>
                   <button
                     type="button"
                     onClick={() => toggleActive(item.id)}

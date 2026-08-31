@@ -65,6 +65,18 @@ export const adminNavItems: {
     permission: "products",
   },
   {
+    href: "/admin/categories",
+    label: "دسته‌بندی‌ها",
+    exact: false,
+    permission: "products",
+  },
+  {
+    href: "/admin/brands",
+    label: "برندها",
+    exact: false,
+    permission: "products",
+  },
+  {
     href: "/admin/discounts",
     label: "کد تخفیف",
     exact: false,

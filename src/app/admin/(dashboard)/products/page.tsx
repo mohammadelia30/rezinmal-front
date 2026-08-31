@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { AdminProductsPage } from "@/components/admin/AdminProductsPage";
-import { getAdminProducts } from "@/lib/api/admin";
+import {
+  getAdminBrands,
+  getAdminCategories,
+  getAdminProductDetails,
+} from "@/lib/api/admin";
+import { requirePanelPermission } from "@/lib/auth/guard";
 
 export const metadata: Metadata = {
   title: "محصولات | پنل ادمین",
@@ -8,6 +13,17 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const products = await getAdminProducts();
-  return <AdminProductsPage products={products} />;
+  await requirePanelPermission("panel_products");
+  const [products, categories, brands] = await Promise.all([
+    getAdminProductDetails(),
+    getAdminCategories(),
+    getAdminBrands(),
+  ]);
+  return (
+    <AdminProductsPage
+      products={products}
+      categories={categories}
+      brands={brands}
+    />
+  );
 }

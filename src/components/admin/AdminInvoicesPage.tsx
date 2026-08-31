@@ -12,6 +12,7 @@ import {
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
+import { API_PATHS } from "@/lib/api/config";
 import { formatProductPrice } from "@/lib/price";
 
 export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
@@ -53,13 +54,23 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
               </AdminBadge>
             </td>
             <td className="px-4 py-3">
-              <button
-                type="button"
-                onClick={() => setSelected(invoice)}
-                className="rounded-lg bg-brand-mist px-3 py-1.5 text-xs font-bold text-brand transition hover:bg-brand hover:text-white"
-              >
-                جزئیات
-              </button>
+              <div className="flex flex-wrap justify-end gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSelected(invoice)}
+                  className="rounded-lg bg-brand-mist px-3 py-1.5 text-xs font-bold text-brand transition hover:bg-brand hover:text-white"
+                >
+                  جزئیات
+                </button>
+                <a
+                  href={API_PATHS.orderPrint(invoice.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7]"
+                >
+                  چاپ
+                </a>
+              </div>
             </td>
           </tr>
         ))}

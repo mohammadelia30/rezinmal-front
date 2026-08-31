@@ -59,4 +59,15 @@ export const API_PATHS = {
   adminRole: (id: string | number) => `/api/accounts/roles/${id}/`,
   panelPermissions: "/api/accounts/panel-permissions/",
   siteSettings: "/api/core/settings/",
+  productImages: "/api/catalog/images/",
+  productImage: (id: string | number) => `/api/catalog/images/${id}/`,
+  variant: (id: string | number) => `/api/catalog/variants/${id}/`,
+  orderConfirm: (id: string | number) => `/api/orders/orders/${id}/confirm/`,
+  orderCancel: (id: string | number) => `/api/orders/orders/${id}/cancel/`,
+  orderPreparing: (id: string | number) => `/api/orders/orders/${id}/preparing/`,
+  orderReadyForPost: (id: string | number) =>
+    `/api/orders/orders/${id}/ready-for-post/`,
+  orderDeliveredToPost: (id: string | number) =>
+    `/api/orders/orders/${id}/delivered-to-post/`,
+  orderPrint: (id: string | number) => `/api/orders/orders/${id}/print/`,
 } as const;

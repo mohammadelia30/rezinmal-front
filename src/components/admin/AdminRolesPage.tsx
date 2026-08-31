@@ -10,6 +10,7 @@ import {
   AdminActionError,
   createRole,
   deleteRole,
+  renameRole,
   setRolePermissions,
 } from "@/lib/admin-store";
 
@@ -133,14 +134,33 @@ export function AdminRolesPage({ roles }: { roles: AdminRoleRow[] }) {
           {selected ? (
             <>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => run(() => deleteRole(selected.id))}
-                  className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium text-[#8a3a3a] transition hover:bg-[#fff5f5] disabled:opacity-60"
-                >
-                  حذف نقش
-                </button>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      const name = window.prompt("نام جدید نقش:", selected.name);
+                      if (name && name.trim() && name !== selected.name) {
+                        run(() => renameRole(selected.id, name.trim()));
+                      }
+                    }}
+                    className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium transition hover:bg-[#f6f1e7] disabled:opacity-60"
+                  >
+                    تغییر نام
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      if (window.confirm(`نقش «${selected.name}» حذف شود؟`)) {
+                        run(() => deleteRole(selected.id));
+                      }
+                    }}
+                    className="rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium text-[#8a3a3a] transition hover:bg-[#fff5f5] disabled:opacity-60"
+                  >
+                    حذف نقش
+                  </button>
+                </div>
                 <h2 className="text-lg font-bold text-foreground">
                   دسترسی‌های «{selected.name}»
                 </h2>

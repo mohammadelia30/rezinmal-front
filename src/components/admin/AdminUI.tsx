@@ -105,3 +105,197 @@ export function AdminEmpty({ message }: { message: string }) {
     <AdminCard className="py-10 text-center text-sm text-muted">{message}</AdminCard>
   );
 }
+
+// ==========================================================
+// اجزای مشترک فرم‌ها و عملیات
+// ==========================================================
+
+export function AdminButton({
+  children,
+  onClick,
+  type = "button",
+  variant = "primary",
+  disabled,
+  title,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  type?: "button" | "submit";
+  variant?: "primary" | "ghost" | "danger";
+  disabled?: boolean;
+  title?: string;
+}) {
+  const styles = {
+    primary: "bg-brand text-white hover:bg-brand-dark",
+    ghost: "border border-[#e6dcc2] text-foreground hover:bg-[#f6f1e7]",
+    danger: "border border-[#e6dcc2] text-[#8a3a3a] hover:bg-[#fff5f5]",
+  }[variant];
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`rounded-xl px-4 py-2 text-sm font-medium transition disabled:opacity-60 ${styles}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function AdminField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  dir,
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  dir?: "ltr" | "rtl";
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="block text-right">
+      <span className="mb-1.5 block text-sm font-medium text-foreground">
+        {label}
+        {required ? <span className="text-red-500"> *</span> : null}
+      </span>
+      <input
+        type={type}
+        value={value}
+        dir={dir}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+      />
+    </label>
+  );
+}
+
+export function AdminTextarea({
+  label,
+  value,
+  onChange,
+  rows = 3,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  rows?: number;
+}) {
+  return (
+    <label className="block text-right">
+      <span className="mb-1.5 block text-sm font-medium text-foreground">
+        {label}
+      </span>
+      <textarea
+        value={value}
+        rows={rows}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+      />
+    </label>
+  );
+}
+
+export function AdminSelect({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+}) {
+  return (
+    <label className="block text-right">
+      <span className="mb-1.5 block text-sm font-medium text-foreground">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+      >
+        {placeholder ? <option value="">{placeholder}</option> : null}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+export function AdminToggleField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-[#efe6d4] bg-[#fbf9f1] px-4 py-2.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="size-4 accent-[#4e2a54]"
+      />
+      <span className="text-sm font-medium text-foreground">{label}</span>
+    </label>
+  );
+}
+
+/** پنجرهٔ فرم؛ برای افزودن و ویرایش استفاده می‌شود. */
+export function AdminModal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8">
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="بستن"
+            className="rounded-lg p-1.5 text-muted transition hover:bg-[#f6f1e7]"
+          >
+            ✕
+          </button>
+          <h2 className="text-lg font-bold text-foreground">{title}</h2>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function AdminError({ message }: { message: string }) {
+  if (!message) return null;
+  return (
+    <p className="mb-3 rounded-xl bg-[#fde8e8] px-4 py-2.5 text-right text-sm text-[#9b3d3d]">
+      {message}
+    </p>
+  );
+}

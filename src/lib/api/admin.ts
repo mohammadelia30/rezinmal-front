@@ -9,6 +9,7 @@ import type {
   InvoiceStatus,
 } from "@/data/admin";
 import { getPrimaryImage } from "@/lib/api/mappers";
+import { publicMediaUrl } from "@/lib/format";
 import type { ProductDetail, ProductList } from "@/lib/api/types";
 
 /**
@@ -275,4 +276,128 @@ export type SiteSettingsModel = {
 
 export async function getSiteSettings(): Promise<SiteSettingsModel | null> {
   return serverApiFetch<SiteSettingsModel>(API_PATHS.siteSettings);
+}
+
+
+// ==========================================================
+// دسته‌بندی، برند و جزئیات محصول (برای فرم‌ها)
+// ==========================================================
+
+export type AdminCategoryRow = {
+  id: string;
+  title: string;
+  description: string;
+  parentId: string;
+  parentTitle: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+type ApiCategory = {
+  id: number;
+  title: string;
+  description?: string;
+  parent?: number | null;
+  sort_order?: number;
+  is_active?: boolean;
+};
+
+export async function getAdminCategories(): Promise<AdminCategoryRow[]> {
+  const items = await serverApiFetch<ApiCategory[]>(API_PATHS.categories);
+  if (!Array.isArray(items)) return [];
+
+  const titleById = new Map(items.map((item) => [item.id, item.title]));
+
+  return items.map((item) => ({
+    id: String(item.id),
+    title: item.title,
+    description: item.description ?? "",
+    parentId: item.parent ? String(item.parent) : "",
+    parentTitle: item.parent ? (titleById.get(item.parent) ?? "—") : "—",
+    sortOrder: item.sort_order ?? 0,
+    isActive: item.is_active !== false,
+  }));
+}
+
+export type AdminBrandRow = {
+  id: string;
+  title: string;
+  description: string;
+  isActive: boolean;
+};
+
+type ApiBrand = {
+  id: number;
+  title: string;
+  description?: string;
+  is_active?: boolean;
+};
+
+export async function getAdminBrands(): Promise<AdminBrandRow[]> {
+  const items = await serverApiFetch<ApiBrand[]>(API_PATHS.brands);
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    id: String(item.id),
+    title: item.title,
+    description: item.description ?? "",
+    isActive: item.is_active !== false,
+  }));
+}
+
+/** محصول با تمام فیلدهایی که فرم ویرایش لازم دارد */
+export type AdminProductDetail = {
+  id: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  brandId: string;
+  categoryIds: string[];
+  status: string;
+  isFeatured: boolean;
+  isActive: boolean;
+  price: number;
+  sku: string;
+  variantId: string;
+  images: { id: string; url: string; isPrimary: boolean }[];
+};
+
+export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
+  const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
+  if (!Array.isArray(list)) return [];
+
+  const details = await Promise.all(
+    list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
+  );
+
+  return details
+    .filter((detail): detail is ProductDetail => Boolean(detail))
+    .map((detail) => {
+      const variant =
+        detail.variants?.find((item) => item.is_default) ?? detail.variants?.[0];
+      const brand = detail.brand;
+
+      return {
+        id: String(detail.id),
+        title: detail.title,
+        shortDescription: detail.short_description ?? "",
+        description: detail.description ?? "",
+        brandId:
+          brand && typeof brand === "object" && "id" in brand
+            ? String((brand as { id: number }).id)
+            : "",
+        categoryIds: (detail.categories ?? []).map((item) => String(item.id)),
+        status: detail.status == null ? "" : String(detail.status),
+        isFeatured: Boolean(detail.is_featured),
+        isActive: detail.is_active !== false,
+        price: variant?.price ?? 0,
+        sku: variant?.sku ?? "",
+        variantId: variant ? String(variant.id) : "",
+        images: (detail.images ?? []).map((image) => ({
+          id: String(image.id),
+          url: publicMediaUrl(image.image) ?? "",
+          isPrimary: Boolean(image.is_primary),
+        })),
+      };
+    });
 }
