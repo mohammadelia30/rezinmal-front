@@ -22,6 +22,7 @@ import type {
 } from "@/lib/api/admin";
 import {
   AdminActionError,
+  PRODUCT_STATUS,
   createProduct,
   deleteProduct,
   deleteProductImage,
@@ -39,7 +40,7 @@ const EMPTY_FORM = {
   description: "",
   brand: "",
   categories: [] as string[],
-  status: "",
+  status: "2",
   is_featured: false,
   is_active: true,
   price: "",
@@ -139,6 +140,10 @@ export function AdminProductsPage({
       setError("قیمت معتبر وارد کنید.");
       return;
     }
+    if (form.categories.length === 0) {
+      setError("حداقل یک دسته‌بندی انتخاب کنید.");
+      return;
+    }
 
     const done = await run(async () => {
       await createProduct(toInput(), {
@@ -155,6 +160,10 @@ export function AdminProductsPage({
 
     if (!form.title.trim()) {
       setError("عنوان محصول را وارد کنید.");
+      return;
+    }
+    if (form.categories.length === 0) {
+      setError("حداقل یک دسته‌بندی انتخاب کنید.");
       return;
     }
 
@@ -221,6 +230,12 @@ export function AdminProductsPage({
           placeholder="خالی بماند، خودکار ساخته می‌شود"
         />
         <AdminSelect
+          label="وضعیت انتشار"
+          value={form.status}
+          onChange={(value) => set("status", value)}
+          options={PRODUCT_STATUS}
+        />
+        <AdminSelect
           label="برند"
           value={form.brand}
           onChange={(value) => set("brand", value)}
@@ -246,7 +261,7 @@ export function AdminProductsPage({
 
       <div className="text-right">
         <span className="mb-1.5 block text-sm font-medium text-foreground">
-          دسته‌بندی‌ها
+          دسته‌بندی‌ها <span className="text-red-500">*</span>
         </span>
         {categoryOptions.length === 0 ? (
           <p className="text-xs text-muted">

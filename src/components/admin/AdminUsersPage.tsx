@@ -112,7 +112,7 @@ export function AdminUsersPage({
                         ),
                       )
                     }
-                    className="rounded-lg border border-[#e6dcc2] bg-[#fbf9f1] px-2 py-1.5 text-xs outline-none focus:border-brand"
+                    className="min-h-9 rounded-lg border border-[#e6dcc2] bg-[#fbf9f1] px-2 py-1.5 text-xs outline-none focus:border-brand"
                   >
                     <option value="">بدون نقش</option>
                     {roles.map((role) => (

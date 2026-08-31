@@ -251,6 +251,13 @@ export type ProductInput = {
   is_active: boolean;
 };
 
+/** وضعیت در بک‌اند IntegerChoices است: ۱ پیش‌نویس، ۲ منتشرشده، ۳ بایگانی */
+export const PRODUCT_STATUS = [
+  { value: "1", label: "پیش‌نویس" },
+  { value: "2", label: "منتشر شده" },
+  { value: "3", label: "بایگانی" },
+];
+
 function productBody(input: ProductInput) {
   return {
     title: input.title,
@@ -258,7 +265,7 @@ function productBody(input: ProductInput) {
     description: input.description,
     brand: input.brand ? Number(input.brand) : null,
     categories: input.categories.map(Number),
-    status: input.status,
+    status: Number(input.status) || 2,
     is_featured: input.is_featured,
     is_active: input.is_active,
   };

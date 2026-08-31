@@ -94,7 +94,7 @@ export function AdminOverview({
           </p>
           <Link
             href="/admin/orders"
-            className="mt-3 inline-block text-sm font-medium text-brand hover:text-brand-dark"
+            className="mt-2 inline-flex min-h-9 items-center text-sm font-medium text-brand transition hover:text-brand-dark"
           >
             مشاهده سفارش‌ها
           </Link>
@@ -107,7 +107,7 @@ export function AdminOverview({
           </p>
           <Link
             href="/admin/orders"
-            className="mt-3 inline-block text-sm font-medium text-brand hover:text-brand-dark"
+            className="mt-2 inline-flex min-h-9 items-center text-sm font-medium text-brand transition hover:text-brand-dark"
           >
             پیگیری ارسال‌ها
           </Link>
@@ -130,7 +130,7 @@ export function AdminOverview({
         <div className="mb-4 flex items-center justify-between gap-3">
           <Link
             href="/admin/orders"
-            className="text-sm font-medium text-brand hover:text-brand-dark"
+            className="inline-flex min-h-9 items-center text-sm font-medium text-brand transition hover:text-brand-dark"
           >
             مشاهده همه
           </Link>
