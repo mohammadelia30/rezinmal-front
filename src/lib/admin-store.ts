@@ -381,4 +381,30 @@ export async function runOrderAction(
   await send(ORDER_ACTION_PATHS[action](id), { method: "POST" });
 }
 
+// ==========================================================
+// موجودی انبار
+// ==========================================================
+
+export async function changeStock(
+  id: string,
+  quantity: number,
+  direction: "increase" | "decrease",
+): Promise<void> {
+  const path =
+    direction === "increase"
+      ? API_PATHS.inventoryIncrease(id)
+      : API_PATHS.inventoryDecrease(id);
+  await send(path, { method: "POST", body: { quantity } });
+}
+
+export async function setMinimumStock(
+  id: string,
+  minimum: number,
+): Promise<void> {
+  await send(API_PATHS.inventory(id), {
+    method: "PATCH",
+    body: { minimum_stock: minimum },
+  });
+}
+
 export type { AdminDiscount };

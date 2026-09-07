@@ -13,6 +13,7 @@ import {
   AdminTextarea,
   AdminToggleField,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import type { AdminBrandRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -25,6 +26,9 @@ const EMPTY = { title: "", description: "", is_active: true };
 
 export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
   const router = useRouter();
+  const { query, setQuery, filtered } = useSearchFilter(brands, [
+    "title", "description",
+  ]);
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -100,15 +104,21 @@ export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
         action={<AdminButton onClick={openCreate}>افزودن برند</AdminButton>}
       />
 
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس نام برند"
+      />
+
       {!open ? <AdminError message={error} /> : null}
 
-      {brands.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           هنوز برندی ثبت نشده است.
         </p>
       ) : (
         <AdminTable headers={["نام برند", "توضیحات", "وضعیت", "عملیات"]}>
-          {brands.map((row) => (
+          {filtered.map((row) => (
             <tr
               key={row.id}
               className="border-b border-[#efe6d4] text-right last:border-b-0"

@@ -401,3 +401,84 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
       };
     });
 }
+
+
+// ==========================================================
+// صندوق پیام (مشترک بین مشتری و مدیر)
+// ==========================================================
+
+type ApiNotification = {
+  id: number;
+  title: string;
+  message: string;
+  notification_type?: string;
+  is_read: boolean;
+  created_at?: string;
+};
+
+export type InboxRow = {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export async function getInbox(): Promise<InboxRow[]> {
+  const items = await serverApiFetch<ApiNotification[]>(API_PATHS.notifications);
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    id: String(item.id),
+    title: item.title,
+    message: item.message,
+    type: item.notification_type ?? "",
+    isRead: Boolean(item.is_read),
+    createdAt: formatDate(item.created_at),
+  }));
+}
+
+
+// ==========================================================
+// موجودی انبار
+// ==========================================================
+
+type ApiInventory = {
+  id: number;
+  variant?: number;
+  sku?: string;
+  product_title?: string;
+  stock: number;
+  reserved_stock?: number;
+  available_stock?: number;
+  minimum_stock?: number;
+  is_low_stock?: boolean;
+};
+
+export type InventoryRow = {
+  id: string;
+  productTitle: string;
+  sku: string;
+  stock: number;
+  reserved: number;
+  available: number;
+  minimum: number;
+  isLow: boolean;
+};
+
+export async function getInventories(): Promise<InventoryRow[]> {
+  const items = await serverApiFetch<ApiInventory[]>(API_PATHS.inventories);
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    id: String(item.id),
+    productTitle: item.product_title ?? "—",
+    sku: item.sku ?? "—",
+    stock: item.stock ?? 0,
+    reserved: item.reserved_stock ?? 0,
+    available: item.available_stock ?? 0,
+    minimum: item.minimum_stock ?? 0,
+    isLow: Boolean(item.is_low_stock),
+  }));
+}

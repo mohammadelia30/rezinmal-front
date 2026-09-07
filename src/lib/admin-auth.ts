@@ -51,6 +51,12 @@ export const adminNavItems: {
   permission: AdminPermission;
 }[] = [
   { href: "/admin", label: "داشبورد", exact: true, permission: "dashboard" },
+  {
+    href: "/admin/inbox",
+    label: "صندوق پیام",
+    exact: false,
+    permission: "dashboard",
+  },
   { href: "/admin/orders", label: "سفارش‌ها", exact: false, permission: "orders" },
   {
     href: "/admin/invoices",
@@ -61,6 +67,12 @@ export const adminNavItems: {
   {
     href: "/admin/products",
     label: "محصولات",
+    exact: false,
+    permission: "products",
+  },
+  {
+    href: "/admin/inventory",
+    label: "موجودی",
     exact: false,
     permission: "products",
   },

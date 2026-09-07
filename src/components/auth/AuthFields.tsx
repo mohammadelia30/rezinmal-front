@@ -16,7 +16,7 @@ type FieldProps = {
   onChange: (value: string) => void;
   error?: string;
   placeholder?: string;
-  type?: "text" | "tel";
+  type?: "text" | "tel" | "password";
   inputMode?: "text" | "tel" | "numeric";
   autoComplete?: string;
   maxLength?: number;

@@ -14,6 +14,7 @@ import {
   AdminTextarea,
   AdminToggleField,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import type { AdminCategoryRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -37,6 +38,9 @@ export function AdminCategoriesPage({
   categories: AdminCategoryRow[];
 }) {
   const router = useRouter();
+  const { query, setQuery, filtered } = useSearchFilter(categories, [
+    "title", "parentTitle",
+  ]);
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -121,15 +125,21 @@ export function AdminCategoriesPage({
         action={<AdminButton onClick={openCreate}>افزودن دسته‌بندی</AdminButton>}
       />
 
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس عنوان دسته‌بندی"
+      />
+
       {!open ? <AdminError message={error} /> : null}
 
-      {categories.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           هنوز دسته‌بندی‌ای ثبت نشده است.
         </p>
       ) : (
         <AdminTable headers={["عنوان", "والد", "ترتیب", "وضعیت", "عملیات"]}>
-          {categories.map((row) => (
+          {filtered.map((row) => (
             <tr
               key={row.id}
               className="border-b border-[#efe6d4] text-right last:border-b-0"

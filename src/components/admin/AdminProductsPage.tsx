@@ -15,6 +15,7 @@ import {
   AdminTextarea,
   AdminToggleField,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import type {
   AdminBrandRow,
   AdminCategoryRow,
@@ -59,11 +60,17 @@ export function AdminProductsPage({
   brands: AdminBrandRow[];
 }) {
   const router = useRouter();
+  const { query, setQuery, filtered } = useSearchFilter(products, [
+    "title", "sku",
+  ]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<AdminProductDetail | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  // تصویر به شناسهٔ محصول نیاز دارد که هنگام ساخت هنوز وجود ندارد،
+  // پس انتخاب‌ها اینجا می‌مانند و بلافاصله بعد از ساخت آپلود می‌شوند.
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -90,6 +97,7 @@ export function AdminProductsPage({
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
+    setPendingImages([]);
     setCreating(true);
     setError("");
   };
@@ -114,6 +122,7 @@ export function AdminProductsPage({
   const closeForm = () => {
     setCreating(false);
     setEditing(null);
+    setPendingImages([]);
     setError("");
   };
 
@@ -146,10 +155,14 @@ export function AdminProductsPage({
     }
 
     const done = await run(async () => {
-      await createProduct(toInput(), {
+      const productId = await createProduct(toInput(), {
         sku: form.sku.trim() || `SKU-${Date.now()}`,
         price,
       });
+
+      for (const [index, file] of pendingImages.entries()) {
+        await uploadProductImage(String(productId), file, index === 0);
+      }
     });
     if (done) closeForm();
   };
@@ -314,34 +327,75 @@ export function AdminProductsPage({
         />
       </div>
 
-      {mode === "edit" && editing ? (
-        <div className="rounded-xl border border-[#efe6d4] p-3">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <AdminButton
-              variant="ghost"
-              disabled={busy}
-              onClick={() => fileInput.current?.click()}
-            >
-              افزودن تصویر
-            </AdminButton>
-            <span className="text-sm font-medium text-foreground">تصاویر</span>
-          </div>
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) handleUpload(file);
-              event.target.value = "";
-            }}
-          />
-          {editing.images.length === 0 ? (
-            <p className="text-xs text-muted">تصویری ثبت نشده است.</p>
+      <div className="rounded-xl border border-[#efe6d4] p-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <AdminButton
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => fileInput.current?.click()}
+          >
+            افزودن تصویر
+          </AdminButton>
+          <span className="text-sm font-medium text-foreground">تصاویر</span>
+        </div>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          multiple={mode === "create"}
+          className="hidden"
+          onChange={(event) => {
+            const files = Array.from(event.target.files ?? []);
+            if (files.length) {
+              if (mode === "create") {
+                setPendingImages((current) => [...current, ...files]);
+              } else {
+                handleUpload(files[0]);
+              }
+            }
+            event.target.value = "";
+          }}
+        />
+
+        {mode === "create" ? (
+          pendingImages.length === 0 ? (
+            <p className="text-xs text-muted">
+              می‌توانید همین حالا تصویر انتخاب کنید؛ بعد از ذخیرهٔ محصول
+              آپلود می‌شوند.
+            </p>
           ) : (
-            <div className="flex flex-wrap justify-end gap-2">
-              {editing.images.map((image) => (
+            <ul className="space-y-1 text-right">
+              {pendingImages.map((file, index) => (
+                <li
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-[#fbf9f1] px-3 py-1.5 text-xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingImages((current) =>
+                        current.filter((_, i) => i !== index),
+                      )
+                    }
+                    className="text-[#9b3d3d]"
+                    aria-label="حذف"
+                  >
+                    ✕
+                  </button>
+                  <span className="truncate">
+                    {file.name}
+                    {index === 0 ? " (تصویر اصلی)" : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : editing && editing.images.length === 0 ? (
+          <p className="text-xs text-muted">تصویری ثبت نشده است.</p>
+        ) : editing ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {editing.images.map((image) => (
                 <div key={image.id} className="relative">
                   <div className="relative size-16 overflow-hidden rounded-lg bg-brand-mist">
                     <Image
@@ -367,11 +421,10 @@ export function AdminProductsPage({
                     ✕
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null}
+            ))}
+          </div>
+        ) : null}
+      </div>
 
       <div className="flex justify-end gap-2">
         <AdminButton variant="ghost" onClick={closeForm} disabled={busy}>
@@ -392,15 +445,21 @@ export function AdminProductsPage({
         action={<AdminButton onClick={openCreate}>افزودن محصول</AdminButton>}
       />
 
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس نام محصول یا کد کالا"
+      />
+
       {!creating && !editing ? <AdminError message={error} /> : null}
 
-      {products.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           هنوز محصولی ثبت نشده است. با دکمهٔ «افزودن محصول» شروع کنید.
         </p>
       ) : (
         <AdminTable minWidth={720} headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
-          {products.map((product) => (
+          {filtered.map((product) => (
             <tr
               key={product.id}
               className="border-b border-[#efe6d4] text-right last:border-b-0"

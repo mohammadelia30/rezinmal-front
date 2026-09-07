@@ -5,10 +5,22 @@ import { useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell, AuthSwitchLink } from "@/components/auth/AuthShell";
 import { isValidPhone, normalizePhone, saveLoginPhone } from "@/lib/auth-flow";
+import { mergeGuestCartIntoUser } from "@/lib/cart";
 
+type Mode = "password" | "otp";
+
+/**
+ * ورود کاربر.
+ *
+ * دو راه دارد: رمز عبور برای کسی که قبلاً ثبت‌نام کرده (بدون معطلی برای
+ * پیامک) و کد یک‌بارمصرف برای وقتی رمز را فراموش کرده یا هنوز رمز
+ * تعریف نکرده است.
+ */
 export function LoginForm() {
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("password");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,11 +33,38 @@ export function LoginForm() {
       return;
     }
 
+    if (mode === "password" && !password) {
+      setError("رمز عبور را وارد کنید.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      // کد واقعاً از بک‌اند درخواست می‌شود؛ قبلاً این مرحله ساختگی بود.
+      if (mode === "password") {
+        const response = await fetch("/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ phone_number: normalized, password }),
+        });
+
+        const data = (await response.json().catch(() => null)) as {
+          detail?: string;
+        } | null;
+
+        if (!response.ok) {
+          setError(data?.detail ?? "شماره موبایل یا رمز عبور نادرست است.");
+          return;
+        }
+
+        mergeGuestCartIntoUser(normalized);
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
       const response = await fetch("/auth/otp/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,7 +93,11 @@ export function LoginForm() {
   return (
     <AuthShell
       title="ورود به حساب کاربری"
-      subtitle="برای ورود، شماره موبایل خود را وارد کنید."
+      subtitle={
+        mode === "password"
+          ? "با شماره موبایل و رمز عبور وارد شوید."
+          : "کد تایید به شماره شما پیامک می‌شود."
+      }
       footer={
         <AuthSwitchLink
           prompt="حساب کاربری ندارید؟"
@@ -72,7 +115,7 @@ export function LoginForm() {
             setPhone(value);
             setError("");
           }}
-          error={error}
+          error={mode === "password" ? "" : error}
           placeholder="۰۹۱۲۳۴۵۶۷۸۹"
           type="tel"
           inputMode="tel"
@@ -80,9 +123,43 @@ export function LoginForm() {
           maxLength={11}
         />
 
+        {mode === "password" ? (
+          <AuthField
+            id="login-password"
+            label="رمز عبور"
+            value={password}
+            onChange={(value) => {
+              setPassword(value);
+              setError("");
+            }}
+            error={error}
+            placeholder="••••••••"
+            type="password"
+            autoComplete="current-password"
+          />
+        ) : null}
+
         <AuthSubmitButton disabled={loading}>
-          {loading ? "در حال ارسال کد..." : "دریافت کد تایید"}
+          {loading
+            ? "لطفاً صبر کنید..."
+            : mode === "password"
+              ? "ورود"
+              : "دریافت کد تایید"}
         </AuthSubmitButton>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "password" ? "otp" : "password");
+            setError("");
+            setPassword("");
+          }}
+          className="w-full text-center text-sm font-medium text-brand transition hover:text-brand-dark"
+        >
+          {mode === "password"
+            ? "ورود با کد یک‌بارمصرف"
+            : "ورود با رمز عبور"}
+        </button>
       </form>
     </AuthShell>
   );

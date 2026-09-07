@@ -12,10 +12,14 @@ import {
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import { API_PATHS } from "@/lib/api/config";
 import { formatProductPrice } from "@/lib/price";
 
 export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
+  const { query, setQuery, filtered } = useSearchFilter(invoices, [
+    "number", "orderCode", "customer",
+  ]);
   const [selected, setSelected] = useState<AdminInvoice | null>(null);
 
   return (
@@ -23,6 +27,12 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
       <AdminPageHeader
         title="فاکتورها"
         description="مشاهده فاکتورهای صادرشده و وضعیت پرداخت"
+      />
+
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس شماره فاکتور یا نام مشتری"
       />
 
       <AdminTable
@@ -36,7 +46,7 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
           "عملیات",
         ]}
       >
-        {invoices.map((invoice) => (
+        {filtered.map((invoice) => (
           <tr
             key={invoice.id}
             className="border-b border-[#efe6d4] text-right last:border-b-0"

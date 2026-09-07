@@ -14,6 +14,7 @@ import {
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import {
   AdminActionError,
   runOrderAction,
@@ -52,6 +53,9 @@ const ACTIONS: {
 
 export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
   const router = useRouter();
+  const { query, setQuery, filtered } = useSearchFilter(orders, [
+    "code", "customer", "phone", "date",
+  ]);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -81,9 +85,15 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
         description="مدیریت فروش و وضعیت سفارش‌های فروشگاه"
       />
 
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس کد سفارش، نام مشتری یا شماره تلفن"
+      />
+
       <AdminError message={error} />
 
-      {orders.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           هنوز سفارشی ثبت نشده است.
         </p>
@@ -99,7 +109,7 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
             "عملیات",
           ]}
         >
-          {orders.map((order) => {
+          {filtered.map((order) => {
             const busy = busyId === order.id;
             const actions = ACTIONS.filter((action) =>
               action.showFor.includes(order.status),

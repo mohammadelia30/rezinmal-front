@@ -70,4 +70,10 @@ export const API_PATHS = {
   orderDeliveredToPost: (id: string | number) =>
     `/api/orders/orders/${id}/delivered-to-post/`,
   orderPrint: (id: string | number) => `/api/orders/orders/${id}/print/`,
+  inventories: "/api/inventory/inventories/",
+  inventoryIncrease: (id: string | number) =>
+    `/api/inventory/inventories/${id}/increase/`,
+  inventoryDecrease: (id: string | number) =>
+    `/api/inventory/inventories/${id}/decrease/`,
+  inventory: (id: string | number) => `/api/inventory/inventories/${id}/`,
 } as const;

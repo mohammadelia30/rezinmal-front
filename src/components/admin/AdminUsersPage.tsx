@@ -9,6 +9,7 @@ import {
   AdminPageHeader,
   AdminTable,
 } from "@/components/admin/AdminUI";
+import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import type { AdminRoleRow, AdminUserRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -32,6 +33,9 @@ export function AdminUsersPage({
   roles: AdminRoleRow[];
 }) {
   const router = useRouter();
+  const { query, setQuery, filtered } = useSearchFilter(users, [
+    "firstName", "lastName", "phone",
+  ]);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -59,9 +63,15 @@ export function AdminUsersPage({
         description="لیست مشتریان ثبت‌نام‌شده و سطح دسترسی آن‌ها"
       />
 
+      <AdminSearch
+        value={query}
+        onChange={setQuery}
+        placeholder="جست‌وجو بر اساس نام یا شماره تلفن"
+      />
+
       <AdminError message={error} />
 
-      {users.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           هنوز کاربری ثبت‌نام نکرده است.
         </p>
@@ -78,7 +88,7 @@ export function AdminUsersPage({
             "عملیات",
           ]}
         >
-          {users.map((user) => {
+          {filtered.map((user) => {
             const fullName =
               `${user.firstName} ${user.lastName}`.trim() || "—";
             const busy = busyId === user.id;
