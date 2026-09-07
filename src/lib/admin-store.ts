@@ -45,21 +45,52 @@ export type CouponInput = {
   value: number;
   maxUses: number;
   expiresAt: string;
+  /** هدف: خالی یعنی روی کل سبد */
+  categoryId: string;
+  productId: string;
+  levelId: string;
 };
 
-export async function createCoupon(input: CouponInput): Promise<void> {
-  await send(API_PATHS.coupons, {
+function couponBody(input: CouponInput) {
+  return {
+    title: input.code,
+    code: input.code,
+    discount_type: input.type,
+    value: input.value,
+    usage_limit: input.maxUses,
+    expires_at: input.expiresAt || null,
+    category: input.categoryId ? Number(input.categoryId) : null,
+    product: input.productId ? Number(input.productId) : null,
+  };
+}
+
+/**
+ * تخصیص کوپن به یک سطح باشگاه.
+ *
+ * در بک‌اند این یک رکورد جداگانه (CouponAssignment) است، نه فیلدی روی
+ * خود کوپن؛ پس بعد از ساخت یا ویرایش کوپن جداگانه ثبت می‌شود.
+ */
+async function syncLevelAssignment(
+  couponId: number | string,
+  levelId: string,
+): Promise<void> {
+  if (!levelId) return;
+  await send(API_PATHS.couponAssignments, {
     method: "POST",
     body: {
-      title: input.code,
-      code: input.code,
-      discount_type: input.type,
-      value: input.value,
-      usage_limit: input.maxUses,
-      expires_at: input.expiresAt || null,
-      is_active: true,
+      coupon: Number(couponId),
+      assignment_type: "level",
+      level: Number(levelId),
     },
   });
+}
+
+export async function createCoupon(input: CouponInput): Promise<void> {
+  const created = await send<{ id: number }>(API_PATHS.coupons, {
+    method: "POST",
+    body: { ...couponBody(input), is_active: true },
+  });
+  await syncLevelAssignment(created.id, input.levelId);
 }
 
 export async function setCouponActive(
@@ -78,15 +109,9 @@ export async function updateCoupon(
 ): Promise<void> {
   await send(API_PATHS.coupon(id), {
     method: "PATCH",
-    body: {
-      title: input.code,
-      code: input.code,
-      discount_type: input.type,
-      value: input.value,
-      usage_limit: input.maxUses,
-      expires_at: input.expiresAt || null,
-    },
+    body: couponBody(input),
   });
+  await syncLevelAssignment(id, input.levelId);
 }
 
 export async function renameRole(id: string, name: string): Promise<void> {

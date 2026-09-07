@@ -8,6 +8,7 @@ import {
   AdminCard,
   AdminEmpty,
   AdminPageHeader,
+  AdminSelect,
   AdminTable,
 } from "@/components/admin/AdminUI";
 import {
@@ -21,8 +22,14 @@ import { formatProductPrice } from "@/lib/price";
 
 export function AdminDiscountsPage({
   discounts,
+  categories,
+  products,
+  levels,
 }: {
   discounts: AdminDiscount[];
+  categories: { id: string; title: string }[];
+  products: { id: string; title: string }[];
+  levels: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -34,6 +41,9 @@ export function AdminDiscountsPage({
   const [value, setValue] = useState("");
   const [maxUses, setMaxUses] = useState("100");
   const [expiresAt, setExpiresAt] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [productId, setProductId] = useState("");
+  const [levelId, setLevelId] = useState("");
   const [error, setError] = useState("");
 
   const refresh = () => startTransition(() => router.refresh());
@@ -68,6 +78,9 @@ export function AdminDiscountsPage({
         value: numericValue,
         maxUses: numericMax,
         expiresAt: expiresAt.trim(),
+        categoryId,
+        productId,
+        levelId,
       };
       if (editingId) {
         await updateCoupon(editingId, payload);
@@ -90,6 +103,9 @@ export function AdminDiscountsPage({
     setValue("");
     setMaxUses("100");
     setExpiresAt("");
+    setCategoryId("");
+    setProductId("");
+    setLevelId("");
     setError("");
   };
 
@@ -193,8 +209,48 @@ export function AdminDiscountsPage({
                 placeholder="۱۴۰۴/۰۶/۳۰"
               />
             </div>
+            <div className="text-right sm:col-span-2">
+              <p className="mb-2 text-sm font-medium text-foreground">
+                این تخفیف روی چه چیزی اعمال شود؟
+              </p>
+              <p className="mb-3 text-xs text-muted">
+                اگر هیچ‌کدام را انتخاب نکنید، روی کل سبد خرید اعمال می‌شود.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <AdminSelect
+                  label="دسته‌بندی"
+                  value={categoryId}
+                  onChange={setCategoryId}
+                  placeholder="—"
+                  options={categories.map((item) => ({
+                    value: item.id,
+                    label: item.title,
+                  }))}
+                />
+                <AdminSelect
+                  label="محصول"
+                  value={productId}
+                  onChange={setProductId}
+                  placeholder="—"
+                  options={products.map((item) => ({
+                    value: item.id,
+                    label: item.title,
+                  }))}
+                />
+                <AdminSelect
+                  label="سطح باشگاه مشتریان"
+                  value={levelId}
+                  onChange={setLevelId}
+                  placeholder="—"
+                  options={levels.map((item) => ({
+                    value: item.id,
+                    label: item.name,
+                  }))}
+                />
+              </div>
+            </div>
             {error ? (
-              <p className="text-right text-xs text-red-500 sm:col-span-2">{error}</p>
+              <p className="text-right text-xs text-[#9b3d3d] sm:col-span-2">{error}</p>
             ) : null}
             <div className="sm:col-span-2">
               <button
@@ -265,6 +321,9 @@ export function AdminDiscountsPage({
                       setValue(String(item.value));
                       setMaxUses(String(item.maxUses));
                       setExpiresAt("");
+                      setCategoryId(item.categoryId);
+                      setProductId(item.productId);
+                      setLevelId(item.levelId);
                       setShowForm(true);
                       setError("");
                     }}

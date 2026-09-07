@@ -76,4 +76,10 @@ export const API_PATHS = {
   inventoryDecrease: (id: string | number) =>
     `/api/inventory/inventories/${id}/decrease/`,
   inventory: (id: string | number) => `/api/inventory/inventories/${id}/`,
+  clubLevels: "/api/customers/levels/",
+  clubMembers: "/api/customers/members/",
+  couponAssignments: "/api/discounts/coupon-assignments/",
+  couponAssignment: (id: string | number) =>
+    `/api/discounts/coupon-assignments/${id}/`,
+  ordersPrintList: "/api/orders/orders/print-list/",
 } as const;

@@ -165,15 +165,38 @@ type ApiCoupon = {
   code: string;
   discount_type: string;
   value: number;
+  category?: number | null;
+  product?: number | null;
   starts_at?: string | null;
   expires_at?: string | null;
   usage_limit?: number | null;
   is_active?: boolean;
 };
 
+type ApiCouponAssignment = {
+  id: number;
+  coupon: number;
+  assignment_type: string;
+  user?: number | null;
+  level?: number | null;
+};
+
 export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
   const coupons = await serverApiFetch<ApiCoupon[]>(API_PATHS.coupons);
   if (!Array.isArray(coupons)) return [];
+
+  const assignments = await serverApiFetch<ApiCouponAssignment[]>(
+    API_PATHS.couponAssignments,
+  );
+
+  const levelByCoupon = new Map<number, number>();
+  if (Array.isArray(assignments)) {
+    for (const item of assignments) {
+      if (item.assignment_type === "level" && item.level) {
+        levelByCoupon.set(item.coupon, item.level);
+      }
+    }
+  }
 
   return coupons.map((coupon) => ({
     id: String(coupon.id),
@@ -184,6 +207,11 @@ export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
     used: 0,
     expiresAt: formatDate(coupon.expires_at),
     active: coupon.is_active !== false,
+    categoryId: coupon.category ? String(coupon.category) : "",
+    productId: coupon.product ? String(coupon.product) : "",
+    levelId: levelByCoupon.has(coupon.id)
+      ? String(levelByCoupon.get(coupon.id))
+      : "",
   }));
 }
 
@@ -481,4 +509,74 @@ export async function getInventories(): Promise<InventoryRow[]> {
     minimum: item.minimum_stock ?? 0,
     isLow: Boolean(item.is_low_stock),
   }));
+}
+
+
+// ==========================================================
+// باشگاه مشتریان
+// ==========================================================
+
+export type ClubLevelRow = {
+  id: string;
+  name: string;
+  levelId: string;
+  levelType: string;
+  priority: number;
+  minAmount: number;
+  minCount: number;
+  isActive: boolean;
+  membersCount: number;
+};
+
+export async function getClubLevels(): Promise<ClubLevelRow[]> {
+  const items = await serverApiFetch<Record<string, unknown>[]>(
+    API_PATHS.clubLevels,
+  );
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    id: String(item.id),
+    name: String(item.name ?? ""),
+    levelId: String(item.level_id ?? ""),
+    levelType: String(item.level_type ?? ""),
+    priority: Number(item.priority ?? 0),
+    minAmount: Number(item.min_purchase_amount ?? 0),
+    minCount: Number(item.min_purchase_count ?? 0),
+    isActive: item.is_active !== false,
+    membersCount: Number(item.members_count ?? 0),
+  }));
+}
+
+export type ClubMemberRow = {
+  userId: string;
+  fullName: string;
+  phone: string;
+  levelName: string;
+  levelType: string;
+  byAdmin: boolean;
+  since: string;
+  totalAmount: number;
+  totalCount: number;
+};
+
+export async function getClubMembers(): Promise<ClubMemberRow[]> {
+  const items = await serverApiFetch<Record<string, unknown>[]>(
+    API_PATHS.clubMembers,
+  );
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => {
+    const name = `${item.first_name ?? ""} ${item.last_name ?? ""}`.trim();
+    return {
+      userId: String(item.user_id ?? ""),
+      fullName: name || "—",
+      phone: String(item.phone_number ?? ""),
+      levelName: String(item.level_name ?? "—"),
+      levelType: String(item.level_type ?? ""),
+      byAdmin: Boolean(item.assigned_by_admin),
+      since: formatDate(item.started_at as string | undefined),
+      totalAmount: Number(item.total_purchase_amount ?? 0),
+      totalCount: Number(item.total_purchase_count ?? 0),
+    };
+  });
 }

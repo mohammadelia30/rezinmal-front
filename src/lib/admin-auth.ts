@@ -96,6 +96,12 @@ export const adminNavItems: {
   },
   { href: "/admin/users", label: "کاربران", exact: false, permission: "users" },
   {
+    href: "/admin/club",
+    label: "باشگاه مشتریان",
+    exact: false,
+    permission: "users",
+  },
+  {
     href: "/admin/roles",
     label: "نقش‌ها و دسترسی‌ها",
     exact: false,

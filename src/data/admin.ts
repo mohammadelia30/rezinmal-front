@@ -78,6 +78,10 @@ export type AdminDiscount = {
   used: number;
   expiresAt: string;
   active: boolean;
+  /** هدف تخفیف: دسته‌بندی، محصول یا سطح باشگاه مشتریان */
+  categoryId: string;
+  productId: string;
+  levelId: string;
 };
 
 export type AdminSettings = {

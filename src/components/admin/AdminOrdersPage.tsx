@@ -83,6 +83,18 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
       <AdminPageHeader
         title="سفارش‌ها"
         description="مدیریت فروش و وضعیت سفارش‌های فروشگاه"
+        action={
+          orders.length > 0 ? (
+            <a
+              href={API_PATHS.ordersPrintList}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-dark"
+            >
+              چاپ لیست سفارش‌ها
+            </a>
+          ) : undefined
+        }
       />
 
       <AdminSearch
