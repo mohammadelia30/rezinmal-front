@@ -201,7 +201,7 @@ export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
   return coupons.map((coupon) => ({
     id: String(coupon.id),
     code: coupon.code,
-    type: coupon.discount_type === "fixed" ? "fixed" : "percent",
+    type: coupon.discount_type === "fixed" ? "fixed" : "percentage",
     value: coupon.value ?? 0,
     maxUses: coupon.usage_limit ?? 0,
     used: 0,

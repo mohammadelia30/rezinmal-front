@@ -17,7 +17,8 @@ export type AdminPermission =
   | "roles"
   | "settings";
 
-export type DiscountType = "percent" | "fixed";
+// مقادیر باید دقیقاً با DiscountType در بک‌اند یکی باشند
+export type DiscountType = "percentage" | "fixed";
 
 export type AdminOrder = {
   id: string;

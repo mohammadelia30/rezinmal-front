@@ -37,7 +37,7 @@ export function AdminDiscountsPage({
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [type, setType] = useState<DiscountType>("percent");
+  const [type, setType] = useState<DiscountType>("percentage");
   const [value, setValue] = useState("");
   const [maxUses, setMaxUses] = useState("100");
   const [expiresAt, setExpiresAt] = useState("");
@@ -62,7 +62,7 @@ export function AdminDiscountsPage({
       setError("مقدار تخفیف معتبر نیست.");
       return;
     }
-    if (type === "percent" && numericValue > 100) {
+    if (type === "percentage" && numericValue > 100) {
       setError("درصد تخفیف نمی‌تواند بیشتر از ۱۰۰ باشد.");
       return;
     }
@@ -173,20 +173,20 @@ export function AdminDiscountsPage({
                 onChange={(e) => setType(e.target.value as DiscountType)}
                 className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none focus:border-brand"
               >
-                <option value="percent">درصدی</option>
+                <option value="percentage">درصدی</option>
                 <option value="fixed">مبلغ ثابت</option>
               </select>
             </div>
             <div className="text-right">
               <label className="mb-1.5 block text-sm font-medium">
-                {type === "percent" ? "درصد" : "مبلغ (تومان)"}
+                {type === "percentage" ? "درصد" : "مبلغ (تومان)"}
               </label>
               <input
                 type="number"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none focus:border-brand"
-                placeholder={type === "percent" ? "10" : "50000"}
+                placeholder={type === "percentage" ? "10" : "50000"}
                 dir="ltr"
               />
             </div>
@@ -287,10 +287,10 @@ export function AdminDiscountsPage({
                 {item.code}
               </td>
               <td className="px-4 py-3">
-                {item.type === "percent" ? "درصدی" : "مبلغ ثابت"}
+                {item.type === "percentage" ? "درصدی" : "مبلغ ثابت"}
               </td>
               <td className="px-4 py-3 text-brand font-bold">
-                {item.type === "percent"
+                {item.type === "percentage"
                   ? `${item.value.toLocaleString("fa-IR")}٪`
                   : formatProductPrice(item.value)}
               </td>
