@@ -486,6 +486,7 @@ type ApiInventory = {
 
 export type InventoryRow = {
   id: string;
+  variantId: string;
   productTitle: string;
   sku: string;
   stock: number;
@@ -501,6 +502,7 @@ export async function getInventories(): Promise<InventoryRow[]> {
 
   return items.map((item) => ({
     id: String(item.id),
+    variantId: item.variant ? String(item.variant) : "",
     productTitle: item.product_title ?? "—",
     sku: item.sku ?? "—",
     stock: item.stock ?? 0,
@@ -579,4 +581,39 @@ export async function getClubMembers(): Promise<ClubMemberRow[]> {
       totalCount: Number(item.total_purchase_count ?? 0),
     };
   });
+}
+
+
+/**
+ * همهٔ واریانت‌های موجود، برای انتخاب هنگام ثبت موجودی.
+ *
+ * اندپوینت واریانت‌ها محصولِ هر واریانت را برنمی‌گرداند، پس از جزئیات
+ * محصولات ساخته می‌شود تا برچسب قابل فهمی داشته باشیم.
+ */
+export type VariantOption = {
+  id: string;
+  label: string;
+};
+
+export async function getVariantOptions(): Promise<VariantOption[]> {
+  const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
+  if (!Array.isArray(list)) return [];
+
+  const details = await Promise.all(
+    list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
+  );
+
+  const options: VariantOption[] = [];
+  for (const detail of details) {
+    if (!detail) continue;
+    for (const variant of detail.variants ?? []) {
+      options.push({
+        id: String(variant.id),
+        label: variant.sku
+          ? `${detail.title} — ${variant.sku}`
+          : detail.title,
+      });
+    }
+  }
+  return options;
 }

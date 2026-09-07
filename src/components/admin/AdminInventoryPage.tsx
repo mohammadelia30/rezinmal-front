@@ -6,14 +6,18 @@ import {
   AdminBadge,
   AdminButton,
   AdminError,
+  AdminField,
+  AdminModal,
   AdminPageHeader,
+  AdminSelect,
   AdminTable,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
-import type { InventoryRow } from "@/lib/api/admin";
+import type { InventoryRow, VariantOption } from "@/lib/api/admin";
 import {
   AdminActionError,
   changeStock,
+  createInventory,
   setMinimumStock,
 } from "@/lib/admin-store";
 
@@ -24,10 +28,53 @@ import {
  * هشدار موجودی کم درست محاسبه شوند؛ نوشتن مستقیم عدد موجودی این
  * منطق را دور می‌زد.
  */
-export function AdminInventoryPage({ rows }: { rows: InventoryRow[] }) {
+export function AdminInventoryPage({
+  rows,
+  variants,
+}: {
+  rows: InventoryRow[];
+  variants: VariantOption[];
+}) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ variantId: "", stock: "0", minimum: "0" });
+
+  // فقط واریانت‌هایی که هنوز رکورد موجودی ندارند؛ هر واریانت بیش از
+  // یک موجودی نمی‌تواند داشته باشد (رابطه یک‌به‌یک است).
+  const withInventory = new Set(rows.map((row) => row.variantId));
+  const available = variants.filter((item) => !withInventory.has(item.id));
+
+  const handleCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!form.variantId) {
+      setError("محصول را انتخاب کنید.");
+      return;
+    }
+
+    setError("");
+    setBusyId("new");
+    try {
+      await createInventory(
+        form.variantId,
+        Number(form.stock) || 0,
+        Number(form.minimum) || 0,
+      );
+      setOpen(false);
+      setForm({ variantId: "", stock: "0", minimum: "0" });
+      router.refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof AdminActionError
+          ? actionError.message
+          : "ثبت موجودی ناموفق بود.",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
   const { query, setQuery, filtered } = useSearchFilter(rows, [
     "productTitle",
     "sku",
@@ -68,6 +115,19 @@ export function AdminInventoryPage({ rows }: { rows: InventoryRow[] }) {
             ? `${lowCount.toLocaleString("fa-IR")} قلم زیر حد نصاب موجودی است`
             : "موجودی و حد نصاب هر کالا"
         }
+        action={
+          available.length > 0 ? (
+            <AdminButton
+              onClick={() => {
+                setForm({ variantId: "", stock: "0", minimum: "0" });
+                setError("");
+                setOpen(true);
+              }}
+            >
+              ثبت موجودی محصول
+            </AdminButton>
+          ) : undefined
+        }
       />
 
       <AdminError message={error} />
@@ -81,7 +141,9 @@ export function AdminInventoryPage({ rows }: { rows: InventoryRow[] }) {
       {filtered.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-sm text-muted shadow-[0_4px_20px_rgba(78,42,84,0.06)]">
           {rows.length === 0
-            ? "هنوز موجودی‌ای ثبت نشده است."
+            ? available.length > 0
+              ? "هنوز برای هیچ محصولی موجودی ثبت نشده است. با دکمهٔ «ثبت موجودی محصول» شروع کنید."
+              : "ابتدا یک محصول بسازید تا بتوانید برایش موجودی ثبت کنید."
             : "موردی با این جست‌وجو پیدا نشد."}
         </p>
       ) : (
@@ -176,6 +238,62 @@ export function AdminInventoryPage({ rows }: { rows: InventoryRow[] }) {
           })}
         </AdminTable>
       )}
+
+      {open ? (
+        <AdminModal title="ثبت موجودی محصول" onClose={() => setOpen(false)}>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <AdminError message={error} />
+
+            <AdminSelect
+              label="محصول"
+              value={form.variantId}
+              onChange={(value) => setForm({ ...form, variantId: value })}
+              placeholder="انتخاب کنید"
+              options={available.map((item) => ({
+                value: item.id,
+                label: item.label,
+              }))}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <AdminField
+                label="موجودی اولیه"
+                value={form.stock}
+                onChange={(value) =>
+                  setForm({ ...form, stock: value.replace(/\D/g, "") })
+                }
+                dir="ltr"
+              />
+              <AdminField
+                label="حد نصاب هشدار"
+                value={form.minimum}
+                onChange={(value) =>
+                  setForm({ ...form, minimum: value.replace(/\D/g, "") })
+                }
+                dir="ltr"
+              />
+            </div>
+
+            <p className="text-right text-xs text-muted">
+              وقتی موجودی به حد نصاب برسد، هشدارش در صندوق پیام مدیر ثبت
+              می‌شود.
+            </p>
+
+            <div className="flex justify-end gap-2">
+              <AdminButton
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                disabled={busyId === "new"}
+              >
+                انصراف
+              </AdminButton>
+              <AdminButton type="submit" disabled={busyId === "new"}>
+                {busyId === "new" ? "در حال ثبت..." : "ثبت"}
+              </AdminButton>
+            </div>
+          </form>
+        </AdminModal>
+      ) : null}
     </div>
   );
 }

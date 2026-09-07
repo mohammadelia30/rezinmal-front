@@ -422,6 +422,22 @@ export async function changeStock(
   await send(path, { method: "POST", body: { quantity } });
 }
 
+export async function createInventory(
+  variantId: string,
+  stock: number,
+  minimum: number,
+): Promise<void> {
+  await send(API_PATHS.inventories, {
+    method: "POST",
+    body: {
+      variant: Number(variantId),
+      stock,
+      minimum_stock: minimum,
+      is_active: true,
+    },
+  });
+}
+
 export async function setMinimumStock(
   id: string,
   minimum: number,

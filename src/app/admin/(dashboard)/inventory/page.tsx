@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminInventoryPage } from "@/components/admin/AdminInventoryPage";
-import { getInventories } from "@/lib/api/admin";
+import { getInventories, getVariantOptions } from "@/lib/api/admin";
 import { requirePanelPermission } from "@/lib/auth/guard";
 
 export const metadata: Metadata = {
@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requirePanelPermission("panel_products");
-  const rows = await getInventories();
-  return <AdminInventoryPage rows={rows} />;
+  const [rows, variants] = await Promise.all([
+    getInventories(),
+    getVariantOptions(),
+  ]);
+  return <AdminInventoryPage rows={rows} variants={variants} />;
 }
