@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { CartLink } from "@/components/CartLink";
+import { SiteSearch } from "@/components/SiteSearch";
 import { Container } from "@/components/Container";
 import { MenuIcon, UserIcon } from "@/components/icons";
 import { navLinks } from "@/data/home";
@@ -19,6 +20,7 @@ type HeaderProps = {
 };
 
 export function Header({ links = navLinks }: HeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -56,6 +58,25 @@ export function Header({ links = navLinks }: HeaderProps) {
           />
 
           <div className="flex items-center gap-2.5 text-[#33203c]">
+            <button
+              type="button"
+              aria-label={searchOpen ? "بستن جست‌وجو" : "جست‌وجو"}
+              aria-expanded={searchOpen}
+              onClick={() => setSearchOpen((value) => !value)}
+              className="p-1"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden
+                className="size-[18px]"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+              </svg>
+            </button>
             <CartLink mobile />
             <Link href="/dashboard" aria-label="حساب کاربری" className="p-1">
               <Image
@@ -96,6 +117,12 @@ export function Header({ links = navLinks }: HeaderProps) {
       <Container className="relative hidden h-16 items-center justify-between md:flex md:h-20">
         <BrandLogo className="relative z-10" />
 
+        {searchOpen ? (
+          <div className="border-t border-[#efe6d4] px-4 py-3">
+            <SiteSearch autoFocus onDone={() => setSearchOpen(false)} />
+          </div>
+        ) : null}
+
         <nav
           className="absolute inset-x-0 flex items-center justify-center gap-4 px-24 lg:gap-8 xl:gap-10"
           aria-label="منوی اصلی"
@@ -112,6 +139,7 @@ export function Header({ links = navLinks }: HeaderProps) {
         </nav>
 
         <div className="relative z-10 flex items-center gap-3 text-foreground">
+          <SiteSearch className="hidden w-44 lg:block xl:w-56" />
           <CartLink />
           <Link
             href="/dashboard"
