@@ -52,16 +52,26 @@ function forwardRequestHeaders(request: NextRequest): Headers {
   return headers;
 }
 
+/** وضعیت‌هایی که طبق استاندارد Fetch نباید بدنه داشته باشند */
+const BODYLESS_STATUSES = new Set([204, 205, 304]);
+
 function buildResponse(
   upstream: Response,
   body: ArrayBuffer,
-): NextResponse<ArrayBuffer> {
+): NextResponse {
   const headers = new Headers();
   upstream.headers.forEach((value, key) => {
     if (!STRIPPED_RESPONSE_HEADERS.has(key.toLowerCase())) {
       headers.set(key, value);
     }
   });
+
+  // دادن بدنه به این وضعیت‌ها باعث خطای سازندهٔ Response می‌شود؛
+  // نتیجه‌اش این بود که حذف روی بک‌اند انجام می‌شد ولی پنل خطا نشان می‌داد.
+  if (BODYLESS_STATUSES.has(upstream.status)) {
+    return new NextResponse(null, { status: upstream.status, headers });
+  }
+
   return new NextResponse(body, { status: upstream.status, headers });
 }
 

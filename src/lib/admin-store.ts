@@ -432,4 +432,51 @@ export async function setMinimumStock(
   });
 }
 
+// ==========================================================
+// سطوح باشگاه مشتریان
+// ==========================================================
+
+export type ClubLevelInput = {
+  name: string;
+  levelType: string;
+  priority: number;
+  minAmount: number;
+  minCount: number;
+  isActive: boolean;
+};
+
+function levelBody(input: ClubLevelInput) {
+  return {
+    name: input.name,
+    level_type: input.levelType,
+    priority: input.priority,
+    min_purchase_amount: input.minAmount,
+    min_purchase_count: input.minCount,
+    is_active: input.isActive,
+  };
+}
+
+export async function createClubLevel(
+  input: ClubLevelInput,
+): Promise<void> {
+  await send(API_PATHS.clubLevels, {
+    method: "POST",
+    body: levelBody(input),
+  });
+}
+
+export async function updateClubLevel(
+  id: string,
+  input: ClubLevelInput,
+): Promise<void> {
+  await send(API_PATHS.clubLevel(id), {
+    method: "PATCH",
+    body: levelBody(input),
+  });
+}
+
+export async function deleteClubLevel(id: string): Promise<void> {
+  await send(API_PATHS.clubLevel(id), { method: "DELETE" });
+}
+
 export type { AdminDiscount };

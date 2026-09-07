@@ -77,6 +77,7 @@ export const API_PATHS = {
     `/api/inventory/inventories/${id}/decrease/`,
   inventory: (id: string | number) => `/api/inventory/inventories/${id}/`,
   clubLevels: "/api/customers/levels/",
+  clubLevel: (id: string | number) => `/api/customers/levels/${id}/`,
   clubMembers: "/api/customers/members/",
   couponAssignments: "/api/discounts/coupon-assignments/",
   couponAssignment: (id: string | number) =>
