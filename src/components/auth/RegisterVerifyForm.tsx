@@ -42,7 +42,7 @@ export function RegisterVerifyForm() {
     event.preventDefault();
 
     if (!isValidOtp(code)) {
-      setError("کد تایید باید ۵ رقم باشد.");
+      setError("کد تایید باید ۶ رقم باشد.");
       return;
     }
 

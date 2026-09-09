@@ -68,7 +68,7 @@ export function OtpField({
   value,
   onChange,
   error,
-  length = 5,
+  length = 6,
 }: OtpFieldProps) {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 

@@ -72,8 +72,11 @@ export function clearRegisterData() {
   sessionStorage.removeItem(REGISTER_DATA_KEY);
 }
 
+/** بک‌اند کد شش‌رقمی می‌سازد؛ این عدد باید با آن یکی بماند. */
+export const OTP_LENGTH = 6;
+
 export function isValidOtp(code: string) {
-  return /^\d{5}$/.test(code);
+  return new RegExp(`^\\d{${OTP_LENGTH}}$`).test(code);
 }
 
 export function saveUserSession(user: UserSession) {
