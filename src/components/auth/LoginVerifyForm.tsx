@@ -13,6 +13,7 @@ import {
   saveUserSession,
 } from "@/lib/auth-flow";
 import { mergeGuestCartIntoUser } from "@/lib/cart";
+import { mergeGuestFavoritesIntoUser } from "@/lib/favorites";
 
 export function LoginVerifyForm() {
   const router = useRouter();
@@ -62,6 +63,7 @@ export function LoginVerifyForm() {
       clearLoginPhone();
       saveUserSession({ phone });
       mergeGuestCartIntoUser(phone);
+      mergeGuestFavoritesIntoUser(phone);
       router.push("/dashboard");
       router.refresh();
     } catch {

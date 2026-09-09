@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { products } from "@/data/home";
 import { readUserSession } from "@/lib/auth-flow";
+import { fetchProductsByIds } from "@/lib/product-lookup";
 import { formatProductPrice, parseProductPrice } from "@/lib/price";
 
 export type CartProduct = {
@@ -47,17 +47,24 @@ function notifyCartChange() {
   window.dispatchEvent(new CustomEvent("cart:change"));
 }
 
-function hydrateItems(items: StoredCartItem[]): CartProduct[] {
-  return items.flatMap((item) => {
-    const product = products.find((entry) => entry.id === item.id);
-    if (!product || item.quantity < 1) return [];
+/**
+ * تبدیل شناسه‌های ذخیره‌شده به محصول واقعی.
+ *
+ * اطلاعات محصول از API گرفته می‌شود؛ در حافظهٔ مرورگر فقط شناسه و
+ * تعداد نگه داشته می‌شود تا قیمت و نام همیشه به‌روز باشند.
+ */
+async function hydrateItems(
+  items: StoredCartItem[],
+): Promise<CartProduct[]> {
+  const valid = items.filter((item) => item.quantity > 0);
+  if (valid.length === 0) return [];
 
-    return [
-      {
-        ...product,
-        quantity: item.quantity,
-      },
-    ];
+  const products = await fetchProductsByIds(valid.map((item) => item.id));
+
+  return valid.flatMap((item) => {
+    const product = products.get(item.id);
+    if (!product) return [];
+    return [{ ...product, quantity: item.quantity }];
   });
 }
 
@@ -158,7 +165,7 @@ export function useCart() {
     const session = readUserSession();
     const userPhone = session?.phone ?? null;
     setPhone(userPhone);
-    setItems(hydrateItems(readStoredItems(userPhone)));
+    void hydrateItems(readStoredItems(userPhone)).then(setItems);
   }, []);
 
   useEffect(() => {

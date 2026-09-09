@@ -13,6 +13,7 @@ import {
   saveUserSession,
 } from "@/lib/auth-flow";
 import { mergeGuestCartIntoUser } from "@/lib/cart";
+import { mergeGuestFavoritesIntoUser } from "@/lib/favorites";
 
 export function RegisterVerifyForm() {
   const router = useRouter();
@@ -87,8 +88,11 @@ export function RegisterVerifyForm() {
           lastName: registerData.lastName,
         });
         mergeGuestCartIntoUser(registerData.phone);
+        mergeGuestFavoritesIntoUser(registerData.phone);
       }
-      router.push("/dashboard");
+      // تازه‌واردها هنوز رمز ندارند؛ بدون این مرحله فقط با کد
+      // پیامکی می‌توانند وارد شوند.
+      router.push("/register/password");
       router.refresh();
     } catch {
       setError("ارتباط با سرور برقرار نشد.");

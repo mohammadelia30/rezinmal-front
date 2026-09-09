@@ -4,8 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell, AuthSwitchLink } from "@/components/auth/AuthShell";
-import { isValidPhone, normalizePhone, saveLoginPhone } from "@/lib/auth-flow";
+import {
+  isValidPhone,
+  normalizePhone,
+  saveLoginPhone,
+  saveUserSession,
+} from "@/lib/auth-flow";
 import { mergeGuestCartIntoUser } from "@/lib/cart";
+import { mergeGuestFavoritesIntoUser } from "@/lib/favorites";
 
 type Mode = "password" | "otp";
 
@@ -59,7 +65,11 @@ export function LoginForm() {
           return;
         }
 
+        // بدون این، سبد خرید و علاقه‌مندی‌ها با کلید شمارهٔ کاربر نوشته
+        // می‌شوند ولی با کلید مهمان خوانده می‌شوند و خالی به نظر می‌رسند.
+        saveUserSession({ phone: normalized });
         mergeGuestCartIntoUser(normalized);
+        mergeGuestFavoritesIntoUser(normalized);
         router.push("/dashboard");
         router.refresh();
         return;
