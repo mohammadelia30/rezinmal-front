@@ -55,6 +55,8 @@ export const API_PATHS = {
   searchProducts: "/api/search/products/",
   adminUsers: "/api/accounts/users/",
   adminUser: (id: string | number) => `/api/accounts/users/${id}/`,
+  adminUserSetPassword: (id: string | number) =>
+    `/api/accounts/users/${id}/set-password/`,
   adminRoles: "/api/accounts/roles/",
   adminRole: (id: string | number) => `/api/accounts/roles/${id}/`,
   panelPermissions: "/api/accounts/panel-permissions/",

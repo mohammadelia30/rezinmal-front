@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -152,6 +153,12 @@ export function AdminUsersPage({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap justify-end gap-1.5">
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="inline-flex min-h-9 items-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition hover:bg-[#f6f1e7]"
+                    >
+                      پروفایل
+                    </Link>
                     <AdminButton
                       variant="ghost"
                       size="sm"

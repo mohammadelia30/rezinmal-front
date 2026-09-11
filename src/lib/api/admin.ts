@@ -617,3 +617,47 @@ export async function getVariantOptions(): Promise<VariantOption[]> {
   }
   return options;
 }
+
+
+// ==========================================================
+// جزئیات کاربر برای پنل
+// ==========================================================
+
+export type AdminUserDetail = AdminUserRow & {
+  birthDate: string;
+  gender: string;
+  isCompleted: boolean;
+  hasPassword: boolean;
+  lastLogin: string;
+};
+
+export async function getAdminUser(
+  id: string,
+): Promise<AdminUserDetail | null> {
+  const item = await serverApiFetch<Record<string, unknown>>(
+    API_PATHS.adminUser(id),
+  );
+  if (!item) return null;
+
+  return {
+    id: String(item.id),
+    firstName: String(item.first_name ?? ""),
+    lastName: String(item.last_name ?? ""),
+    phone: String(item.phone_number ?? ""),
+    ordersCount: Number(item.orders_count ?? 0),
+    totalSpent: Number(item.total_spent ?? 0),
+    isActive: Boolean(item.is_active),
+    isStaff: Boolean(item.is_staff),
+    roleIds: ((item.role_ids as number[]) ?? []).map(String),
+    joinedAt: formatDate(item.created_at as string | undefined),
+    birthDate: item.birth_date
+      ? formatDate(item.birth_date as string)
+      : "—",
+    gender: String(item.gender ?? "") || "—",
+    isCompleted: Boolean(item.is_completed),
+    hasPassword: Boolean(item.has_password),
+    lastLogin: item.last_login
+      ? formatDate(item.last_login as string)
+      : "—",
+  };
+}

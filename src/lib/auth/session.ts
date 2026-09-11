@@ -10,6 +10,7 @@ export type SessionUser = {
   is_staff: boolean;
   is_superuser: boolean;
   panel_permissions?: string[];
+  has_password?: boolean;
 };
 
 /** آدرس بک‌اند برای فراخوانی سمت سرور (داخل شبکهٔ داکر) */

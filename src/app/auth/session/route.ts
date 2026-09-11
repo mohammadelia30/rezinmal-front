@@ -23,6 +23,7 @@ export async function GET() {
       isSuperuser: Boolean(user.is_superuser),
       isCompleted: Boolean(user.is_completed),
       panelPermissions: user.panel_permissions ?? [],
+      hasPassword: Boolean(user.has_password),
     },
   });
 }

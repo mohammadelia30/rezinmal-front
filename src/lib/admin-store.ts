@@ -495,4 +495,21 @@ export async function deleteClubLevel(id: string): Promise<void> {
   await send(API_PATHS.clubLevel(id), { method: "DELETE" });
 }
 
+/**
+ * تغییر رمز یک کاربر توسط مدیر.
+ *
+ * رمز فعلی لازم نیست چون مدیر آن را نمی‌داند؛ بک‌اند دسترسی را بررسی
+ * می‌کند و توکن‌های قبلی آن کاربر را باطل می‌کند.
+ */
+export async function setUserPassword(
+  id: string,
+  password: string,
+  confirm: string,
+): Promise<void> {
+  await send(API_PATHS.adminUserSetPassword(id), {
+    method: "POST",
+    body: { password, password_confirm: confirm },
+  });
+}
+
 export type { AdminDiscount };
