@@ -1,10 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell, AuthSwitchLink } from "@/components/auth/AuthShell";
-import { isValidPhone, normalizePhone, saveRegisterData } from "@/lib/auth-flow";
+import {
+  isValidPhone,
+  normalizePhone,
+  rememberAuthRedirect,
+  saveRegisterData,
+} from "@/lib/auth-flow";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -12,6 +17,10 @@ export function RegisterForm() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    rememberAuthRedirect();
+  }, []);
   const [errors, setErrors] = useState<{
     firstName?: string;
     lastName?: string;

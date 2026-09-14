@@ -119,3 +119,36 @@ export function getUserDisplayName(user: UserSession) {
   const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
   return fullName || "کاربر عزیز";
 }
+
+const AUTH_REDIRECT_KEY = "auth:redirect";
+
+/**
+ * فقط مسیر داخلی سایت پذیرفته می‌شود؛ وگرنه لینکی مثل
+ * /login?next=https://evil.example کاربر را بعد از ورود به سایت دیگری
+ * می‌فرستاد. «//» هم در مرورگر آدرس بیرونی حساب می‌شود.
+ */
+function isSafeRedirect(path: string | null): path is string {
+  return Boolean(
+    path && path.startsWith("/") && !path.startsWith("//") && !path.includes("\\"),
+  );
+}
+
+/**
+ * مقصد بعد از ورود را از ?next= برمی‌دارد و نگه می‌دارد.
+ *
+ * ورود چند صفحه است (شماره، کد، تعریف رمز)؛ پارامتر آدرس در این مسیر از
+ * دست می‌رود، پس در sessionStorage می‌ماند تا مرحلهٔ آخر.
+ */
+export function rememberAuthRedirect() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (isSafeRedirect(next)) {
+    sessionStorage.setItem(AUTH_REDIRECT_KEY, next);
+  }
+}
+
+/** مقصد ذخیره‌شده را برمی‌گرداند و پاک می‌کند. */
+export function takeAuthRedirect(fallback = "/dashboard"): string {
+  const stored = sessionStorage.getItem(AUTH_REDIRECT_KEY);
+  sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+  return isSafeRedirect(stored) ? stored : fallback;
+}

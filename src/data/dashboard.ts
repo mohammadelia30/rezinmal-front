@@ -1,4 +1,9 @@
-export type OrderStatus = "processing" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus =
+  | "awaiting_payment"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
 
 export type DashboardOrder = {
   id: string;
@@ -16,6 +21,7 @@ export type DashboardOrder = {
 };
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
+  awaiting_payment: "در انتظار پرداخت",
   processing: "در حال پردازش",
   shipped: "ارسال شده",
   delivered: "تحویل شده",
@@ -23,6 +29,7 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
 };
 
 export const orderStatusStyles: Record<OrderStatus, string> = {
+  awaiting_payment: "bg-[#fde8e8] text-[#9b3d3d]",
   processing: "bg-[#fff3d6] text-[#8a6a1f]",
   shipped: "bg-brand-mist text-brand",
   delivered: "bg-[#e4f5ea] text-[#2f6b45]",

@@ -55,6 +55,26 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
   },
 
+  /**
+   * آدرس بازگشت زرین‌پال در .env سرور ممکن است هنوز اندپوینت JSON بک‌اند
+   * باشد؛ آن‌وقت مشتری بعد از پرداخت یک صفحهٔ JSON خام می‌دید. به صفحهٔ
+   * نتیجهٔ پرداخت هدایت می‌شود و Authority و Status خودکار منتقل می‌شوند.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/api/payments/zarinpal/callback",
+        destination: "/payment/callback",
+        permanent: false,
+      },
+      {
+        source: "/api/payments/zarinpal/callback/",
+        destination: "/payment/callback",
+        permanent: false,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { takeAuthRedirect } from "@/lib/auth-flow";
 
 /**
  * تعریف رمز عبور بعد از تأیید شمارهٔ موبایل.
@@ -65,7 +66,7 @@ export function SetPasswordForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push(takeAuthRedirect());
       router.refresh();
     } catch {
       setError("ارتباط با سرور برقرار نشد.");
@@ -113,7 +114,7 @@ export function SetPasswordForm() {
 
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push(takeAuthRedirect())}
           className="w-full text-center text-sm font-medium text-muted transition hover:text-brand"
         >
           فعلاً رد شو

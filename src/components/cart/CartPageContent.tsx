@@ -2,42 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { Container } from "@/components/Container";
 import { formatProductPrice, parseProductPrice } from "@/lib/price";
 import { useCart } from "@/lib/cart";
 
 export function CartPageContent() {
-  const { items, total, totalLabel, setQuantity, remove, clear } = useCart();
-  const [checkedOut, setCheckedOut] = useState(false);
-
-  const handleCheckout = () => {
-    setCheckedOut(true);
-    clear();
-  };
-
-  if (checkedOut) {
-    return (
-      <Container className="py-10 sm:py-14">
-        <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 text-center shadow-[0_8px_30px_rgba(78,42,84,0.08)]">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-[#e4f5ea] text-[#2f6b45]">
-            ✓
-          </div>
-          <h1 className="text-xl font-bold text-foreground">سفارش ثبت شد</h1>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            سفارش شما با موفقیت ثبت شد. به‌زودی با شما تماس می‌گیریم.
-          </p>
-          <Link
-            href="/products"
-            className="mt-6 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-dark"
-          >
-            ادامه خرید
-          </Link>
-        </div>
-      </Container>
-    );
-  }
-
+  const { items, totalLabel, setQuantity, remove } = useCart();
   if (items.length === 0) {
     return (
       <Container className="py-10 sm:py-14">
@@ -170,13 +140,13 @@ export function CartPageContent() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCheckout}
-            className="mt-6 w-full rounded-xl bg-brand py-3 text-sm font-bold text-white transition hover:bg-brand-dark"
+          {/* مهمان در /checkout به ورود هدایت می‌شود و بعد به همین مسیر برمی‌گردد */}
+          <Link
+            href="/checkout"
+            className="mt-6 block w-full rounded-xl bg-brand py-3 text-center text-sm font-bold text-white transition hover:bg-brand-dark"
           >
-            ثبت سفارش
-          </button>
+            ادامه و پرداخت
+          </Link>
 
           <Link
             href="/products"

@@ -160,12 +160,17 @@ export function getCartTotal(items: CartProduct[]) {
 export function useCart() {
   const [phone, setPhone] = useState<string | null>(null);
   const [items, setItems] = useState<CartProduct[]>([]);
+  // تا اطلاعات محصولات نرسیده، سبد خالی از سبدِ هنوز-بارگذاری‌نشده قابل تشخیص نیست
+  const [ready, setReady] = useState(false);
 
   const refresh = useCallback(() => {
     const session = readUserSession();
     const userPhone = session?.phone ?? null;
     setPhone(userPhone);
-    void hydrateItems(readStoredItems(userPhone)).then(setItems);
+    void hydrateItems(readStoredItems(userPhone)).then((next) => {
+      setItems(next);
+      setReady(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -216,6 +221,7 @@ export function useCart() {
   return {
     phone,
     items,
+    ready,
     count,
     total,
     totalLabel: formatProductPrice(total),

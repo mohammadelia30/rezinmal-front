@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type AddressRow = {
   id: string;
@@ -63,8 +63,17 @@ function Field({
  * روی اندپوینت آدرس بک‌اند سوار است که از قبل فیلد «عنوان» داشت؛
  * همان چیزی که برای تفکیک خانه و محل کار لازم است.
  */
-export function DashboardAddresses() {
+export function DashboardAddresses({
+  onChange,
+}: {
+  /** برای صفحهٔ تسویه‌حساب که باید فهرست آدرس‌ها را هم‌زمان داشته باشد */
+  onChange?: (rows: AddressRow[]) => void;
+} = {}) {
   const [rows, setRows] = useState<AddressRow[]>([]);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  });
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -80,11 +89,12 @@ export function DashboardAddresses() {
       });
       if (!response.ok) {
         setRows([]);
+        onChangeRef.current?.([]);
         return;
       }
       const data = (await response.json()) as Record<string, unknown>[];
-      setRows(
-        (Array.isArray(data) ? data : []).map((item) => ({
+      const mapped: AddressRow[] = (Array.isArray(data) ? data : []).map(
+        (item) => ({
           id: String(item.id),
           title: String(item.title ?? ""),
           receiverName: String(item.receiver_name ?? ""),
@@ -94,8 +104,10 @@ export function DashboardAddresses() {
           address: String(item.address ?? ""),
           postalCode: String(item.postal_code ?? ""),
           isDefault: Boolean(item.is_default),
-        })),
+        }),
       );
+      setRows(mapped);
+      onChangeRef.current?.(mapped);
     } catch {
       setError("دریافت آدرس‌ها ناموفق بود.");
     } finally {

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PayOrderButton } from "@/components/checkout/PayOrderButton";
 import {
   orderStatusLabels,
   orderStatusStyles,
@@ -73,6 +74,15 @@ export function DashboardOrders({ orders }: { orders: DashboardOrder[] }) {
               </li>
             ))}
           </ul>
+
+          {order.status === "awaiting_payment" ? (
+            <div className="mt-4 flex flex-col gap-3 border-t border-[#efe6d4] pt-4 sm:flex-row-reverse sm:items-center sm:justify-between">
+              <p className="text-right text-sm text-muted">
+                این سفارش هنوز پرداخت نشده است.
+              </p>
+              <PayOrderButton orderId={order.id} label="پرداخت سفارش" />
+            </div>
+          ) : null}
         </article>
       ))}
     </div>

@@ -33,6 +33,7 @@ type ApiOrder = {
 
 function mapStatus(status: string): OrderStatus {
   const normalized = (status ?? "").toLowerCase();
+  if (normalized === "pending_payment") return "awaiting_payment";
   if (normalized.includes("cancel")) return "cancelled";
   if (normalized.includes("deliver")) return "delivered";
   if (normalized.includes("post") || normalized.includes("ship")) {

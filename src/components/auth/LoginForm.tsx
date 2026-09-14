@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell, AuthSwitchLink } from "@/components/auth/AuthShell";
 import {
   isValidPhone,
   normalizePhone,
+  rememberAuthRedirect,
   saveLoginPhone,
   saveUserSession,
+  takeAuthRedirect,
 } from "@/lib/auth-flow";
 import { mergeGuestCartIntoUser } from "@/lib/cart";
 import { mergeGuestFavoritesIntoUser } from "@/lib/favorites";
@@ -29,6 +31,11 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // مثلاً از صفحهٔ تسویه‌حساب با ?next=/checkout آمده است
+  useEffect(() => {
+    rememberAuthRedirect();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -70,7 +77,7 @@ export function LoginForm() {
         saveUserSession({ phone: normalized });
         mergeGuestCartIntoUser(normalized);
         mergeGuestFavoritesIntoUser(normalized);
-        router.push("/dashboard");
+        router.push(takeAuthRedirect());
         router.refresh();
         return;
       }

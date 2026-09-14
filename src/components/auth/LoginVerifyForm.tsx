@@ -11,6 +11,7 @@ import {
   isValidOtp,
   readLoginPhone,
   saveUserSession,
+  takeAuthRedirect,
 } from "@/lib/auth-flow";
 import { mergeGuestCartIntoUser } from "@/lib/cart";
 import { mergeGuestFavoritesIntoUser } from "@/lib/favorites";
@@ -64,7 +65,7 @@ export function LoginVerifyForm() {
       saveUserSession({ phone });
       mergeGuestCartIntoUser(phone);
       mergeGuestFavoritesIntoUser(phone);
-      router.push("/dashboard");
+      router.push(takeAuthRedirect());
       router.refresh();
     } catch {
       setError("ارتباط با سرور برقرار نشد.");
