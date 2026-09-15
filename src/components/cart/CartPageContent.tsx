@@ -136,9 +136,13 @@ export function CartPageContent() {
             </div>
             <div className="flex items-center justify-between font-bold text-foreground">
               <span>{totalLabel}</span>
-              <span>مبلغ قابل پرداخت</span>
+              <span>جمع کالاها</span>
             </div>
           </div>
+
+          <p className="mt-3 text-right text-xs leading-5 text-muted">
+            هزینهٔ ارسال و کد تخفیف در مرحلهٔ بعد محاسبه می‌شود.
+          </p>
 
           {/* مهمان در /checkout به ورود هدایت می‌شود و بعد به همین مسیر برمی‌گردد */}
           <Link

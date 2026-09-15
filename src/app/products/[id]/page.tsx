@@ -82,9 +82,21 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </p>
               </div>
 
-              <p className="text-xl font-bold text-brand sm:text-2xl">
-                {product.price}
-              </p>
+              <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1">
+                <p className="text-xl font-bold text-brand sm:text-2xl">
+                  {product.price}
+                </p>
+                {product.oldPrice ? (
+                  <>
+                    <del className="text-base text-muted sm:text-lg">
+                      {product.oldPrice}
+                    </del>
+                    <span className="rounded-full bg-[#c0392b] px-2.5 py-0.5 text-xs font-bold text-white sm:text-sm">
+                      {product.discountPercent?.toLocaleString("fa-IR")}٪ تخفیف
+                    </span>
+                  </>
+                ) : null}
+              </div>
 
               <p className="text-sm leading-7 text-foreground/80 sm:text-base sm:leading-8">
                 {product.description ||

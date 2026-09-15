@@ -38,6 +38,9 @@ export type ProductVariantDetail = {
   barcode?: string;
   attribute_values?: unknown[];
   price: number;
+  /** قیمت بعد از تخفیف محصول/دسته؛ در نسخه‌های قدیمی بک‌اند نیست */
+  final_price?: number;
+  discount_amount?: number;
   weight?: number | null;
   is_default?: boolean;
   is_active?: boolean;
@@ -121,5 +124,8 @@ export type ProductCardModel = {
   image: string;
   description?: string;
   rawPrice?: number;
+  /** قیمت قبل از تخفیف؛ فقط وقتی محصول تخفیف دارد */
+  oldPrice?: string;
+  discountPercent?: number;
   variantId?: number;
 };

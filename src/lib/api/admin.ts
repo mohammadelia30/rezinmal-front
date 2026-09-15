@@ -1,15 +1,18 @@
 import { API_PATHS } from "@/lib/api/config";
 import { serverApiFetch } from "@/lib/auth/session";
-import type {
-  AdminDiscount,
-  AdminInvoice,
-  AdminOrder,
-  AdminOrderStatus,
-  AdminProduct,
-  InvoiceStatus,
+import {
+  orderStatusLabels,
+  type AdminCoupon,
+  type AdminInvoice,
+  type AdminOrder,
+  type AdminOrderStatus,
+  type AdminProduct,
+  type AdminProductDiscount,
+  type InvoiceStatus,
 } from "@/data/admin";
 import { getPrimaryImage } from "@/lib/api/mappers";
 import { publicMediaUrl } from "@/lib/format";
+import { toDateInput } from "@/lib/tehran-date";
 import type { ProductDetail, ProductList } from "@/lib/api/types";
 
 /**
@@ -58,16 +61,9 @@ export type ReportOverview = {
 
 /** وضعیت‌های بک‌اند را به وضعیت‌های نمایشی فرانت نگاشت می‌کند. */
 function mapOrderStatus(status: string): AdminOrderStatus {
-  const normalized = (status ?? "").toLowerCase();
-  if (normalized.includes("cancel")) return "cancelled";
-  if (normalized.includes("deliver")) return "delivered";
-  if (normalized.includes("post") || normalized.includes("ship")) {
-    return "shipped";
-  }
-  if (normalized.includes("paid") || normalized.includes("confirm")) {
-    return "paid";
-  }
-  return "pending";
+  return (status in orderStatusLabels
+    ? status
+    : "pending_payment") as AdminOrderStatus;
 }
 
 function formatDate(value?: string | null): string {
@@ -165,11 +161,10 @@ type ApiCoupon = {
   code: string;
   discount_type: string;
   value: number;
-  category?: number | null;
-  product?: number | null;
   starts_at?: string | null;
   expires_at?: string | null;
   usage_limit?: number | null;
+  used_count?: number;
   is_active?: boolean;
 };
 
@@ -181,20 +176,22 @@ type ApiCouponAssignment = {
   level?: number | null;
 };
 
-export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
-  const coupons = await serverApiFetch<ApiCoupon[]>(API_PATHS.coupons);
+export async function getAdminCoupons(): Promise<AdminCoupon[]> {
+  const [coupons, assignments] = await Promise.all([
+    serverApiFetch<ApiCoupon[]>(API_PATHS.coupons),
+    serverApiFetch<ApiCouponAssignment[]>(API_PATHS.couponAssignments),
+  ]);
   if (!Array.isArray(coupons)) return [];
 
-  const assignments = await serverApiFetch<ApiCouponAssignment[]>(
-    API_PATHS.couponAssignments,
-  );
-
-  const levelByCoupon = new Map<number, number>();
-  if (Array.isArray(assignments)) {
-    for (const item of assignments) {
-      if (item.assignment_type === "level" && item.level) {
-        levelByCoupon.set(item.coupon, item.level);
-      }
+  const levels = new Map<number, Set<string>>();
+  const users = new Map<number, number>();
+  for (const item of Array.isArray(assignments) ? assignments : []) {
+    if (item.assignment_type === "level" && item.level) {
+      const set = levels.get(item.coupon) ?? new Set<string>();
+      set.add(String(item.level));
+      levels.set(item.coupon, set);
+    } else if (item.assignment_type === "user") {
+      users.set(item.coupon, (users.get(item.coupon) ?? 0) + 1);
     }
   }
 
@@ -203,16 +200,51 @@ export async function getAdminDiscounts(): Promise<AdminDiscount[]> {
     code: coupon.code,
     type: coupon.discount_type === "fixed" ? "fixed" : "percentage",
     value: coupon.value ?? 0,
-    maxUses: coupon.usage_limit ?? 0,
-    used: 0,
-    expiresAt: formatDate(coupon.expires_at),
+    usageLimit: coupon.usage_limit ?? null,
+    used: coupon.used_count ?? 0,
+    startsAt: toDateInput(coupon.starts_at),
+    expiresAt: toDateInput(coupon.expires_at),
     active: coupon.is_active !== false,
-    categoryId: coupon.category ? String(coupon.category) : "",
-    productId: coupon.product ? String(coupon.product) : "",
-    levelId: levelByCoupon.has(coupon.id)
-      ? String(levelByCoupon.get(coupon.id))
-      : "",
+    levelIds: Array.from(levels.get(coupon.id) ?? []),
+    userAssignments: users.get(coupon.id) ?? 0,
   }));
+}
+
+type ApiDiscount = {
+  id: number;
+  discount_type: string;
+  value: number;
+  product?: number | null;
+  category?: number | null;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  is_active?: boolean;
+};
+
+export async function getAdminProductDiscounts(
+  titles: { products: Map<string, string>; categories: Map<string, string> },
+): Promise<AdminProductDiscount[]> {
+  const items = await serverApiFetch<ApiDiscount[]>(API_PATHS.discounts);
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => {
+    const targetKind = item.product ? "product" : "category";
+    const targetId = String(item.product ?? item.category ?? "");
+    return {
+      id: String(item.id),
+      type: item.discount_type === "fixed" ? "fixed" : "percentage",
+      value: item.value ?? 0,
+      targetKind,
+      targetId,
+      targetTitle:
+        (targetKind === "product"
+          ? titles.products.get(targetId)
+          : titles.categories.get(targetId)) ?? "—",
+      startsAt: toDateInput(item.starts_at),
+      expiresAt: toDateInput(item.expires_at),
+      active: item.is_active !== false,
+    };
+  });
 }
 
 
@@ -296,7 +328,8 @@ export type SiteSettingsModel = {
   phone: string;
   email: string;
   address: string;
-  shipping_cost: number;
+  standard_shipping_cost: number;
+  large_shipping_cost: number;
   free_shipping_min: number;
   payment_enabled: boolean;
   maintenance_mode: boolean;

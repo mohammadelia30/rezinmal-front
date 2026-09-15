@@ -3,6 +3,8 @@ import Image from "next/image";
 type CategoryProductCardProps = {
   title: string;
   price: string;
+  oldPrice?: string;
+  discountPercent?: number;
   rating: string;
   image: string;
 };
@@ -10,6 +12,8 @@ type CategoryProductCardProps = {
 export function CategoryProductCard({
   title,
   price,
+  oldPrice,
+  discountPercent,
   rating,
   image,
 }: CategoryProductCardProps) {
@@ -26,6 +30,11 @@ export function CategoryProductCard({
           sizes="(max-width: 1024px) 50vw, 25vw"
           className="object-cover"
         />
+        {discountPercent ? (
+          <span className="absolute start-2 top-2 rounded-full bg-[#c0392b] px-2 py-0.5 text-[10px] font-bold text-white sm:text-xs">
+            {discountPercent.toLocaleString("fa-IR")}٪
+          </span>
+        ) : null}
       </div>
 
       <h3 className="mt-3 line-clamp-2 min-h-[2.5rem] text-right text-xs font-bold leading-5 text-[#3d2246] sm:text-sm">
@@ -37,7 +46,14 @@ export function CategoryProductCard({
           <span>{rating}</span>
           <span className="text-[#f5b400]">★</span>
         </span>
-        <span className="font-semibold text-[#3d2246]">{price}</span>
+        <span className="flex flex-col items-end leading-tight">
+          {oldPrice ? (
+            <del className="text-[10px] text-muted">{oldPrice}</del>
+          ) : null}
+          <span className={`font-semibold ${oldPrice ? "text-[#c0392b]" : "text-[#3d2246]"}`}>
+            {price}
+          </span>
+        </span>
       </div>
 
       <div className="mt-3 flex flex-col gap-1.5 sm:flex-row sm:items-center">

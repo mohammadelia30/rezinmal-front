@@ -71,6 +71,8 @@ export function ProductSearch({ items }: { items: ProductCardModel[] }) {
                 title={product.title}
                 subtitle={product.subtitle}
                 price={product.price}
+                oldPrice={product.oldPrice}
+                discountPercent={product.discountPercent}
                 image={product.image}
               />
             ))}

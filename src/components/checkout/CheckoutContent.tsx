@@ -243,9 +243,18 @@ export function CheckoutContent() {
                   <span>تخفیف</span>
                 </div>
               ) : null}
-              <div className="flex items-center justify-between text-muted">
-                <span>{cart.shipping_cost > 0 ? formatProductPrice(cart.shipping_cost) : "رایگان"}</span>
-                <span>هزینهٔ ارسال</span>
+              <div className="flex items-start justify-between gap-3 text-muted">
+                <span className="shrink-0">
+                  {cart.shipping_cost > 0 ? formatProductPrice(cart.shipping_cost) : "رایگان"}
+                </span>
+                <span className="text-right">
+                  هزینهٔ ارسال
+                  <span className="block text-xs">
+                    {cart.shipping_type === "large"
+                      ? "بستهٔ بزرگ (بیش از ۲ عدد)"
+                      : "بستهٔ استاندارد"}
+                  </span>
+                </span>
               </div>
               <div className="flex items-center justify-between border-t border-[#efe6d4] pt-3 font-bold text-foreground">
                 <span>{formatProductPrice(cart.total_amount)}</span>

@@ -21,6 +21,8 @@ export type ServerCart = {
   product_discount_amount: number;
   discount_amount: number;
   shipping_cost: number;
+  /** بک‌اند از تعداد اقلام تعیین می‌کند: بیش از ۲ عدد = بستهٔ بزرگ */
+  shipping_type?: "standard" | "large";
   total_amount: number;
 };
 
@@ -156,8 +158,8 @@ export function placeOrder(input: {
     {
       method: "POST",
       body: {
+        // نوع ارسال را بک‌اند از تعداد اقلام تعیین می‌کند و از مشتری نمی‌پذیرد
         address_id: Number(input.addressId),
-        shipping_type: "standard",
         ...(input.couponCode ? { coupon_code: input.couponCode } : {}),
       },
     },

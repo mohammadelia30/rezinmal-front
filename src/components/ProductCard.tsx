@@ -8,6 +8,9 @@ type ProductCardProps = {
   title: string;
   subtitle: string;
   price: string;
+  /** قیمت قبل از تخفیف؛ فقط وقتی محصول تخفیف دارد */
+  oldPrice?: string;
+  discountPercent?: number;
   image: string;
 };
 
@@ -16,6 +19,8 @@ export function ProductCard({
   title,
   subtitle,
   price,
+  oldPrice,
+  discountPercent,
   image,
 }: ProductCardProps) {
   const isRemote = image.startsWith("http");
@@ -36,6 +41,11 @@ export function ProductCard({
             className="object-cover transition duration-500 hover:scale-105"
           />
         </Link>
+        {discountPercent ? (
+          <span className="absolute start-2 top-2 z-10 rounded-full bg-[#c0392b] px-2 py-0.5 text-[10px] font-bold text-white md:text-xs">
+            {discountPercent.toLocaleString("fa-IR")}٪
+          </span>
+        ) : null}
         <FavoriteButton
           product={{ id, title, subtitle, price, image }}
           className="absolute end-2 top-2 z-10"
@@ -49,7 +59,14 @@ export function ProductCard({
           </h3>
         </Link>
         <div className="flex items-center justify-between text-[10px] text-[#7a6a80] md:text-xs md:text-muted lg:text-sm">
-          <span>{price}</span>
+          <span className="flex flex-col items-start leading-tight">
+            {oldPrice ? (
+              <del className="text-[9px] text-muted/80 md:text-[11px]">{oldPrice}</del>
+            ) : null}
+            <span className={oldPrice ? "font-bold text-[#c0392b]" : undefined}>
+              {price}
+            </span>
+          </span>
           <span>{subtitle}</span>
         </div>
         <div className="mt-1.5 md:mt-2 md:flex md:items-center md:gap-2">

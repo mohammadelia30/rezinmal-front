@@ -1,7 +1,8 @@
 "use client";
 
 import { API_PATHS } from "@/lib/api/config";
-import type { AdminDiscount, DiscountType } from "@/data/admin";
+import type { AdminOrderStatus, DiscountType } from "@/data/admin";
+import { toEndOfDay, toStartOfDay } from "@/lib/tehran-date";
 
 /**
  * عملیات نوشتنی پنل مدیریت.
@@ -12,6 +13,53 @@ import type { AdminDiscount, DiscountType } from "@/data/admin";
  */
 
 export class AdminActionError extends Error {}
+
+/** پیام‌های انگلیسی بک‌اند که مدیر فروشگاه ممکن است ببیند. */
+const API_MESSAGES: [RegExp, string][] = [
+  [/exactly one target/i, "یک محصول یا یک دسته‌بندی انتخاب کنید (فقط یکی)."],
+  [/percentage .*(exceed|cannot)|value__lte|max_100/i, "درصد تخفیف نمی‌تواند بیشتر از ۱۰۰ باشد."],
+  [/greater than zero/i, "مقدار باید بیشتر از صفر باشد."],
+  [/expiration date must be after/i, "تاریخ پایان باید بعد از تاریخ شروع باشد."],
+  [/coupon with this code already exists|code already exists|unique/i, "این کد تخفیف قبلاً ثبت شده است."],
+  [/code cannot be empty/i, "کد تخفیف را وارد کنید."],
+  [/datetime has wrong format|date has wrong format/i, "تاریخ وارد شده معتبر نیست."],
+  [/free shipping minimum/i, "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ ارسال بیشتر باشد."],
+  [/cannot change order status/i, "این تغییر وضعیت برای این سفارش مجاز نیست."],
+  [/permission/i, "دسترسی لازم برای این کار را ندارید."],
+  [/this field is required/i, "همهٔ فیلدهای لازم را پر کنید."],
+  [/invalid pk|does not exist/i, "مورد انتخاب‌شده دیگر وجود ندارد."],
+];
+
+/**
+ * اولین پیام خطای DRF، به فارسی.
+ *
+ * DRF خطای اعتبارسنجی را به شکل {فیلد: [پیام]} برمی‌گرداند، نه
+ * {detail}؛ قبلاً فقط detail خوانده می‌شد و مدیر برای هر خطای فرم فقط
+ * «انجام عملیات ناموفق بود» می‌دید.
+ */
+function readApiError(data: unknown, status: number): string {
+  const pick = (value: unknown): string | null => {
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return pick(value[0]);
+    if (value && typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      return pick(record.detail) ?? pick(Object.values(record)[0]);
+    }
+    return null;
+  };
+
+  const message = pick(data);
+  if (message) {
+    for (const [pattern, persian] of API_MESSAGES) {
+      if (pattern.test(message)) return persian;
+    }
+    if (/[\u0600-\u06FF]/.test(message)) return message;
+  }
+
+  if (status === 403) return "دسترسی لازم برای این کار را ندارید.";
+  if (status === 404) return "مورد مورد نظر پیدا نشد.";
+  return "انجام عملیات ناموفق بود.";
+}
 
 async function send<T>(
   path: string,
@@ -29,26 +77,26 @@ async function send<T>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const detail =
-      data && typeof data === "object" && "detail" in data
-        ? String((data as { detail: unknown }).detail)
-        : "انجام عملیات ناموفق بود.";
-    throw new AdminActionError(detail);
+    throw new AdminActionError(readApiError(data, response.status));
   }
 
   return data as T;
 }
 
+// ==========================================================
+// کد تخفیف و تخفیف محصول
+// ==========================================================
+
 export type CouponInput = {
   code: string;
   type: DiscountType;
   value: number;
-  maxUses: number;
+  /** null یعنی بدون سقف */
+  usageLimit: number | null;
+  startsAt: string;
   expiresAt: string;
-  /** هدف: خالی یعنی روی کل سبد */
-  categoryId: string;
-  productId: string;
-  levelId: string;
+  /** خالی یعنی همهٔ کاربران */
+  levelIds: string[];
 };
 
 function couponBody(input: CouponInput) {
@@ -57,32 +105,39 @@ function couponBody(input: CouponInput) {
     code: input.code,
     discount_type: input.type,
     value: input.value,
-    usage_limit: input.maxUses,
-    expires_at: input.expiresAt || null,
-    category: input.categoryId ? Number(input.categoryId) : null,
-    product: input.productId ? Number(input.productId) : null,
+    usage_limit: input.usageLimit,
+    starts_at: toStartOfDay(input.startsAt),
+    expires_at: toEndOfDay(input.expiresAt),
+    // کد تخفیف دیگر به محصول یا دسته گره نمی‌خورد؛ آن کار «تخفیف محصول»
+    // است. مقدارهای قدیمی هم پاک می‌شوند تا کد روی کل سبد اعمال شود.
+    category: null,
+    product: null,
   };
 }
 
 /**
- * تخصیص کوپن به یک سطح باشگاه.
+ * کد را به سطح‌های باشگاه اختصاص می‌دهد.
  *
- * در بک‌اند این یک رکورد جداگانه (CouponAssignment) است، نه فیلدی روی
- * خود کوپن؛ پس بعد از ساخت یا ویرایش کوپن جداگانه ثبت می‌شود.
+ * هر تخصیص در بک‌اند یک رکورد جداست و به اعضای فعلی آن سطح کد می‌دهد
+ * (و اعلان می‌فرستد)؛ پس فقط سطح‌هایی که هنوز تخصیص ندارند ثبت می‌شوند،
+ * وگرنه هر ویرایش تخصیص تکراری می‌ساخت.
  */
-async function syncLevelAssignment(
+async function assignLevels(
   couponId: number | string,
-  levelId: string,
+  levelIds: string[],
+  alreadyAssigned: string[] = [],
 ): Promise<void> {
-  if (!levelId) return;
-  await send(API_PATHS.couponAssignments, {
-    method: "POST",
-    body: {
-      coupon: Number(couponId),
-      assignment_type: "level",
-      level: Number(levelId),
-    },
-  });
+  for (const levelId of levelIds) {
+    if (alreadyAssigned.includes(levelId)) continue;
+    await send(API_PATHS.couponAssignments, {
+      method: "POST",
+      body: {
+        coupon: Number(couponId),
+        assignment_type: "level",
+        level: Number(levelId),
+      },
+    });
+  }
 }
 
 export async function createCoupon(input: CouponInput): Promise<void> {
@@ -90,7 +145,19 @@ export async function createCoupon(input: CouponInput): Promise<void> {
     method: "POST",
     body: { ...couponBody(input), is_active: true },
   });
-  await syncLevelAssignment(created.id, input.levelId);
+  await assignLevels(created.id, input.levelIds);
+}
+
+export async function updateCoupon(
+  id: string,
+  input: CouponInput,
+  alreadyAssignedLevels: string[],
+): Promise<void> {
+  await send(API_PATHS.coupon(id), {
+    method: "PATCH",
+    body: couponBody(input),
+  });
+  await assignLevels(id, input.levelIds, alreadyAssignedLevels);
 }
 
 export async function setCouponActive(
@@ -103,24 +170,68 @@ export async function setCouponActive(
   });
 }
 
-export async function updateCoupon(
-  id: string,
-  input: CouponInput,
+export async function deleteCoupon(id: string): Promise<void> {
+  await send(API_PATHS.coupon(id), { method: "DELETE" });
+}
+
+export type ProductDiscountInput = {
+  type: DiscountType;
+  value: number;
+  targetKind: "product" | "category";
+  targetId: string;
+  startsAt: string;
+  expiresAt: string;
+};
+
+function productDiscountBody(input: ProductDiscountInput) {
+  // بک‌اند دقیقاً یک هدف می‌خواهد؛ دیگری باید صریحاً null باشد
+  return {
+    discount_type: input.type,
+    value: input.value,
+    product: input.targetKind === "product" ? Number(input.targetId) : null,
+    category: input.targetKind === "category" ? Number(input.targetId) : null,
+    starts_at: toStartOfDay(input.startsAt),
+    expires_at: toEndOfDay(input.expiresAt),
+  };
+}
+
+export async function createProductDiscount(
+  input: ProductDiscountInput,
 ): Promise<void> {
-  await send(API_PATHS.coupon(id), {
-    method: "PATCH",
-    body: couponBody(input),
+  await send(API_PATHS.discounts, {
+    method: "POST",
+    body: { ...productDiscountBody(input), is_active: true },
   });
-  await syncLevelAssignment(id, input.levelId);
+}
+
+export async function updateProductDiscount(
+  id: string,
+  input: ProductDiscountInput,
+): Promise<void> {
+  await send(API_PATHS.discount(id), {
+    method: "PATCH",
+    body: productDiscountBody(input),
+  });
+}
+
+export async function setProductDiscountActive(
+  id: string,
+  active: boolean,
+): Promise<void> {
+  await send(API_PATHS.discount(id), {
+    method: "PATCH",
+    body: { is_active: active },
+  });
+}
+
+export async function deleteProductDiscount(id: string): Promise<void> {
+  await send(API_PATHS.discount(id), { method: "DELETE" });
 }
 
 export async function renameRole(id: string, name: string): Promise<void> {
   await send(API_PATHS.adminRole(id), { method: "PATCH", body: { name } });
 }
 
-export async function deleteCoupon(id: string): Promise<void> {
-  await send(API_PATHS.coupon(id), { method: "DELETE" });
-}
 
 export async function setProductActive(
   id: string,
@@ -188,7 +299,8 @@ export type SiteSettingsInput = {
   phone: string;
   email: string;
   address: string;
-  shipping_cost: number;
+  standard_shipping_cost: number;
+  large_shipping_cost: number;
   free_shipping_min: number;
   payment_enabled: boolean;
   maintenance_mode: boolean;
@@ -384,26 +496,29 @@ export async function deleteProductImage(imageId: string): Promise<void> {
 // سفارش‌ها
 // ==========================================================
 
-export type OrderAction =
-  | "confirm"
-  | "cancel"
-  | "preparing"
-  | "readyForPost"
-  | "deliveredToPost";
-
-const ORDER_ACTION_PATHS: Record<OrderAction, (id: string) => string> = {
-  confirm: API_PATHS.orderConfirm,
-  cancel: API_PATHS.orderCancel,
-  preparing: API_PATHS.orderPreparing,
-  readyForPost: API_PATHS.orderReadyForPost,
-  deliveredToPost: API_PATHS.orderDeliveredToPost,
+export type BulkStatusResult = {
+  changed: { id: number; order_code: string }[];
+  skipped: {
+    id: number;
+    order_code: string | null;
+    reason: "not_found" | "unchanged" | "invalid_transition" | "error";
+  }[];
 };
 
-export async function runOrderAction(
-  id: string,
-  action: OrderAction,
-): Promise<void> {
-  await send(ORDER_ACTION_PATHS[action](id), { method: "POST" });
+/**
+ * تغییر وضعیت یک یا چند سفارش با یک درخواست.
+ *
+ * بک‌اند هر سفارش را جدا بررسی می‌کند؛ سفارشی که این تغییر برایش مجاز
+ * نیست رد می‌شود و بقیه انجام می‌شوند.
+ */
+export async function changeOrdersStatus(
+  ids: string[],
+  status: AdminOrderStatus,
+): Promise<BulkStatusResult> {
+  return send<BulkStatusResult>(API_PATHS.ordersBulkStatus, {
+    method: "POST",
+    body: { ids: ids.map(Number), status },
+  });
 }
 
 // ==========================================================
@@ -512,4 +627,3 @@ export async function setUserPassword(
   });
 }
 
-export type { AdminDiscount };

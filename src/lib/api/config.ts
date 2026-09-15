@@ -85,6 +85,7 @@ export const API_PATHS = {
   couponAssignment: (id: string | number) =>
     `/api/discounts/coupon-assignments/${id}/`,
   ordersPrintList: "/api/orders/orders/print-list/",
+  ordersBulkStatus: "/api/orders/orders/bulk-change-status/",
   payOrder: (id: string | number) => `/api/payments/orders/${id}/pay/`,
   zarinpalCallback: "/api/payments/zarinpal/callback/",
 } as const;

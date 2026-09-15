@@ -1,5 +1,6 @@
 "use client";
 
+import { getVariantPricing } from "@/lib/api/mappers";
 import type { ProductCardModel } from "@/lib/api/types";
 
 /**
@@ -13,7 +14,12 @@ import type { ProductCardModel } from "@/lib/api/types";
 
 const PLACEHOLDER_IMAGE = "/images/product-1.jpg";
 
-type ApiVariant = { price?: number; is_default?: boolean };
+type ApiVariant = {
+  price: number;
+  final_price?: number;
+  is_default?: boolean;
+  is_active?: boolean;
+};
 type ApiImage = { image?: string | null; is_primary?: boolean };
 
 type ApiProduct = {
@@ -23,11 +29,6 @@ type ApiProduct = {
   variants?: ApiVariant[];
   images?: ApiImage[];
 };
-
-function formatPrice(value?: number): string {
-  if (value === undefined || value === null || Number.isNaN(value)) return "—";
-  return `${new Intl.NumberFormat("fa-IR").format(value)} تومان`;
-}
 
 function toCard(product: ApiProduct): ProductCardModel {
   const variant =
@@ -43,9 +44,9 @@ function toCard(product: ApiProduct): ProductCardModel {
     id: String(product.id),
     title: product.title,
     subtitle: brand || "رزین‌مال",
-    price: formatPrice(variant?.price),
+    // قیمت بعد از تخفیف؛ سبد خرید با همین جمع می‌زند
+    ...getVariantPricing(variant),
     image: image?.image ? toPublicPath(image.image) : PLACEHOLDER_IMAGE,
-    rawPrice: variant?.price,
   };
 }
 

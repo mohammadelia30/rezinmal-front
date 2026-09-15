@@ -27,14 +27,15 @@ export function AdminOverview({
   overview: ReportOverview | null;
   orders: AdminOrder[];
 }) {
+  // پرداخت‌شده‌هایی که فروشگاه هنوز باید آماده و ارسالشان کند
   const pendingOrders = orders.filter(
-    (order) => order.status === "pending",
+    (order) => order.status === "confirmed" || order.status === "preparing",
   ).length;
   const shippingOrders = orders.filter(
-    (order) => order.status === "shipped",
+    (order) => order.status === "ready_for_post",
   ).length;
   const deliveredOrders = orders.filter(
-    (order) => order.status === "delivered",
+    (order) => order.status === "delivered_to_post",
   ).length;
 
   const yearSales = overview?.summary.sales ?? 0;
@@ -82,7 +83,7 @@ export function AdminOverview({
         <AdminStatCard
           label="در حال ارسال"
           value={shippingOrders.toLocaleString("fa-IR")}
-          hint="تحویل‌شده به پست"
+          hint="آمادهٔ تحویل به پست"
         />
       </div>
 

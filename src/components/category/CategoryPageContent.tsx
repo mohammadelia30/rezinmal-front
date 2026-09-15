@@ -99,6 +99,8 @@ export function CategoryPageContent({
                   <CategoryProductCard
                     title={product.title}
                     price={product.price}
+                    oldPrice={product.oldPrice}
+                    discountPercent={product.discountPercent}
                     rating="۴.۸"
                     image={product.image}
                   />

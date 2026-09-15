@@ -38,6 +38,29 @@ export function getDefaultVariant(
   );
 }
 
+/**
+ * قیمت نمایشی یک نسخه: قیمت نهایی، و اگر تخفیف دارد قیمت قبلی و درصد.
+ *
+ * درصد برای تخفیف مبلغ ثابت هم محاسبه می‌شود تا برچسب همیشه یکسان باشد.
+ */
+export function getVariantPricing(
+  variant: Pick<ProductVariantDetail, "price" | "final_price"> | undefined,
+): Pick<ProductCardModel, "price" | "rawPrice" | "oldPrice" | "discountPercent"> {
+  const base = variant?.price;
+  const final = variant?.final_price ?? base;
+  const discounted =
+    base !== undefined && final !== undefined && final < base && base > 0;
+
+  return {
+    price: formatPrice(final),
+    rawPrice: final,
+    oldPrice: discounted ? formatPrice(base) : undefined,
+    discountPercent: discounted
+      ? Math.max(1, Math.round(((base - final) / base) * 100))
+      : undefined,
+  };
+}
+
 export function mapProductDetailToCard(
   product: ProductDetail,
 ): ProductCardModel {
@@ -46,10 +69,9 @@ export function mapProductDetailToCard(
     id: String(product.id),
     title: product.title,
     subtitle: getBrandTitle(product.brand) || "رزینمال",
-    price: formatPrice(variant?.price),
+    ...getVariantPricing(variant),
     image: getPrimaryImage(product.images),
     description: product.short_description || product.description || undefined,
-    rawPrice: variant?.price,
     variantId: variant?.id,
   };
 }

@@ -1,9 +1,27 @@
+/**
+ * دقیقاً همان وضعیت‌های Order.Status در بک‌اند.
+ *
+ * قبلاً به پنج وضعیت کلی خلاصه می‌شدند؛ مثلاً «آماده‌سازی» و «در انتظار
+ * پرداخت» هر دو «در انتظار» نشان داده می‌شدند و دکمه‌هایی ظاهر می‌شد
+ * که بک‌اند برای آن سفارش رد می‌کرد.
+ */
 export type AdminOrderStatus =
-  | "pending"
-  | "paid"
-  | "shipped"
-  | "delivered"
+  | "pending_payment"
+  | "confirmed"
+  | "preparing"
+  | "ready_for_post"
+  | "delivered_to_post"
   | "cancelled";
+
+/** تغییر وضعیت‌های مجاز؛ همان OrderService.ALLOWED_STATUS_TRANSITIONS */
+export const orderStatusTransitions: Record<AdminOrderStatus, AdminOrderStatus[]> = {
+  pending_payment: ["confirmed", "cancelled"],
+  confirmed: ["preparing", "cancelled"],
+  preparing: ["ready_for_post", "cancelled"],
+  ready_for_post: ["delivered_to_post"],
+  delivered_to_post: [],
+  cancelled: [],
+};
 
 export type InvoiceStatus = "paid" | "unpaid" | "refunded";
 
@@ -70,19 +88,41 @@ export type AdminRole = {
   permissions: AdminPermission[];
 };
 
-export type AdminDiscount = {
+/**
+ * کد تخفیف (Coupon): مشتری هنگام خرید کد را وارد می‌کند.
+ * مخاطبش همهٔ کاربران است یا اعضای سطح‌های مشخصی از باشگاه مشتریان.
+ */
+export type AdminCoupon = {
   id: string;
   code: string;
   type: DiscountType;
   value: number;
-  maxUses: number;
+  /** null یعنی بدون سقف */
+  usageLimit: number | null;
   used: number;
+  /** yyyy-mm-dd به وقت تهران، برای فرم؛ خالی یعنی بدون محدودیت */
+  startsAt: string;
   expiresAt: string;
   active: boolean;
-  /** هدف تخفیف: دسته‌بندی، محصول یا سطح باشگاه مشتریان */
-  categoryId: string;
-  productId: string;
-  levelId: string;
+  levelIds: string[];
+  /** تعداد تخصیص‌های مستقیم به کاربر (از پنل جنگو) */
+  userAssignments: number;
+};
+
+/**
+ * تخفیف محصول (Discount): کد ندارد و خودکار روی قیمت یک محصول یا همهٔ
+ * محصولات یک دسته اعمال می‌شود.
+ */
+export type AdminProductDiscount = {
+  id: string;
+  type: DiscountType;
+  value: number;
+  targetKind: "product" | "category";
+  targetId: string;
+  targetTitle: string;
+  startsAt: string;
+  expiresAt: string;
+  active: boolean;
 };
 
 export type AdminSettings = {
@@ -97,18 +137,20 @@ export type AdminSettings = {
 };
 
 export const orderStatusLabels: Record<AdminOrderStatus, string> = {
-  pending: "در انتظار",
-  paid: "پرداخت‌شده",
-  shipped: "ارسال‌شده",
-  delivered: "تحویل‌شده",
-  cancelled: "لغو‌شده",
+  pending_payment: "در انتظار پرداخت",
+  confirmed: "تأییدشده",
+  preparing: "در حال آماده‌سازی",
+  ready_for_post: "آمادهٔ ارسال",
+  delivered_to_post: "تحویل به پست",
+  cancelled: "لغوشده",
 };
 
 export const orderStatusStyles: Record<AdminOrderStatus, string> = {
-  pending: "bg-[#fff3d6] text-[#8a6a1f]",
-  paid: "bg-brand-mist text-brand",
-  shipped: "bg-[#e0eefc] text-[#1f5a8a]",
-  delivered: "bg-[#e4f5ea] text-[#2f6b45]",
+  pending_payment: "bg-[#f1ede4] text-[#6b6358]",
+  confirmed: "bg-[#fff3d6] text-[#8a6a1f]",
+  preparing: "bg-brand-mist text-brand",
+  ready_for_post: "bg-[#e0eefc] text-[#1f5a8a]",
+  delivered_to_post: "bg-[#e4f5ea] text-[#2f6b45]",
   cancelled: "bg-[#fde8e8] text-[#9b3d3d]",
 };
 

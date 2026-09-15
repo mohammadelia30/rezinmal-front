@@ -45,6 +45,8 @@ export function FeaturedProducts({
               title={product.title}
               subtitle={product.subtitle}
               price={product.price}
+              oldPrice={product.oldPrice}
+              discountPercent={product.discountPercent}
               image={product.image}
             />
           ))}
@@ -64,6 +66,8 @@ export function FeaturedProducts({
               title={product.title}
               subtitle={product.subtitle}
               price={product.price}
+              oldPrice={product.oldPrice}
+              discountPercent={product.discountPercent}
               image={product.image}
             />
           ))}

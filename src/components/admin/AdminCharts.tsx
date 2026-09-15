@@ -33,10 +33,11 @@ const barGradients = [
 ];
 
 const statusColors: Record<AdminOrderStatus, string> = {
-  pending: "#d1a53a",
-  paid: "#2f6b45",
-  shipped: "#1f5a8a",
-  delivered: "#4e2a54",
+  pending_payment: "#a89f92",
+  confirmed: "#d1a53a",
+  preparing: "#4e2a54",
+  ready_for_post: "#1f5a8a",
+  delivered_to_post: "#2f6b45",
   cancelled: "#9b3d3d",
 };
 

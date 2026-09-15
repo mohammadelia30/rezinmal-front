@@ -86,10 +86,27 @@ export function AdminSettingsPage({
               onChange={(value) => update("address", value)}
             />
             <Field
-              label="هزینه ارسال (تومان)"
-              value={String(settings.shipping_cost)}
+              label="هزینه ارسال بستهٔ استاندارد (تومان)"
+              hint="سفارش‌های ۱ یا ۲ عددی"
+              value={String(settings.standard_shipping_cost ?? 0)}
               onChange={(value) =>
-                update("shipping_cost", Number(value.replace(/\D/g, "")) || 0)
+                update(
+                  "standard_shipping_cost",
+                  Number(value.replace(/\D/g, "")) || 0,
+                )
+              }
+              dir="ltr"
+              type="number"
+            />
+            <Field
+              label="هزینه ارسال بستهٔ بزرگ (تومان)"
+              hint="سفارش‌های بیش از ۲ عدد"
+              value={String(settings.large_shipping_cost ?? 0)}
+              onChange={(value) =>
+                update(
+                  "large_shipping_cost",
+                  Number(value.replace(/\D/g, "")) || 0,
+                )
               }
               dir="ltr"
               type="number"
@@ -147,8 +164,10 @@ function Field({
   onChange,
   dir,
   type = "text",
+  hint,
 }: {
   label: string;
+  hint?: string;
   value: string;
   onChange: (value: string) => void;
   dir?: "ltr" | "rtl";
@@ -166,6 +185,7 @@ function Field({
         onChange={(event) => onChange(event.target.value)}
         className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
       />
+      {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
     </div>
   );
 }
