@@ -306,10 +306,11 @@ export type SiteSettingsInput = {
   maintenance_mode: boolean;
 };
 
-export async function saveSiteSettings(
-  input: SiteSettingsInput,
-): Promise<void> {
-  await send(API_PATHS.siteSettings, {
+export async function saveSiteSettings<T extends SiteSettingsInput>(
+  input: T,
+): Promise<T> {
+  // پاسخ برگردانده می‌شود تا فرم همان چیزی را نشان دهد که ذخیره شده
+  return send<T>(API_PATHS.siteSettings, {
     method: "PATCH",
     body: input,
   });

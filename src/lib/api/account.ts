@@ -25,6 +25,10 @@ type ApiOrder = {
   id: number;
   order_code?: string;
   status: string;
+  subtotal?: number;
+  discount_amount?: number;
+  shipping_cost?: number;
+  shipping_type?: string;
   total_amount?: number;
   paid_at?: string | null;
   created_date?: string;
@@ -64,6 +68,11 @@ export async function getMyOrders(): Promise<DashboardOrder[]> {
     code: order.order_code ?? String(order.id),
     date: formatDate(order.paid_at ?? order.created_date),
     status: mapStatus(order.status),
+    subtotal: order.subtotal ?? 0,
+    discount: order.discount_amount ?? 0,
+    shippingCost: order.shipping_cost ?? 0,
+    shippingType: order.shipping_type === "large" ? "large" : "standard",
+    totalAmount: order.total_amount ?? 0,
     total: formatPrice(order.total_amount ?? 0),
     items: (order.items ?? []).map((item) => ({
       id: String(item.id),

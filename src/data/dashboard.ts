@@ -10,6 +10,12 @@ export type DashboardOrder = {
   code: string;
   date: string;
   status: OrderStatus;
+  /** مبالغ خام برای نمایش ریز فاکتور */
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  shippingType: "standard" | "large";
+  totalAmount: number;
   total: string;
   items: {
     id: string;

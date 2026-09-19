@@ -55,9 +55,21 @@ export type AdminInvoice = {
   orderCode: string;
   customer: string;
   date: string;
+  /** جمع کالاها پس از تخفیف محصول */
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  shippingType: ShippingType;
   total: number;
   status: InvoiceStatus;
   items: { title: string; quantity: number; price: number }[];
+};
+
+export type ShippingType = "standard" | "large";
+
+export const shippingTypeLabels: Record<ShippingType, string> = {
+  standard: "بستهٔ استاندارد",
+  large: "بستهٔ بزرگ",
 };
 
 export type AdminProduct = {

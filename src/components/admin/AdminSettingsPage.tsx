@@ -8,6 +8,7 @@ import {
 } from "@/components/admin/AdminUI";
 import type { SiteSettingsModel } from "@/lib/api/admin";
 import { AdminActionError, saveSiteSettings } from "@/lib/admin-store";
+import { toEnglishDigits } from "@/lib/digits";
 
 /**
  * تنظیمات فروشگاه.
@@ -17,8 +18,11 @@ import { AdminActionError, saveSiteSettings } from "@/lib/admin-store";
  */
 export function AdminSettingsPage({
   initialSettings,
+  loadFailed = false,
 }: {
   initialSettings: SiteSettingsModel;
+  /** تنظیمات از بک‌اند خوانده نشد؛ فرم خالی نباید ذخیره شود */
+  loadFailed?: boolean;
 }) {
   const router = useRouter();
   const [settings, setSettings] = useState<SiteSettingsModel>(initialSettings);
@@ -34,13 +38,38 @@ export function AdminSettingsPage({
     setSaved(false);
   };
 
+  /**
+   * پیش از فرستادن به سرور، همان قاعده‌ای که بک‌اند بررسی می‌کند اینجا
+   * هم بررسی می‌شود تا مدیر به‌جای «ذخیره ناموفق بود» بداند مشکل کجاست.
+   */
+  const localError = (): string => {
+    if (!settings.shop_name.trim()) return "نام فروشگاه را وارد کنید.";
+    if (
+      settings.free_shipping_min > 0 &&
+      settings.free_shipping_min <=
+        Math.max(settings.standard_shipping_cost, settings.large_shipping_cost)
+    ) {
+      return "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ ارسال بیشتر باشد (یا صفر بماند).";
+    }
+    return "";
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+
+    const invalid = localError();
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+
     setSaving(true);
 
     try {
-      await saveSiteSettings(settings);
+      // پاسخ سرور جایگزین وضعیت فرم می‌شود تا آنچه دیده می‌شود همان
+      // چیزی باشد که واقعاً ذخیره شده است
+      setSettings(await saveSiteSettings(settings));
       setSaved(true);
       router.refresh();
     } catch (saveError) {
@@ -54,12 +83,24 @@ export function AdminSettingsPage({
     }
   };
 
+  const money = (key: keyof SiteSettingsModel) => (value: string) =>
+    // ارقام فارسی و جداکننده‌ها هم پذیرفته می‌شوند؛ قبلاً «۵۰۰۰۰» به صفر
+    // تبدیل می‌شد و مدیر فکر می‌کرد ذخیره نشده است
+    update(key, Number(toEnglishDigits(value).replace(/[^\d]/g, "")) || 0);
+
   return (
     <div>
       <AdminPageHeader
         title="تنظیمات فروشگاه"
         description="اطلاعات عمومی، ارسال و وضعیت سیستم"
       />
+
+      {loadFailed ? (
+        <p className="mb-4 rounded-xl bg-[#fde8e8] px-4 py-3 text-right text-sm leading-6 text-[#9b3d3d]">
+          تنظیمات فروشگاه از سرور خوانده نشد. صفحه را دوباره باز کنید؛ ذخیره در
+          این وضعیت مقادیر فعلی را پاک می‌کند.
+        </p>
+      ) : null}
 
       <AdminCard>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -89,36 +130,24 @@ export function AdminSettingsPage({
               label="هزینه ارسال بستهٔ استاندارد (تومان)"
               hint="سفارش‌های ۱ یا ۲ عددی"
               value={String(settings.standard_shipping_cost ?? 0)}
-              onChange={(value) =>
-                update(
-                  "standard_shipping_cost",
-                  Number(value.replace(/\D/g, "")) || 0,
-                )
-              }
+              onChange={money("standard_shipping_cost")}
               dir="ltr"
-              type="number"
+              inputMode="numeric"
             />
             <Field
               label="هزینه ارسال بستهٔ بزرگ (تومان)"
               hint="سفارش‌های بیش از ۲ عدد"
               value={String(settings.large_shipping_cost ?? 0)}
-              onChange={(value) =>
-                update(
-                  "large_shipping_cost",
-                  Number(value.replace(/\D/g, "")) || 0,
-                )
-              }
+              onChange={money("large_shipping_cost")}
               dir="ltr"
-              type="number"
+              inputMode="numeric"
             />
             <Field
               label="حداقل مبلغ ارسال رایگان"
               value={String(settings.free_shipping_min)}
-              onChange={(value) =>
-                update("free_shipping_min", Number(value.replace(/\D/g, "")) || 0)
-              }
+              onChange={money("free_shipping_min")}
               dir="ltr"
-              type="number"
+              inputMode="numeric"
             />
           </div>
 
@@ -138,7 +167,7 @@ export function AdminSettingsPage({
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || loadFailed}
               className="rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark disabled:opacity-60"
             >
               {saving ? "در حال ذخیره..." : "ذخیره تنظیمات"}
@@ -165,6 +194,7 @@ function Field({
   dir,
   type = "text",
   hint,
+  inputMode,
 }: {
   label: string;
   hint?: string;
@@ -172,6 +202,7 @@ function Field({
   onChange: (value: string) => void;
   dir?: "ltr" | "rtl";
   type?: string;
+  inputMode?: "numeric" | "text";
 }) {
   return (
     <div className="text-right">
@@ -180,6 +211,7 @@ function Field({
       </label>
       <input
         type={type}
+        inputMode={inputMode}
         value={value}
         dir={dir}
         onChange={(event) => onChange(event.target.value)}

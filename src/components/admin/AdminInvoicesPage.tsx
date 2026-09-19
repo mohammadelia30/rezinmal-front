@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   invoiceStatusLabels,
   invoiceStatusStyles,
+  shippingTypeLabels,
   type AdminInvoice,
 } from "@/data/admin";
 import {
@@ -132,18 +133,60 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
                 ))}
               </ul>
 
-              <div className="mt-4 flex items-center justify-between">
+              {/* بدون این ردیف‌ها فقط مبلغ نهایی دیده می‌شد و معلوم نبود
+                  هزینهٔ ارسال و تخفیف در آن حساب شده است */}
+              <dl className="mt-4 space-y-2 text-sm">
+                <Line label="جمع کالاها" value={selected.subtotal} />
+                {selected.discount > 0 ? (
+                  <Line
+                    label="تخفیف"
+                    value={-selected.discount}
+                    className="text-[#2f6b45]"
+                  />
+                ) : null}
+                <Line
+                  label={`هزینهٔ ارسال (${shippingTypeLabels[selected.shippingType]})`}
+                  value={selected.shippingCost}
+                  free={selected.shippingCost === 0}
+                />
+              </dl>
+
+              <div className="mt-4 flex items-center justify-between border-t border-[#efe6d4] pt-4">
                 <AdminBadge className={invoiceStatusStyles[selected.status]}>
                   {invoiceStatusLabels[selected.status]}
                 </AdminBadge>
-                <p className="text-base font-bold text-brand">
-                  {formatProductPrice(selected.total)}
-                </p>
+                <div className="text-left">
+                  <p className="text-xs text-muted">مبلغ نهایی</p>
+                  <p className="text-base font-bold text-brand">
+                    {formatProductPrice(selected.total)}
+                  </p>
+                </div>
               </div>
             </AdminCard>
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function Line({
+  label,
+  value,
+  free = false,
+  className = "",
+}: {
+  label: string;
+  value: number;
+  free?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`flex items-center justify-between gap-3 ${className}`}>
+      <dd className="font-medium">
+        {free ? "رایگان" : formatProductPrice(value)}
+      </dd>
+      <dt className="text-muted">{label}</dt>
     </div>
   );
 }

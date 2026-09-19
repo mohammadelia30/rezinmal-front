@@ -41,6 +41,7 @@ type ApiOrder = {
   subtotal?: number;
   discount_amount?: number;
   shipping_cost?: number;
+  shipping_type?: string;
   total_amount?: number;
   paid_at?: string | null;
   created_date?: string;
@@ -93,6 +94,7 @@ function toAdminOrder(order: ApiOrder): AdminOrder {
 }
 
 function toAdminInvoice(order: ApiOrder): AdminInvoice {
+  const shippingCost = order.shipping_cost ?? 0;
   const status: InvoiceStatus = order.paid_at
     ? "paid"
     : mapOrderStatus(order.status) === "cancelled"
@@ -105,6 +107,10 @@ function toAdminInvoice(order: ApiOrder): AdminInvoice {
     orderCode: order.order_code ?? String(order.id),
     customer: order.recipient_name?.trim() || "—",
     date: formatDate(order.paid_at ?? order.created_date),
+    subtotal: order.subtotal ?? 0,
+    discount: order.discount_amount ?? 0,
+    shippingCost,
+    shippingType: order.shipping_type === "large" ? "large" : "standard",
     total: order.total_amount ?? 0,
     status,
     items: (order.items ?? []).map((item) => ({

@@ -5,6 +5,12 @@ import {
   orderStatusStyles,
   type DashboardOrder,
 } from "@/data/dashboard";
+import { formatPrice } from "@/lib/format";
+
+const SHIPPING_LABELS = {
+  standard: "بستهٔ استاندارد",
+  large: "بستهٔ بزرگ",
+} as const;
 
 export function DashboardOrders({ orders }: { orders: DashboardOrder[] }) {
   return (
@@ -74,6 +80,37 @@ export function DashboardOrders({ orders }: { orders: DashboardOrder[] }) {
               </li>
             ))}
           </ul>
+
+          {/* ریز مبالغ: مشتری باید ببیند هزینهٔ ارسال در مبلغ نهایی
+              حساب شده است */}
+          <dl className="mt-4 space-y-2 border-t border-[#efe6d4] pt-4 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <dd className="font-medium text-foreground">
+                {formatPrice(order.subtotal)}
+              </dd>
+              <dt className="text-muted">جمع کالاها</dt>
+            </div>
+            {order.discount > 0 ? (
+              <div className="flex items-center justify-between gap-3 text-[#2f6b45]">
+                <dd className="font-medium">{formatPrice(order.discount)}−</dd>
+                <dt>تخفیف</dt>
+              </div>
+            ) : null}
+            <div className="flex items-center justify-between gap-3">
+              <dd className="font-medium text-foreground">
+                {order.shippingCost > 0
+                  ? formatPrice(order.shippingCost)
+                  : "رایگان"}
+              </dd>
+              <dt className="text-muted">
+                هزینهٔ ارسال ({SHIPPING_LABELS[order.shippingType]})
+              </dt>
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-[#efe6d4] pt-2 font-bold">
+              <dd className="text-brand">{formatPrice(order.totalAmount)}</dd>
+              <dt className="text-foreground">مبلغ نهایی</dt>
+            </div>
+          </dl>
 
           {order.status === "awaiting_payment" ? (
             <div className="mt-4 flex flex-col gap-3 border-t border-[#efe6d4] pt-4 sm:flex-row-reverse sm:items-center sm:justify-between">

@@ -23,5 +23,10 @@ const EMPTY_SETTINGS = {
 export default async function Page() {
   await requirePanelPermission("panel_settings");
   const settings = await getSiteSettings();
-  return <AdminSettingsPage initialSettings={settings ?? EMPTY_SETTINGS} />;
+  return (
+    <AdminSettingsPage
+      initialSettings={settings ?? EMPTY_SETTINGS}
+      loadFailed={!settings}
+    />
+  );
 }
