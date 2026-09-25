@@ -83,7 +83,7 @@ export function AdminOverview({
         <AdminStatCard
           label="در حال ارسال"
           value={shippingOrders.toLocaleString("fa-IR")}
-          hint="آمادهٔ تحویل به پست"
+          hint="آمادهٔ تحویل به تیپاکس"
         />
       </div>
 

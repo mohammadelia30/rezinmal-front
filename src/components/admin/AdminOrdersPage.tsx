@@ -33,7 +33,7 @@ const ACTION_LABELS: Record<AdminOrderStatus, string> = {
   confirmed: "تأیید",
   preparing: "آماده‌سازی",
   ready_for_post: "آمادهٔ ارسال",
-  delivered_to_post: "تحویل به پست",
+  delivered_to_post: "تحویل به تیپاکس",
   cancelled: "لغو",
 };
 

@@ -388,7 +388,7 @@ export function DashboardAddresses({
               </label>
 
               <Field
-                label="کد پستی"
+                label="کد پستی (اختیاری)"
                 value={form.postal_code}
                 onChange={(value) => setForm({ ...form, postal_code: value })}
                 dir="ltr"

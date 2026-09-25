@@ -153,7 +153,7 @@ export const orderStatusLabels: Record<AdminOrderStatus, string> = {
   confirmed: "تأییدشده",
   preparing: "در حال آماده‌سازی",
   ready_for_post: "آمادهٔ ارسال",
-  delivered_to_post: "تحویل به پست",
+  delivered_to_post: "تحویل به تیپاکس",
   cancelled: "لغوشده",
 };
 
