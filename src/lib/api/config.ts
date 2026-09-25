@@ -71,7 +71,10 @@ export const API_PATHS = {
     `/api/orders/orders/${id}/ready-for-post/`,
   orderDeliveredToPost: (id: string | number) =>
     `/api/orders/orders/${id}/delivered-to-post/`,
-  orderPrint: (id: string | number) => `/api/orders/orders/${id}/print/`,
+  /** output=html یعنی صفحهٔ چاپ باز شود و پنجرهٔ چاپ خودکار بیاید */
+  orderPrint: (id: string | number) =>
+    `/api/orders/orders/${id}/print/?output=html`,
+  orderPrintPdf: (id: string | number) => `/api/orders/orders/${id}/print/`,
   inventories: "/api/inventory/inventories/",
   inventoryIncrease: (id: string | number) =>
     `/api/inventory/inventories/${id}/increase/`,
@@ -84,7 +87,8 @@ export const API_PATHS = {
   couponAssignments: "/api/discounts/coupon-assignments/",
   couponAssignment: (id: string | number) =>
     `/api/discounts/coupon-assignments/${id}/`,
-  ordersPrintList: "/api/orders/orders/print-list/",
+  ordersPrintList: "/api/orders/orders/print-list/?output=html",
+  ordersPrintListPdf: "/api/orders/orders/print-list/",
   ordersBulkStatus: "/api/orders/orders/bulk-change-status/",
   payOrder: (id: string | number) => `/api/payments/orders/${id}/pay/`,
   zarinpalCallback: "/api/payments/zarinpal/callback/",
