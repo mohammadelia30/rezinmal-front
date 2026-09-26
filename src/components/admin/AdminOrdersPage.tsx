@@ -173,14 +173,24 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
         description="مدیریت فروش و وضعیت سفارش‌های فروشگاه"
         action={
           orders.length > 0 ? (
-            <a
-              href={API_PATHS.ordersPrintList}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-dark"
-            >
-              چاپ لیست سفارش‌ها
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={API_PATHS.ordersPrintReceipts()}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-dark"
+              >
+                چاپ فاکتورها
+              </a>
+              <a
+                href={API_PATHS.ordersPrintList}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#e6dcc2] px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-[#f6f1e7]"
+              >
+                چاپ لیست (A4)
+              </a>
+            </div>
           ) : undefined
         }
       />
@@ -337,6 +347,17 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row-reverse sm:items-center">
+              {/* فاکتورهای همین انتخاب، پشت سر هم روی رول */}
+              <a
+                href={API_PATHS.ordersPrintReceipts(
+                  selectedOrders.map((order) => order.id),
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#e6dcc2] px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-[#f6f1e7]"
+              >
+                چاپ فاکتورها
+              </a>
               <select
                 value={bulkStatus}
                 onChange={(event) => setBulkStatus(event.target.value as AdminOrderStatus | "")}

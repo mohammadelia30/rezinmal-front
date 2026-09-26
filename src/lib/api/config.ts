@@ -87,8 +87,14 @@ export const API_PATHS = {
   couponAssignments: "/api/discounts/coupon-assignments/",
   couponAssignment: (id: string | number) =>
     `/api/discounts/coupon-assignments/${id}/`,
+  /** برگهٔ A4 جمع‌آوری سفارش‌ها */
   ordersPrintList: "/api/orders/orders/print-list/?output=html",
   ordersPrintListPdf: "/api/orders/orders/print-list/",
+  /** فاکتورها پشت سر هم روی رول دستگاه رسید؛ بدون ids یعنی همه */
+  ordersPrintReceipts: (ids?: (string | number)[]) =>
+    `/api/orders/orders/print-receipts/?output=html${
+      ids?.length ? `&ids=${ids.join(",")}` : ""
+    }`,
   ordersBulkStatus: "/api/orders/orders/bulk-change-status/",
   payOrder: (id: string | number) => `/api/payments/orders/${id}/pay/`,
   zarinpalCallback: "/api/payments/zarinpal/callback/",
