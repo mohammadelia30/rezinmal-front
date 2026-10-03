@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 /**
  * تعریف یا تغییر رمز عبور از داخل پروفایل.
@@ -150,12 +151,12 @@ export function DashboardPasswordCard() {
             <span className="mb-1.5 block text-sm font-medium text-foreground">
               رمز فعلی
             </span>
-            <input
-              type="password"
+            <PasswordInput
               value={current}
               autoComplete="current-password"
-              onChange={(event) => setCurrent(event.target.value)}
-              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              onChange={setCurrent}
+              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-2.5 pr-3 pl-10 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              togglePadding="px-2.5"
             />
           </label>
         ) : null}
@@ -165,13 +166,13 @@ export function DashboardPasswordCard() {
             <span className="mb-1.5 block text-sm font-medium text-foreground">
               رمز جدید
             </span>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               autoComplete="new-password"
               placeholder="حداقل ۸ کاراکتر"
-              onChange={(event) => setPassword(event.target.value)}
-              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              onChange={setPassword}
+              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-2.5 pr-3 pl-10 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              togglePadding="px-2.5"
             />
           </label>
 
@@ -179,12 +180,12 @@ export function DashboardPasswordCard() {
             <span className="mb-1.5 block text-sm font-medium text-foreground">
               تکرار رمز جدید
             </span>
-            <input
-              type="password"
+            <PasswordInput
               value={confirm}
               autoComplete="new-password"
-              onChange={(event) => setConfirm(event.target.value)}
-              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              onChange={setConfirm}
+              className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-2.5 pr-3 pl-10 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+              togglePadding="px-2.5"
             />
           </label>
         </div>

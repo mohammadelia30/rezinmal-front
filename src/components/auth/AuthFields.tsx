@@ -8,6 +8,7 @@ import {
   type ClipboardEvent,
   type KeyboardEvent,
 } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 type FieldProps = {
   id: string;
@@ -34,24 +35,38 @@ export function AuthField({
   autoComplete,
   maxLength,
 }: FieldProps) {
+  const isPassword = type === "password";
+  const inputClass = `w-full rounded-xl border bg-[#fbf9f1] py-3 text-sm text-foreground outline-none transition placeholder:text-[#a89aad] focus:border-brand focus:ring-2 focus:ring-brand/15 ${
+    isPassword ? "pr-4 pl-11" : "px-4"
+  } ${error ? "border-red-400" : "border-[#e6dcc2]"}`;
+
   return (
     <div className="text-right">
       <label htmlFor={id} className="mb-2 block text-sm font-medium text-foreground">
         {label}
       </label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        maxLength={maxLength}
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className={`w-full rounded-xl border bg-[#fbf9f1] px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-[#a89aad] focus:border-brand focus:ring-2 focus:ring-brand/15 ${
-          error ? "border-red-400" : "border-[#e6dcc2]"
-        }`}
-      />
+      {isPassword ? (
+        <PasswordInput
+          id={id}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          className={inputClass}
+        />
+      ) : (
+        <input
+          id={id}
+          type={type}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className={inputClass}
+        />
+      )}
       {error ? <p className="mt-1.5 text-xs text-red-500">{error}</p> : null}
     </div>
   );

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 export function AdminStatCard({
   label,
@@ -173,20 +174,35 @@ export function AdminField({
   placeholder?: string;
   required?: boolean;
 }) {
+  const isPassword = type === "password";
+  const inputClass = `w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15 ${
+    isPassword ? "pr-3 pl-10" : "px-3"
+  }`;
+
   return (
     <label className="block text-right">
       <span className="mb-1.5 block text-sm font-medium text-foreground">
         {label}
         {required ? <span className="text-red-500"> *</span> : null}
       </span>
-      <input
-        type={type}
-        value={value}
-        dir={dir}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
-      />
+      {isPassword ? (
+        <PasswordInput
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={inputClass}
+          togglePadding="px-2.5"
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          dir={dir}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className={inputClass}
+        />
+      )}
     </label>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
   fetchSessionUser,
   getDefaultAdminRoute,
@@ -125,16 +126,15 @@ export function AdminLoginForm() {
                 >
                   رمز عبور
                 </label>
-                <input
+                <PasswordInput
                   id="admin-password"
-                  type="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
+                  onChange={(value) => {
+                    setPassword(value);
                     setError("");
                   }}
-                  className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
+                  className="w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-3 pr-4 pl-11 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
                   placeholder="••••••••"
                 />
               </div>

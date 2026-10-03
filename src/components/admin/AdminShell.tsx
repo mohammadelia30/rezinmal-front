@@ -94,6 +94,13 @@ export function AdminShell({
               );
             })}
           </ul>
+
+          {visibleNav.length === 0 ? (
+            <p className="rounded-xl bg-[#fff3d6] px-4 py-3 text-xs leading-6 text-[#8a6a1f]">
+              هنوز هیچ بخشی برای حساب شما فعال نشده است. از مدیر کل بخواهید نقش
+              بدهد.
+            </p>
+          ) : null}
         </nav>
 
         <div className="border-t border-[#efe6d4] p-3">

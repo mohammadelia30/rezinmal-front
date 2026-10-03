@@ -142,11 +142,19 @@ export function getPermissionForPath(pathname: string): AdminPermission | null {
   return match?.permission ?? null;
 }
 
+/**
+ * اولین بخشی که این مدیر اجازهٔ دیدنش را دارد.
+ *
+ * اگر هیچ بخشی نداشته باشد، «/admin» برمی‌گردد نه صفحهٔ ورود: قبلاً
+ * مدیری که نقش نداشت بعد از ورود موفق بی‌صدا به همان صفحهٔ ورود
+ * برمی‌گشت و به نظر می‌رسید اصلاً نمی‌تواند وارد شود. حالا وارد می‌شود
+ * و داشبورد می‌گوید باید نقش بگیرد.
+ */
 export function getDefaultAdminRoute(permissions: AdminPermission[]) {
   const first = adminNavItems.find((item) =>
     permissions.includes(item.permission),
   );
-  return first?.href ?? "/admin/login";
+  return first?.href ?? "/admin";
 }
 
 export function hasAdminPermission(
