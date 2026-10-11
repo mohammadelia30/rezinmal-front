@@ -69,9 +69,12 @@ export function AdminProductsPage({
   const [editing, setEditing] = useState<AdminProductDetail | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  // تصویر به شناسهٔ محصول نیاز دارد که هنگام ساخت هنوز وجود ندارد،
-  // پس انتخاب‌ها اینجا می‌مانند و بلافاصله بعد از ساخت آپلود می‌شوند.
+  // تصویرهای انتخاب‌شده تا زدن «ذخیره» همین‌جا می‌مانند: هنگام ساخت
+  // محصول هنوز شناسه‌ای وجود ندارد، و هنگام ویرایش هم آپلود فوری یعنی
+  // فرم بسته شود و بقیهٔ تغییرهای همان فرم از دست برود.
   const [pendingImages, setPendingImages] = useState<File[]>([]);
+  // تصویرهای موجود که مدیر حذفشان کرده ولی هنوز ذخیره نزده است
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -99,6 +102,7 @@ export function AdminProductsPage({
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setPendingImages([]);
+    setRemovedImageIds([]);
     setCreating(true);
     setError("");
   };
@@ -117,6 +121,8 @@ export function AdminProductsPage({
       sku: product.sku,
     });
     setEditing(product);
+    setPendingImages([]);
+    setRemovedImageIds([]);
     setError("");
   };
 
@@ -124,6 +130,7 @@ export function AdminProductsPage({
     setCreating(false);
     setEditing(null);
     setPendingImages([]);
+    setRemovedImageIds([]);
     setError("");
   };
 
@@ -187,6 +194,24 @@ export function AdminProductsPage({
       if (editing.variantId && price > 0 && price !== editing.price) {
         await updateVariantPrice(editing.variantId, price);
       }
+
+      for (const imageId of removedImageIds) {
+        await deleteProductImage(imageId);
+      }
+
+      // اگر همهٔ تصویرهای قبلی حذف شده‌اند، اولین تصویر تازه باید
+      // تصویر اصلی محصول شود
+      const remaining = editing.images.filter(
+        (image) => !removedImageIds.includes(image.id),
+      ).length;
+
+      for (const [index, file] of pendingImages.entries()) {
+        await uploadProductImage(
+          editing.id,
+          file,
+          remaining === 0 && index === 0,
+        );
+      }
     });
     if (done) closeForm();
   };
@@ -202,18 +227,17 @@ export function AdminProductsPage({
     run(() => deleteProduct(product.id));
   };
 
-  const handleUpload = async (file: File) => {
-    if (!editing) return;
-    await run(() =>
-      uploadProductImage(editing.id, file, editing.images.length === 0),
-    );
-    closeForm();
-  };
-
   const categoryOptions = categories.map((item) => ({
     value: item.id,
     label: item.title,
   }));
+
+  // تصویر اصلی وقتی از بین تصویرهای تازه انتخاب می‌شود که محصول
+  // تصویر باقی‌مانده‌ای نداشته باشد
+  const firstIsPrimary =
+    !editing ||
+    editing.images.filter((image) => !removedImageIds.includes(image.id))
+      .length === 0;
 
   const formBody = (mode: "create" | "edit") => (
     <form
@@ -344,7 +368,7 @@ export function AdminProductsPage({
           ref={fileInput}
           type="file"
           accept="image/*"
-          multiple={mode === "create"}
+          multiple
           className="hidden"
           onChange={(event) => {
             const files = Array.from(event.target.files ?? []);
@@ -360,80 +384,90 @@ export function AdminProductsPage({
             }
 
             setError("");
-            if (mode === "create") {
-              setPendingImages((current) => [...current, ...files]);
-            } else {
-              handleUpload(files[0]);
-            }
+            setPendingImages((current) => [...current, ...files]);
           }}
         />
 
-        {mode === "create" ? (
-          pendingImages.length === 0 ? (
-            <p className="text-xs text-muted">
-              می‌توانید همین حالا تصویر انتخاب کنید؛ بعد از ذخیرهٔ محصول
-              آپلود می‌شوند.
-            </p>
+        {editing ? (
+          editing.images.length === 0 ? (
+            <p className="mb-2 text-xs text-muted">تصویری ثبت نشده است.</p>
           ) : (
-            <ul className="space-y-1 text-right">
-              {pendingImages.map((file, index) => (
-                <li
-                  key={`${file.name}-${index}`}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-[#fbf9f1] px-3 py-1.5 text-xs"
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPendingImages((current) =>
-                        current.filter((_, i) => i !== index),
-                      )
-                    }
-                    className="text-[#9b3d3d]"
-                    aria-label="حذف"
-                  >
-                    ✕
-                  </button>
-                  <span className="truncate">
-                    {file.name}
-                    {index === 0 ? " (تصویر اصلی)" : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )
-        ) : editing && editing.images.length === 0 ? (
-          <p className="text-xs text-muted">تصویری ثبت نشده است.</p>
-        ) : editing ? (
-          <div className="flex flex-wrap justify-end gap-2">
-            {editing.images.map((image) => (
-                <div key={image.id} className="relative">
-                  <div className="relative size-16 overflow-hidden rounded-lg bg-brand-mist">
-                    <Image
-                      src={image.url}
-                      alt=""
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
+            <div className="mb-2 flex flex-wrap justify-end gap-2">
+              {editing.images.map((image) => {
+                const removed = removedImageIds.includes(image.id);
+
+                return (
+                  <div key={image.id} className="relative">
+                    <div
+                      className={`relative size-16 overflow-hidden rounded-lg bg-brand-mist transition ${
+                        removed ? "opacity-35" : ""
+                      }`}
+                    >
+                      <Image
+                        src={image.url}
+                        alt=""
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    </div>
+                    {/* حذف تا زدن «ذخیره» اعمال نمی‌شود، پس برگشت‌پذیر است */}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        setRemovedImageIds((current) =>
+                          removed
+                            ? current.filter((id) => id !== image.id)
+                            : [...current, image.id],
+                        )
+                      }
+                      className="absolute -left-1 -top-1 rounded-full bg-white px-1.5 text-xs shadow"
+                      aria-label={removed ? "برگرداندن تصویر" : "حذف تصویر"}
+                      title={removed ? "برگرداندن تصویر" : "حذف تصویر"}
+                    >
+                      {removed ? "↺" : "✕"}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() =>
-                      run(async () => {
-                        await deleteProductImage(image.id);
-                        closeForm();
-                      })
-                    }
-                    className="absolute -left-1 -top-1 rounded-full bg-white px-1.5 text-xs text-[#9b3d3d] shadow"
-                    aria-label="حذف تصویر"
-                  >
-                    ✕
-                  </button>
-                </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )
         ) : null}
+
+        {pendingImages.length > 0 ? (
+          <ul className="space-y-1 text-right">
+            {pendingImages.map((file, index) => (
+              <li
+                key={`${file.name}-${index}`}
+                className="flex items-center justify-between gap-2 rounded-lg bg-[#fbf9f1] px-3 py-1.5 text-xs"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPendingImages((current) =>
+                      current.filter((_, position) => position !== index),
+                    )
+                  }
+                  className="text-[#9b3d3d]"
+                  aria-label="حذف از فهرست"
+                >
+                  ✕
+                </button>
+                <span className="truncate">
+                  {file.name}
+                  {index === 0 && firstIsPrimary ? " (تصویر اصلی)" : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <p className="mt-2 text-xs text-muted">
+          {pendingImages.length > 0 || removedImageIds.length > 0
+            ? "تغییر تصویرها با زدن «ذخیره» اعمال می‌شود."
+            : "تصویر انتخاب کنید؛ همراه بقیهٔ تغییرها ذخیره می‌شود."}
+        </p>
       </div>
 
       <div className="flex justify-end gap-2">
