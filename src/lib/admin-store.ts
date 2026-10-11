@@ -462,12 +462,29 @@ export async function updateVariantPrice(
   });
 }
 
+/** بیشترین حجم تصویر؛ باید با client_max_body_size در nginx بک‌اند بخواند */
+export const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+
+export function checkImageFile(file: File): string {
+  if (!file.type.startsWith("image/")) {
+    return `«${file.name}» تصویر نیست.`;
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    const size = (file.size / 1024 / 1024).toFixed(1);
+    return `حجم «${file.name}» ${size} مگابایت است؛ حداکثر ۲۵ مگابایت مجاز است.`;
+  }
+  return "";
+}
+
 /** آپلود تصویر محصول؛ چون multipart است، بدنه را دستی می‌فرستیم. */
 export async function uploadProductImage(
   productId: string,
   file: File,
   isPrimary: boolean,
 ): Promise<void> {
+  const tooBig = checkImageFile(file);
+  if (tooBig) throw new AdminActionError(tooBig);
+
   const form = new FormData();
   form.append("product", productId);
   form.append("image", file);
@@ -480,12 +497,15 @@ export async function uploadProductImage(
   });
 
   if (!response.ok) {
+    // ۴۱۳ از nginx می‌آید و بدنه‌اش HTML است، نه JSON
+    if (response.status === 413) {
+      throw new AdminActionError(
+        "حجم تصویر بیشتر از حد مجاز است؛ تصویر کوچک‌تری انتخاب کنید.",
+      );
+    }
+
     const data = await response.json().catch(() => null);
-    throw new AdminActionError(
-      data && typeof data === "object" && "detail" in data
-        ? String((data as { detail: unknown }).detail)
-        : "آپلود تصویر ناموفق بود.",
-    );
+    throw new AdminActionError(readApiError(data, response.status));
   }
 }
 

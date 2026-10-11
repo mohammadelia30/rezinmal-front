@@ -24,6 +24,17 @@ const STRIPPED_REQUEST_HEADERS = new Set([
   "connection",
   "content-length",
   "accept-encoding",
+  // هدرهای hop-by-hop: مال همین اتصال‌اند و ارسالشان به اتصال بعدی
+  // درخواست را می‌شکند. «expect: 100-continue» را بعضی کلاینت‌ها هنگام
+  // آپلود فایل می‌فرستند و آپلود با خطای «ارتباط برقرار نشد» رد می‌شد.
+  "expect",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
 ]);
 
 // هدرهایی که نباید از بک‌اند به مرورگر برگردد

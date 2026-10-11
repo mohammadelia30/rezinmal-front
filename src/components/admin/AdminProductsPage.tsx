@@ -24,6 +24,7 @@ import type {
 import {
   AdminActionError,
   PRODUCT_STATUS,
+  checkImageFile,
   createProduct,
   deleteProduct,
   deleteProductImage,
@@ -347,14 +348,23 @@ export function AdminProductsPage({
           className="hidden"
           onChange={(event) => {
             const files = Array.from(event.target.files ?? []);
-            if (files.length) {
-              if (mode === "create") {
-                setPendingImages((current) => [...current, ...files]);
-              } else {
-                handleUpload(files[0]);
-              }
-            }
             event.target.value = "";
+            if (!files.length) return;
+
+            // همین‌جا بررسی می‌شود تا مدیر بعد از انتظار آپلود با خطا
+            // روبه‌رو نشود
+            const problem = files.map(checkImageFile).find(Boolean);
+            if (problem) {
+              setError(problem);
+              return;
+            }
+
+            setError("");
+            if (mode === "create") {
+              setPendingImages((current) => [...current, ...files]);
+            } else {
+              handleUpload(files[0]);
+            }
           }}
         />
 
