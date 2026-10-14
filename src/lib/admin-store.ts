@@ -415,27 +415,74 @@ function productBody(input: ProductInput) {
  * قیمت در بک‌اند روی واریانت است نه خود محصول، پس محصولی که واریانت
  * نداشته باشد در فروشگاه بدون قیمت نمایش داده می‌شود.
  */
+export type VariantInput = {
+  sku: string;
+  price: number;
+  barcode: string;
+  /** گرم؛ خالی یعنی ثبت‌نشده */
+  weight: number | null;
+  stock: number;
+  minimumStock: number;
+};
+
 export async function createProduct(
   input: ProductInput,
-  variant: { sku: string; price: number },
+  variant: VariantInput,
 ): Promise<number> {
   const created = await send<{ id: number }>(API_PATHS.products, {
     method: "POST",
     body: productBody(input),
   });
 
-  await send(API_PATHS.variants, {
+  const createdVariant = await send<{ id: number }>(API_PATHS.variants, {
     method: "POST",
     body: {
       product: created.id,
       sku: variant.sku,
       price: variant.price,
+      barcode: variant.barcode || null,
+      weight: variant.weight,
       is_default: true,
       is_active: true,
     },
   });
 
+  // بدون رکورد موجودی، محصول به سبد خرید اضافه نمی‌شود
+  await createInventory(
+    String(createdVariant.id),
+    variant.stock,
+    variant.minimumStock,
+  );
+
   return created.id;
+}
+
+/**
+ * موجودی و مشخصات انبارِ یک نسخه.
+ *
+ * محصول‌های قدیمی ممکن است اصلاً رکورد موجودی نداشته باشند، پس اگر
+ * نبود ساخته می‌شود.
+ */
+export async function saveVariantDetails(
+  variantId: string,
+  inventoryId: string,
+  input: { barcode: string; weight: number | null },
+  stock: { stock: number; minimumStock: number },
+): Promise<void> {
+  await send(API_PATHS.variant(variantId), {
+    method: "PATCH",
+    body: { barcode: input.barcode || null, weight: input.weight },
+  });
+
+  if (inventoryId) {
+    await send(API_PATHS.inventory(inventoryId), {
+      method: "PATCH",
+      body: { stock: stock.stock, minimum_stock: stock.minimumStock },
+    });
+    return;
+  }
+
+  await createInventory(variantId, stock.stock, stock.minimumStock);
 }
 
 export async function updateProduct(

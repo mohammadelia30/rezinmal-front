@@ -26,6 +26,7 @@ import {
   PRODUCT_STATUS,
   checkImageFile,
   createProduct,
+  saveVariantDetails,
   deleteProduct,
   deleteProductImage,
   setProductActive,
@@ -34,7 +35,12 @@ import {
   uploadProductImage,
   type ProductInput,
 } from "@/lib/admin-store";
+import { toEnglishDigits } from "@/lib/digits";
 import { formatProductPrice } from "@/lib/price";
+
+/** ارقام فارسی هم پذیرفته می‌شود */
+const toDigits = (value: string) =>
+  toEnglishDigits(value).replace(/[^\d]/g, "");
 
 const EMPTY_FORM = {
   title: "",
@@ -47,6 +53,11 @@ const EMPTY_FORM = {
   is_active: true,
   price: "",
   sku: "",
+  barcode: "",
+  // گرم
+  weight: "",
+  stock: "",
+  minimum_stock: "",
 };
 
 type FormState = typeof EMPTY_FORM;
@@ -119,6 +130,10 @@ export function AdminProductsPage({
       is_active: product.isActive,
       price: String(product.price),
       sku: product.sku,
+      barcode: product.barcode,
+      weight: product.weight == null ? "" : String(product.weight),
+      stock: String(product.stock),
+      minimum_stock: String(product.minimumStock),
     });
     setEditing(product);
     setPendingImages([]);
@@ -166,6 +181,10 @@ export function AdminProductsPage({
       const productId = await createProduct(toInput(), {
         sku: form.sku.trim() || `SKU-${Date.now()}`,
         price,
+        barcode: form.barcode.trim(),
+        weight: form.weight ? Number(form.weight) : null,
+        stock: Number(form.stock) || 0,
+        minimumStock: Number(form.minimum_stock) || 0,
       });
 
       for (const [index, file] of pendingImages.entries()) {
@@ -193,6 +212,21 @@ export function AdminProductsPage({
       await updateProduct(editing.id, toInput());
       if (editing.variantId && price > 0 && price !== editing.price) {
         await updateVariantPrice(editing.variantId, price);
+      }
+
+      if (editing.variantId) {
+        await saveVariantDetails(
+          editing.variantId,
+          editing.inventoryId,
+          {
+            barcode: form.barcode.trim(),
+            weight: form.weight ? Number(form.weight) : null,
+          },
+          {
+            stock: Number(form.stock) || 0,
+            minimumStock: Number(form.minimum_stock) || 0,
+          },
+        );
       }
 
       for (const imageId of removedImageIds) {
@@ -266,6 +300,34 @@ export function AdminProductsPage({
           onChange={(value) => set("sku", value)}
           dir="ltr"
           placeholder="خالی بماند، خودکار ساخته می‌شود"
+        />
+        <AdminField
+          label="موجودی انبار"
+          value={form.stock}
+          onChange={(value) => set("stock", toDigits(value))}
+          dir="ltr"
+          placeholder="۰"
+        />
+        <AdminField
+          label="هشدار کمبود موجودی"
+          value={form.minimum_stock}
+          onChange={(value) => set("minimum_stock", toDigits(value))}
+          dir="ltr"
+          placeholder="۰"
+        />
+        <AdminField
+          label="وزن (گرم)"
+          value={form.weight}
+          onChange={(value) => set("weight", toDigits(value))}
+          dir="ltr"
+          placeholder="اختیاری"
+        />
+        <AdminField
+          label="بارکد"
+          value={form.barcode}
+          onChange={(value) => set("barcode", value.trim())}
+          dir="ltr"
+          placeholder="اختیاری"
         />
         <AdminSelect
           label="وضعیت انتشار"

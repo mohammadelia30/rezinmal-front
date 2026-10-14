@@ -426,6 +426,14 @@ export type AdminProductDetail = {
   price: number;
   sku: string;
   variantId: string;
+  barcode: string;
+  /** وزن به گرم */
+  weight: number | null;
+  /** موجودی انبار؛ بدون آن محصول به سبد خرید اضافه نمی‌شود */
+  stock: number;
+  minimumStock: number;
+  /** رکورد موجودی؛ خالی یعنی هنوز ساخته نشده */
+  inventoryId: string;
   images: { id: string; url: string; isPrimary: boolean }[];
 };
 
@@ -433,8 +441,15 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
   const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
   if (!Array.isArray(list)) return [];
 
-  const details = await Promise.all(
-    list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
+  const [details, inventories] = await Promise.all([
+    Promise.all(
+      list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
+    ),
+    getInventories(),
+  ]);
+
+  const stockByVariant = new Map(
+    inventories.map((item) => [item.variantId, item]),
   );
 
   return details
@@ -443,6 +458,9 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
       const variant =
         detail.variants?.find((item) => item.is_default) ?? detail.variants?.[0];
       const brand = detail.brand;
+      const inventory = variant
+        ? stockByVariant.get(String(variant.id))
+        : undefined;
 
       return {
         id: String(detail.id),
@@ -460,6 +478,11 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
         price: variant?.price ?? 0,
         sku: variant?.sku ?? "",
         variantId: variant ? String(variant.id) : "",
+        barcode: variant?.barcode ?? "",
+        weight: variant?.weight ?? null,
+        stock: inventory?.stock ?? 0,
+        minimumStock: inventory?.minimum ?? 0,
+        inventoryId: inventory?.id ?? "",
         images: (detail.images ?? []).map((image) => ({
           id: String(image.id),
           url: publicMediaUrl(image.image) ?? "",
