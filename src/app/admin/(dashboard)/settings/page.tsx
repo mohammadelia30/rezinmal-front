@@ -13,6 +13,7 @@ const EMPTY_SETTINGS = {
   phone: "",
   email: "",
   address: "",
+  meta_description: "",
   standard_shipping_cost: 0,
   large_shipping_cost: 0,
   free_shipping_min: 0,

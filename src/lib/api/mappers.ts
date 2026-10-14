@@ -72,6 +72,8 @@ export function mapProductDetailToCard(
     ...getVariantPricing(variant),
     image: getPrimaryImage(product.images),
     description: product.short_description || product.description || undefined,
+    metaTitle: product.meta_title || undefined,
+    metaDescription: product.meta_description || undefined,
     variantId: variant?.id,
   };
 }

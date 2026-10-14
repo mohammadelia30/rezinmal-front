@@ -68,6 +68,8 @@ export type ProductDetail = {
   status?: number;
   is_featured?: boolean;
   is_active?: boolean;
+  meta_title?: string;
+  meta_description?: string;
   variants: ProductVariantDetail[];
   images: ProductImage[];
   created_date: string;
@@ -124,6 +126,9 @@ export type ProductCardModel = {
   image: string;
   description?: string;
   rawPrice?: number;
+  /** سئو؛ خالی یعنی از عنوان و توضیح محصول ساخته شود */
+  metaTitle?: string;
+  metaDescription?: string;
   /** قیمت قبل از تخفیف؛ فقط وقتی محصول تخفیف دارد */
   oldPrice?: string;
   discountPercent?: number;

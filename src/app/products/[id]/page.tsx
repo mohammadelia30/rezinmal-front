@@ -30,11 +30,27 @@ export async function generateMetadata({
   const { id } = await params;
   const product = await getStoreProduct(id);
   if (!product) return { title: "محصول | رزینمال" };
+
+  // آنچه مدیر در «نمایش در گوگل» نوشته مقدم است؛ وگرنه از خود محصول
+  // ساخته می‌شود تا هیچ صفحه‌ای بدون توضیح نماند
+  const title = product.metaTitle || `${product.title} | رزین‌مال`;
+  const description =
+    product.metaDescription ||
+    product.description ||
+    `${product.title} از ${product.subtitle} — ${product.price}`;
+
   return {
-    title: `${product.title} | رزینمال`,
-    description:
-      product.description ||
-      `${product.title} از برند ${product.subtitle} — ${product.price}`,
+    title,
+    description,
+    alternates: { canonical: `/products/${product.id}` },
+    // پیش‌نمایش لینک در تلگرام، واتساپ و شبکه‌های اجتماعی
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "fa_IR",
+      images: product.image ? [{ url: product.image }] : undefined,
+    },
   };
 }
 

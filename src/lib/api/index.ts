@@ -11,6 +11,7 @@ export {
   getStoreCatalog,
   getStoreProduct,
   getStoreCategories,
+  getPublicSiteInfo,
 } from "@/lib/api/catalog";
 export {
   requestOtp,

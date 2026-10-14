@@ -109,3 +109,31 @@ export async function getStoreCategories(): Promise<CategoryList[]> {
     return [];
   }
 }
+
+
+export type PublicSiteInfo = {
+  shopName: string;
+  metaDescription: string;
+};
+
+/**
+ * اطلاعات عمومی فروشگاه برای سئوی صفحهٔ اصلی.
+ *
+ * اندپوینت تنظیمات فقط برای مدیر است، پس سایت از نسخهٔ عمومی می‌خواند.
+ */
+export async function getPublicSiteInfo(): Promise<PublicSiteInfo | null> {
+  try {
+    const data = await apiFetch<{
+      shop_name?: string;
+      meta_description?: string;
+    }>(API_PATHS.publicSiteSettings, revalidate);
+
+    return {
+      shopName: data.shop_name ?? "",
+      metaDescription: data.meta_description ?? "",
+    };
+  } catch {
+    return null;
+  }
+}
+

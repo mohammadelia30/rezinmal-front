@@ -299,6 +299,7 @@ export type SiteSettingsInput = {
   phone: string;
   email: string;
   address: string;
+  meta_description: string;
   standard_shipping_cost: number;
   large_shipping_cost: number;
   free_shipping_min: number;
@@ -387,6 +388,8 @@ export type ProductInput = {
   status: string;
   is_featured: boolean;
   is_active: boolean;
+  meta_title: string;
+  meta_description: string;
 };
 
 /** وضعیت در بک‌اند IntegerChoices است: ۱ پیش‌نویس، ۲ منتشرشده، ۳ بایگانی */
@@ -406,6 +409,8 @@ function productBody(input: ProductInput) {
     status: Number(input.status) || 2,
     is_featured: input.is_featured,
     is_active: input.is_active,
+    meta_title: input.meta_title,
+    meta_description: input.meta_description,
   };
 }
 

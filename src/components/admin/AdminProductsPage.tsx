@@ -58,6 +58,8 @@ const EMPTY_FORM = {
   weight: "",
   stock: "",
   minimum_stock: "",
+  meta_title: "",
+  meta_description: "",
 };
 
 type FormState = typeof EMPTY_FORM;
@@ -134,6 +136,8 @@ export function AdminProductsPage({
       weight: product.weight == null ? "" : String(product.weight),
       stock: String(product.stock),
       minimum_stock: String(product.minimumStock),
+      meta_title: product.metaTitle,
+      meta_description: product.metaDescription,
     });
     setEditing(product);
     setPendingImages([]);
@@ -158,6 +162,8 @@ export function AdminProductsPage({
     status: form.status,
     is_featured: form.is_featured,
     is_active: form.is_active,
+    meta_title: form.meta_title.trim(),
+    meta_description: form.meta_description.trim(),
   });
 
   const handleCreate = async (event: React.FormEvent) => {
@@ -358,6 +364,40 @@ export function AdminProductsPage({
         value={form.description}
         onChange={(value) => set("description", value)}
       />
+
+      {/* سئو: همان چیزی که در نتیجهٔ گوگل و پیش‌نمایش لینک دیده می‌شود */}
+      <div className="rounded-xl border border-[#efe6d4] p-3">
+        <p className="mb-3 text-right text-sm font-medium text-foreground">
+          نمایش در گوگل (سئو)
+        </p>
+
+        <div className="space-y-3">
+          <div>
+            <AdminField
+              label="عنوان سئو"
+              value={form.meta_title}
+              onChange={(value) => set("meta_title", value.slice(0, 70))}
+              placeholder={form.title || "خالی بماند، از عنوان محصول ساخته می‌شود"}
+            />
+            <p className="mt-1 text-right text-xs text-muted">
+              {form.meta_title.length.toLocaleString("fa-IR")} از ۷۰ کاراکتر
+            </p>
+          </div>
+
+          <div>
+            <AdminTextarea
+              label="توضیح سئو"
+              value={form.meta_description}
+              onChange={(value) => set("meta_description", value.slice(0, 160))}
+              rows={2}
+            />
+            <p className="mt-1 text-right text-xs text-muted">
+              {form.meta_description.length.toLocaleString("fa-IR")} از ۱۶۰
+              کاراکتر — خالی بماند، از توضیح کوتاه محصول استفاده می‌شود.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="text-right">
         <span className="mb-1.5 block text-sm font-medium text-foreground">

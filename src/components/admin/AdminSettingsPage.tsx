@@ -127,6 +127,14 @@ export function AdminSettingsPage({
               onChange={(value) => update("address", value)}
             />
             <Field
+              label="توضیح سئوی صفحهٔ اصلی"
+              hint="در نتیجهٔ گوگل زیر نام سایت دیده می‌شود؛ حداکثر ۱۶۰ کاراکتر"
+              value={settings.meta_description ?? ""}
+              onChange={(value) =>
+                update("meta_description", value.slice(0, 160))
+              }
+            />
+            <Field
               label="هزینه ارسال بستهٔ استاندارد (تومان)"
               hint="سفارش‌های ۱ یا ۲ عددی"
               value={String(settings.standard_shipping_cost ?? 0)}

@@ -334,6 +334,7 @@ export type SiteSettingsModel = {
   phone: string;
   email: string;
   address: string;
+  meta_description: string;
   standard_shipping_cost: number;
   large_shipping_cost: number;
   free_shipping_min: number;
@@ -423,6 +424,9 @@ export type AdminProductDetail = {
   status: string;
   isFeatured: boolean;
   isActive: boolean;
+  /** سئو: عنوان و توضیحی که در نتیجهٔ گوگل دیده می‌شود */
+  metaTitle: string;
+  metaDescription: string;
   price: number;
   sku: string;
   variantId: string;
@@ -475,6 +479,8 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
         status: detail.status == null ? "" : String(detail.status),
         isFeatured: Boolean(detail.is_featured),
         isActive: detail.is_active !== false,
+        metaTitle: detail.meta_title ?? "",
+        metaDescription: detail.meta_description ?? "",
         price: variant?.price ?? 0,
         sku: variant?.sku ?? "",
         variantId: variant ? String(variant.id) : "",
