@@ -589,22 +589,31 @@ export function AdminProductsPage({
                   </span>
                 </div>
 
-                {/* alt برای خواننده‌های صفحه و گوگل؛ بدون آن آپلود انجام
-                    نمی‌شود */}
-                <input
-                  value={image.alt}
-                  onChange={(event) =>
-                    setPendingImages((current) =>
-                      current.map((item, position) =>
-                        position === index
-                          ? { ...item, alt: event.target.value }
-                          : item,
-                      ),
-                    )
-                  }
-                  placeholder="متن جایگزین تصویر (Alt) — مثلاً: قالب سیلیکونی ماه تولد، نمای جلو"
-                  className="mt-2 min-h-9 w-full rounded-lg border border-[#e6dcc2] bg-white px-2.5 py-1.5 text-right text-xs outline-none transition focus:border-brand"
-                />
+                {/* alt برای خواننده‌های صفحه و گوگل؛ بدون آن ذخیره انجام
+                    نمی‌شود، پس عنوان واقعی دارد نه فقط متن داخل کادر */}
+                <label className="mt-2 block text-right">
+                  <span className="mb-1 block text-xs font-medium text-foreground">
+                    متن جایگزین تصویر (Alt)
+                    <span className="text-red-500"> *</span>
+                  </span>
+                  <input
+                    value={image.alt}
+                    onChange={(event) =>
+                      setPendingImages((current) =>
+                        current.map((item, position) =>
+                          position === index
+                            ? { ...item, alt: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                    placeholder="مثلاً: قالب سیلیکونی ماه تولد، نمای جلو"
+                    className="min-h-9 w-full rounded-lg border border-[#e6dcc2] bg-white px-2.5 py-1.5 text-right text-xs outline-none transition focus:border-brand"
+                  />
+                  <span className="mt-1 block text-[11px] leading-5 text-muted">
+                    خودِ تصویر را توصیف کنید، نه فهرست کلمات کلیدی.
+                  </span>
+                </label>
               </li>
             ))}
           </ul>
