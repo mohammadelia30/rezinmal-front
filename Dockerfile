@@ -1,4 +1,8 @@
-# syntax=docker/dockerfile:1
+# بدون «# syntax=docker/dockerfile:1»: آن خط باعث می‌شود BuildKit پیش از
+# ساخت، ایمیج frontend را از اینترنت بگیرد. روی سرور با میرورهای داخلی
+# این مرحله با خطای «frontend grpc server closed unexpectedly» می‌افتاد و
+# دیپلوی متوقف می‌شد. این Dockerfile چیزی فراتر از دستورهای پایه ندارد،
+# پس frontend داخلی خود BuildKit کافی است.
 
 FROM node:22-alpine AS base
 RUN apk add --no-cache libc6-compat
