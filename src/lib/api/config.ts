@@ -60,6 +60,8 @@ export const API_PATHS = {
   adminRoles: "/api/accounts/roles/",
   adminRole: (id: string | number) => `/api/accounts/roles/${id}/`,
   panelPermissions: "/api/accounts/panel-permissions/",
+  articles: "/api/blog/articles/",
+  article: (id: string | number) => `/api/blog/articles/${id}/`,
   siteSettings: "/api/core/settings/",
   publicSiteSettings: "/api/core/public-settings/",
   productImages: "/api/catalog/images/",

@@ -6,25 +6,40 @@ import { BlogArticleCard } from "@/components/blog/BlogArticleCard";
 import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { CategoryPagination } from "@/components/category/CategoryPagination";
 import { Container } from "@/components/Container";
-import { blogPosts } from "@/data/blog";
+import type { StoreArticle } from "@/lib/api/catalog";
 
 const MOBILE_PAGE_SIZE = 4;
 const DESKTOP_PAGE_SIZE = 6;
 const TOTAL_PAGES = 3;
 
-export function BlogPageContent() {
+export function BlogPageContent({
+  articles = [],
+}: {
+  articles?: StoreArticle[];
+}) {
+  // مقاله‌های واقعی فروشگاه؛ دسته و سطح هنوز در بک‌اند نیست، پس
+  // فیلترهای کناری روی همین فهرست اثری ندارند
+  const blogPosts = articles.map((article) => ({
+    id: article.id,
+    title: article.title,
+    shortTitle: article.title,
+    excerpt: article.excerpt,
+    category: "مقاله",
+    categoryId: "tutorial",
+    author: "رزین‌مال",
+    label: "مقاله",
+    price: "",
+    image: article.image,
+    imageAlt: article.imageAlt,
+  }));
+
   const [categoryId, setCategoryId] = useState("tutorial");
   const [levelId, setLevelId] = useState("beginner");
   const [extraId, setExtraId] = useState("kit");
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    const byCategory = blogPosts.filter(
-      (post) => post.categoryId === categoryId,
-    );
-    return byCategory.length >= 3 ? byCategory : blogPosts;
-  }, [categoryId]);
+  const filtered = blogPosts;
 
   const mobileVisible = useMemo(() => {
     const rotated = [

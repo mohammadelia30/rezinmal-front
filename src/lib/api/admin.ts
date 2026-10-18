@@ -359,12 +359,15 @@ export type AdminCategoryRow = {
   parentTitle: string;
   sortOrder: number;
   isActive: boolean;
+  /** تصویر دسته؛ خالی یعنی هنوز آپلود نشده */
+  imageUrl: string;
 };
 
 type ApiCategory = {
   id: number;
   title: string;
   description?: string;
+  image?: string | null;
   parent?: number | null;
   sort_order?: number;
   is_active?: boolean;
@@ -384,6 +387,7 @@ export async function getAdminCategories(): Promise<AdminCategoryRow[]> {
     parentTitle: item.parent ? (titleById.get(item.parent) ?? "—") : "—",
     sortOrder: item.sort_order ?? 0,
     isActive: item.is_active !== false,
+    imageUrl: publicMediaUrl(item.image) ?? "",
   }));
 }
 
@@ -729,3 +733,60 @@ export async function getAdminUser(
       : "—",
   };
 }
+
+
+// ==========================================================
+// مقالات
+// ==========================================================
+
+type ApiArticle = {
+  id: number;
+  title: string;
+  slug?: string;
+  cover?: string | null;
+  cover_alt?: string;
+  summary?: string;
+  content?: string;
+  is_published?: boolean;
+  published_at?: string | null;
+  meta_title?: string;
+  meta_description?: string;
+};
+
+export type AdminArticleRow = {
+  id: string;
+  title: string;
+  slug: string;
+  coverUrl: string;
+  coverAlt: string;
+  summary: string;
+  content: string;
+  isPublished: boolean;
+  publishedAt: string;
+  metaTitle: string;
+  metaDescription: string;
+};
+
+function toAdminArticle(item: ApiArticle): AdminArticleRow {
+  return {
+    id: String(item.id),
+    title: item.title,
+    slug: item.slug ?? "",
+    coverUrl: publicMediaUrl(item.cover) ?? "",
+    coverAlt: item.cover_alt ?? "",
+    summary: item.summary ?? "",
+    content: item.content ?? "",
+    isPublished: Boolean(item.is_published),
+    publishedAt: formatDate(item.published_at),
+    metaTitle: item.meta_title ?? "",
+    metaDescription: item.meta_description ?? "",
+  };
+}
+
+/** مقالات برای پنل؛ پیش‌نویس‌ها را هم برمی‌گرداند. */
+export async function getAdminArticles(): Promise<AdminArticleRow[]> {
+  const items = await serverApiFetch<ApiArticle[]>(API_PATHS.articles);
+  if (!Array.isArray(items)) return [];
+  return items.map(toAdminArticle);
+}
+

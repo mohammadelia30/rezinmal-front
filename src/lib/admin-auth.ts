@@ -37,6 +37,7 @@ export const PANEL_PERMISSIONS = [
   "panel_users",
   "panel_roles",
   "panel_settings",
+  "panel_articles",
 ] as const;
 
 /** panel_orders → orders */
@@ -100,6 +101,12 @@ export const adminNavItems: {
     label: "باشگاه مشتریان",
     exact: false,
     permission: "users",
+  },
+  {
+    href: "/admin/articles",
+    label: "مقالات",
+    exact: false,
+    permission: "articles",
   },
   {
     href: "/admin/roles",

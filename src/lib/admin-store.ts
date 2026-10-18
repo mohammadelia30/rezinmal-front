@@ -327,6 +327,8 @@ export type CategoryInput = {
   parent: string;
   sort_order: number;
   is_active: boolean;
+  /** تصویر تازه؛ خالی یعنی تصویر فعلی دست‌نخورده بماند */
+  image?: File | null;
 };
 
 function categoryBody(input: CategoryInput) {
@@ -339,18 +341,61 @@ function categoryBody(input: CategoryInput) {
   };
 }
 
+/**
+ * دسته‌بندی با تصویر.
+ *
+ * تصویر فایل است، پس درخواست باید multipart باشد؛ با JSON معمولی
+ * فیلد image اصلاً به بک‌اند نمی‌رسید و دسته بدون عکس ذخیره می‌شد.
+ */
+async function sendCategory(
+  path: string,
+  method: "POST" | "PATCH",
+  input: CategoryInput,
+): Promise<void> {
+  const body = categoryBody(input);
+
+  if (!input.image) {
+    await send(path, { method, body });
+    return;
+  }
+
+  const problem = checkImageFile(input.image);
+  if (problem) throw new AdminActionError(problem);
+
+  const form = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    // parent خالی را نباید فرستاد؛ رشتهٔ "null" برای بک‌اند عدد نیست
+    if (value === null || value === undefined) continue;
+    form.append(key, String(value));
+  }
+  form.append("image", input.image);
+
+  const response = await fetch(path, {
+    method,
+    credentials: "same-origin",
+    body: form,
+  });
+
+  if (!response.ok) {
+    if (response.status === 413) {
+      throw new AdminActionError(
+        "حجم تصویر بیشتر از حد مجاز است؛ تصویر کوچک‌تری انتخاب کنید.",
+      );
+    }
+    const data = await response.json().catch(() => null);
+    throw new AdminActionError(readApiError(data, response.status));
+  }
+}
+
 export async function createCategory(input: CategoryInput): Promise<void> {
-  await send(API_PATHS.categories, { method: "POST", body: categoryBody(input) });
+  await sendCategory(API_PATHS.categories, "POST", input);
 }
 
 export async function updateCategory(
   id: string,
   input: CategoryInput,
 ): Promise<void> {
-  await send(API_PATHS.category(id), {
-    method: "PATCH",
-    body: categoryBody(input),
-  });
+  await sendCategory(API_PATHS.category(id), "PATCH", input);
 }
 
 export async function deleteCategory(id: string): Promise<void> {
@@ -706,5 +751,98 @@ export async function setUserPassword(
     method: "POST",
     body: { password, password_confirm: confirm },
   });
+}
+
+
+// ==========================================================
+// مقالات
+// ==========================================================
+
+export type ArticleInput = {
+  title: string;
+  summary: string;
+  content: string;
+  isPublished: boolean;
+  coverAlt: string;
+  metaTitle: string;
+  metaDescription: string;
+  /** تصویر تازه؛ خالی یعنی تصویر فعلی بماند */
+  cover?: File | null;
+};
+
+function articleBody(input: ArticleInput) {
+  return {
+    title: input.title,
+    summary: input.summary,
+    content: input.content,
+    is_published: input.isPublished,
+    cover_alt: input.coverAlt,
+    meta_title: input.metaTitle,
+    meta_description: input.metaDescription,
+  };
+}
+
+/** مقاله با تصویر؛ مثل دسته‌بندی، وجود فایل یعنی درخواست multipart. */
+async function sendArticle(
+  path: string,
+  method: "POST" | "PATCH",
+  input: ArticleInput,
+): Promise<void> {
+  const body = articleBody(input);
+
+  if (!input.cover) {
+    await send(path, { method, body });
+    return;
+  }
+
+  const problem = checkImageFile(input.cover);
+  if (problem) throw new AdminActionError(problem);
+
+  const form = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    form.append(key, String(value));
+  }
+  form.append("cover", input.cover);
+
+  const response = await fetch(path, {
+    method,
+    credentials: "same-origin",
+    body: form,
+  });
+
+  if (!response.ok) {
+    if (response.status === 413) {
+      throw new AdminActionError(
+        "حجم تصویر بیشتر از حد مجاز است؛ تصویر کوچک‌تری انتخاب کنید.",
+      );
+    }
+    const data = await response.json().catch(() => null);
+    throw new AdminActionError(readApiError(data, response.status));
+  }
+}
+
+export async function createArticle(input: ArticleInput): Promise<void> {
+  await sendArticle(API_PATHS.articles, "POST", input);
+}
+
+export async function updateArticle(
+  id: string,
+  input: ArticleInput,
+): Promise<void> {
+  await sendArticle(API_PATHS.article(id), "PATCH", input);
+}
+
+export async function setArticlePublished(
+  id: string,
+  isPublished: boolean,
+): Promise<void> {
+  await send(API_PATHS.article(id), {
+    method: "PATCH",
+    body: { is_published: isPublished },
+  });
+}
+
+export async function deleteArticle(id: string): Promise<void> {
+  await send(API_PATHS.article(id), { method: "DELETE" });
 }
 

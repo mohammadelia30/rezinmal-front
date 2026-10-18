@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { articles } from "@/data/home";
+import type { StoreArticle } from "@/lib/api/catalog";
 
-export function Articles() {
+export function Articles({ articles = [] }: { articles?: StoreArticle[] }) {
+  if (articles.length === 0) return null;
+
   return (
     <section
       id="articles"
@@ -26,13 +28,14 @@ export function Articles() {
           {articles.map((article) => (
             <Link
               key={article.id}
-              href="/blog"
+              href={`/blog/${article.id}`}
               className="group overflow-hidden rounded-2xl bg-[#f4eee2] transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
                   src={article.image}
-                  alt={article.title}
+                  alt={article.imageAlt}
+                  unoptimized={article.image.startsWith("http")}
                   fill
                   sizes="(max-width: 1024px) 100vw, 33vw"
                   className="object-cover transition duration-500 group-hover:scale-105"

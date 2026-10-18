@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import Image from "next/image";
+import { useRef, useState } from "react";
 import {
   AdminBadge,
   AdminButton,
@@ -18,6 +19,7 @@ import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import type { AdminCategoryRow } from "@/lib/api/admin";
 import {
   AdminActionError,
+  checkImageFile,
   createCategory,
   deleteCategory,
   updateCategory,
@@ -42,6 +44,10 @@ export function AdminCategoriesPage({
     "title", "parentTitle",
   ]);
   const [form, setForm] = useState(EMPTY);
+  // تصویر انتخاب‌شده تا زدن «ذخیره»؛ خالی یعنی تصویر فعلی بماند
+  const [image, setImage] = useState<File | null>(null);
+  const [currentImage, setCurrentImage] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -73,6 +79,8 @@ export function AdminCategoriesPage({
 
   const openCreate = () => {
     setForm(EMPTY);
+    setImage(null);
+    setCurrentImage("");
     setEditingId(null);
     setOpen(true);
     setError("");
@@ -86,6 +94,8 @@ export function AdminCategoriesPage({
       sort_order: String(row.sortOrder),
       is_active: row.isActive,
     });
+    setImage(null);
+    setCurrentImage(row.imageUrl);
     setEditingId(row.id);
     setOpen(true);
     setError("");
@@ -104,6 +114,7 @@ export function AdminCategoriesPage({
       parent: form.parent,
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
+      image,
     };
 
     const done = await run(() =>
@@ -223,6 +234,74 @@ export function AdminCategoriesPage({
               value={form.description}
               onChange={(value) => set("description", value)}
             />
+
+            {/* تصویر دسته؛ همراه بقیهٔ فیلدها ذخیره می‌شود */}
+            <div className="rounded-xl border border-[#efe6d4] p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <AdminButton
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => fileInput.current?.click()}
+                >
+                  انتخاب تصویر
+                </AdminButton>
+                <span className="text-sm font-medium text-foreground">
+                  تصویر دسته‌بندی
+                </span>
+              </div>
+
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  event.target.value = "";
+                  if (!file) return;
+
+                  const problem = checkImageFile(file);
+                  if (problem) {
+                    setError(problem);
+                    return;
+                  }
+
+                  setError("");
+                  setImage(file);
+                }}
+              />
+
+              {image ? (
+                <p className="flex items-center justify-between gap-2 rounded-lg bg-[#fbf9f1] px-3 py-1.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setImage(null)}
+                    className="text-[#9b3d3d]"
+                    aria-label="حذف از فهرست"
+                  >
+                    ✕
+                  </button>
+                  <span className="truncate">{image.name}</span>
+                </p>
+              ) : currentImage ? (
+                <div className="flex items-center justify-end gap-3">
+                  <span className="text-xs text-muted">تصویر فعلی</span>
+                  <div className="relative size-16 overflow-hidden rounded-lg bg-brand-mist">
+                    <Image
+                      src={currentImage}
+                      alt=""
+                      fill
+                      sizes="64px"
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-muted">تصویری ثبت نشده است.</p>
+              )}
+            </div>
 
             <AdminToggleField
               label="فعال"

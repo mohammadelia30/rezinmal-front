@@ -6,7 +6,11 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { MobileCategories } from "@/components/MobileCategories";
-import { getPublicSiteInfo, getStoreProducts } from "@/lib/api";
+import {
+  getPublicSiteInfo,
+  getStoreArticles,
+  getStoreProducts,
+} from "@/lib/api";
 
 /**
  * عنوان و توضیح صفحهٔ اصلی از تنظیمات پنل می‌آید تا مدیر بدون تغییر کد
@@ -30,7 +34,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const products = await getStoreProducts({ featuredOnly: true });
+  const [products, articles] = await Promise.all([
+    getStoreProducts({ featuredOnly: true }),
+    getStoreArticles(),
+  ]);
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
@@ -42,7 +49,7 @@ export default async function Home() {
         <div id="gallery">
           <FeaturedProducts mobileMode="home" items={products} />
         </div>
-        <Articles />
+        <Articles articles={articles} />
       </main>
       <Footer />
     </div>

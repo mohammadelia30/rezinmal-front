@@ -28,6 +28,7 @@ export type InvoiceStatus = "paid" | "unpaid" | "refunded";
 export type AdminPermission =
   | "dashboard"
   | "orders"
+  | "articles"
   | "invoices"
   | "products"
   | "discounts"
@@ -187,6 +188,7 @@ export const permissionLabels: Record<AdminPermission, string> = {
   users: "کاربران",
   roles: "نقش‌ها",
   settings: "تنظیمات",
+  articles: "مقالات",
 };
 
 export const allPermissions: AdminPermission[] = [
@@ -198,6 +200,7 @@ export const allPermissions: AdminPermission[] = [
   "users",
   "roles",
   "settings",
+  "articles",
 ];
 
 

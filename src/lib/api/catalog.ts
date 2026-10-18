@@ -1,6 +1,7 @@
 import { apiFetch } from "@/lib/api/client";
 import { API_PATHS } from "@/lib/api/config";
 import { mapProductDetailToCard } from "@/lib/api/mappers";
+import { publicMediaUrl } from "@/lib/format";
 import type {
   BrandList,
   CategoryDetail,
@@ -132,6 +133,71 @@ export async function getPublicSiteInfo(): Promise<PublicSiteInfo | null> {
       shopName: data.shop_name ?? "",
       metaDescription: data.meta_description ?? "",
     };
+  } catch {
+    return null;
+  }
+}
+
+
+export type StoreArticle = {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  imageAlt: string;
+  publishedAt: string;
+  metaTitle?: string;
+  metaDescription?: string;
+};
+
+type ApiArticle = {
+  id: number;
+  title: string;
+  cover?: string | null;
+  cover_alt?: string;
+  summary?: string;
+  content?: string;
+  published_at?: string | null;
+  meta_title?: string;
+  meta_description?: string;
+};
+
+const ARTICLE_PLACEHOLDER = "/images/article-1.jpg";
+
+function toStoreArticle(item: ApiArticle): StoreArticle {
+  return {
+    id: String(item.id),
+    title: item.title,
+    excerpt: item.summary ?? "",
+    content: item.content ?? "",
+    image: publicMediaUrl(item.cover) ?? ARTICLE_PLACEHOLDER,
+    imageAlt: item.cover_alt || item.title,
+    publishedAt: item.published_at ?? "",
+    metaTitle: item.meta_title || undefined,
+    metaDescription: item.meta_description || undefined,
+  };
+}
+
+/** مقالات منتشرشده؛ پیش‌نویس‌ها از بک‌اند برنمی‌گردند. */
+export async function getStoreArticles(): Promise<StoreArticle[]> {
+  try {
+    const items = await apiFetch<ApiArticle[]>(API_PATHS.articles, revalidate);
+    return Array.isArray(items) ? items.map(toStoreArticle) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getStoreArticle(
+  id: string,
+): Promise<StoreArticle | null> {
+  if (!/^\d+$/.test(id)) return null;
+
+  try {
+    return toStoreArticle(
+      await apiFetch<ApiArticle>(API_PATHS.article(id), revalidate),
+    );
   } catch {
     return null;
   }
