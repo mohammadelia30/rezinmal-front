@@ -1,15 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { categories, products } from "@/data/home";
+import { categories } from "@/data/home";
+import type { ProductCardModel } from "@/lib/api/types";
 
-export function Categories() {
+/**
+ * بخش «دسته‌بندی‌های اصلی» صفحهٔ اصلی.
+ *
+ * شبکهٔ موبایل قبلاً محصول نمونه نشان می‌داد و لینکش به صفحهٔ ۴۰۴
+ * می‌رفت؛ حالا محصول واقعی فروشگاه است. کاشی‌های دسکتاپ طرح ثابت
+ * صفحه‌اند و به صفحهٔ دسته‌بندی‌ها می‌روند.
+ */
+export function Categories({
+  products = [],
+}: {
+  products?: ProductCardModel[];
+}) {
   const mobileProducts = products.slice(0, 2);
 
   return (
     <>
       {/* Mobile — Figma 25:5 product grid */}
-      <section className="bg-[#f6f1e7] px-4 py-4 md:hidden">
+      <section
+        className={`bg-[#f6f1e7] px-4 py-4 md:hidden ${
+          mobileProducts.length === 0 ? "hidden" : ""
+        }`}
+      >
         <h2 className="mb-3 text-right text-sm font-bold text-[#3d2447]">
           دسته‌بندی‌های اصلی
         </h2>

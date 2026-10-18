@@ -38,7 +38,7 @@ export default async function Home() {
       <main className="flex-1">
         <Hero />
         <MobileCategories />
-        <Categories />
+        <Categories products={products} />
         <div id="gallery">
           <FeaturedProducts mobileMode="home" items={products} />
         </div>

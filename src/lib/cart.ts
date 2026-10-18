@@ -12,12 +12,24 @@ export type CartProduct = {
   price: string;
   image: string;
   quantity: number;
+  /** نسخهٔ خریداری‌شده؛ قیمت ردیف از همین نسخه است */
+  variantId?: number;
 };
 
 type StoredCartItem = {
   id: string;
   quantity: number;
+  /** نسخهٔ انتخاب‌شده (رنگ/سایز)؛ خالی یعنی نسخهٔ پیش‌فرض محصول */
+  variantId?: number;
 };
+
+/**
+ * هر ترکیب محصول و نسخه یک ردیف جداست: یک محصول با دو رنگ مختلف
+ * دو قیمت دارد و نباید در یک ردیف جمع شود.
+ */
+function lineKey(item: { id: string; variantId?: number }) {
+  return `${item.id}:${item.variantId ?? ""}`;
+}
 
 const CART_GUEST_KEY = "cart:guest";
 
@@ -59,12 +71,14 @@ async function hydrateItems(
   const valid = items.filter((item) => item.quantity > 0);
   if (valid.length === 0) return [];
 
-  const products = await fetchProductsByIds(valid.map((item) => item.id));
+  const products = await fetchProductsByIds(valid);
 
   return valid.flatMap((item) => {
-    const product = products.get(item.id);
+    const product = products.get(lineKey(item));
     if (!product) return [];
-    return [{ ...product, quantity: item.quantity }];
+    return [
+      { ...product, quantity: item.quantity, variantId: item.variantId },
+    ];
   });
 }
 
@@ -72,17 +86,18 @@ function mergeItems(
   current: StoredCartItem[],
   incoming: StoredCartItem[],
 ): StoredCartItem[] {
-  const map = new Map<string, number>();
+  const map = new Map<string, StoredCartItem>();
 
-  for (const item of current) {
-    map.set(item.id, item.quantity);
+  for (const item of [...current, ...incoming]) {
+    const key = lineKey(item);
+    const found = map.get(key);
+    map.set(
+      key,
+      found ? { ...found, quantity: found.quantity + item.quantity } : item,
+    );
   }
 
-  for (const item of incoming) {
-    map.set(item.id, (map.get(item.id) ?? 0) + item.quantity);
-  }
-
-  return Array.from(map.entries()).map(([id, quantity]) => ({ id, quantity }));
+  return Array.from(map.values());
 }
 
 export function mergeGuestCartIntoUser(phone: string) {
@@ -99,17 +114,19 @@ export function addProductToCart(
   phone: string | null,
   productId: string,
   quantity = 1,
+  variantId?: number,
 ) {
   const items = readStoredItems(phone);
-  const existing = items.find((item) => item.id === productId);
+  const key = lineKey({ id: productId, variantId });
+  const existing = items.find((item) => lineKey(item) === key);
 
   const nextItems = existing
     ? items.map((item) =>
-        item.id === productId
+        lineKey(item) === key
           ? { ...item, quantity: item.quantity + quantity }
           : item,
       )
-    : [...items, { id: productId, quantity }];
+    : [...items, { id: productId, quantity, variantId }];
 
   writeStoredItems(phone, nextItems);
   notifyCartChange();
@@ -119,24 +136,31 @@ export function updateCartQuantity(
   phone: string | null,
   productId: string,
   quantity: number,
+  variantId?: number,
 ) {
   if (quantity < 1) {
-    removeFromCart(phone, productId);
+    removeFromCart(phone, productId, variantId);
     return;
   }
 
+  const key = lineKey({ id: productId, variantId });
   const nextItems = readStoredItems(phone).map((item) =>
-    item.id === productId ? { ...item, quantity } : item,
+    lineKey(item) === key ? { ...item, quantity } : item,
   );
 
   writeStoredItems(phone, nextItems);
   notifyCartChange();
 }
 
-export function removeFromCart(phone: string | null, productId: string) {
+export function removeFromCart(
+  phone: string | null,
+  productId: string,
+  variantId?: number,
+) {
+  const key = lineKey({ id: productId, variantId });
   writeStoredItems(
     phone,
-    readStoredItems(phone).filter((item) => item.id !== productId),
+    readStoredItems(phone).filter((item) => lineKey(item) !== key),
   );
   notifyCartChange();
 }
@@ -187,24 +211,24 @@ export function useCart() {
   }, [refresh]);
 
   const add = useCallback(
-    (productId: string, quantity = 1) => {
-      addProductToCart(phone, productId, quantity);
+    (productId: string, quantity = 1, variantId?: number) => {
+      addProductToCart(phone, productId, quantity, variantId);
       refresh();
     },
     [phone, refresh],
   );
 
   const setQuantity = useCallback(
-    (productId: string, quantity: number) => {
-      updateCartQuantity(phone, productId, quantity);
+    (productId: string, quantity: number, variantId?: number) => {
+      updateCartQuantity(phone, productId, quantity, variantId);
       refresh();
     },
     [phone, refresh],
   );
 
   const remove = useCallback(
-    (productId: string) => {
-      removeFromCart(phone, productId);
+    (productId: string, variantId?: number) => {
+      removeFromCart(phone, productId, variantId);
       refresh();
     },
     [phone, refresh],

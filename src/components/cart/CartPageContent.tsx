@@ -57,7 +57,7 @@ export function CartPageContent() {
 
             return (
               <article
-                key={item.id}
+                key={`${item.id}:${item.variantId ?? ""}`}
                 className="rounded-2xl bg-white p-4 shadow-[0_4px_20px_rgba(78,42,84,0.06)] sm:p-5"
               >
                 <div className="flex gap-4">
@@ -84,7 +84,7 @@ export function CartPageContent() {
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                       <button
                         type="button"
-                        onClick={() => remove(item.id)}
+                        onClick={() => remove(item.id, item.variantId)}
                         className="text-xs font-medium text-[#8a3a3a] transition hover:text-[#6f2f2f]"
                       >
                         حذف
@@ -94,7 +94,9 @@ export function CartPageContent() {
                         <button
                           type="button"
                           aria-label="کاهش تعداد"
-                          onClick={() => setQuantity(item.id, item.quantity - 1)}
+                          onClick={() =>
+                            setQuantity(item.id, item.quantity - 1, item.variantId)
+                          }
                           className="flex size-8 items-center justify-center rounded-lg border border-[#e6dcc2] bg-[#fbf9f1] text-brand transition hover:bg-brand-mist"
                         >
                           −
@@ -105,7 +107,9 @@ export function CartPageContent() {
                         <button
                           type="button"
                           aria-label="افزایش تعداد"
-                          onClick={() => setQuantity(item.id, item.quantity + 1)}
+                          onClick={() =>
+                            setQuantity(item.id, item.quantity + 1, item.variantId)
+                          }
                           className="flex size-8 items-center justify-center rounded-lg border border-[#e6dcc2] bg-[#fbf9f1] text-brand transition hover:bg-brand-mist"
                         >
                           +

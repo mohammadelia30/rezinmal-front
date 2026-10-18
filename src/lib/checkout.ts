@@ -11,7 +11,7 @@
 
 export class CheckoutError extends Error {}
 
-type StoredItem = { id: string; quantity: number };
+type StoredItem = { id: string; quantity: number; variantId?: number };
 
 type ApiVariant = { id: number; is_default?: boolean; is_active?: boolean };
 type ApiProduct = { id: number; title: string; variants?: ApiVariant[] };
@@ -98,15 +98,27 @@ async function call<T>(
   return data as T;
 }
 
-/** نسخهٔ پیش‌فرضِ فعالِ هر محصول؛ سبد سرور با نسخه کار می‌کند نه محصول. */
-async function resolveVariant(productId: string): Promise<{ variant: number; title: string }> {
+/**
+ * نسخه‌ای که باید خریده شود.
+ *
+ * اگر مشتری رنگ یا سایزی انتخاب کرده باشد، همان؛ وگرنه نسخهٔ پیش‌فرض.
+ * قبلاً همیشه نسخهٔ پیش‌فرض خریده می‌شد و انتخاب مشتری در قیمت نهایی
+ * اثری نداشت.
+ */
+async function resolveVariant(
+  productId: string,
+  variantId?: number,
+): Promise<{ variant: number; title: string }> {
   const product = await call<ApiProduct>(
     `/api/catalog/products/${encodeURIComponent(productId)}`,
     {},
     "یکی از محصولات سبد پیدا نشد.",
   );
   const active = (product.variants ?? []).filter((item) => item.is_active !== false);
-  const variant = active.find((item) => item.is_default) ?? active[0];
+  const variant =
+    (variantId ? active.find((item) => item.id === variantId) : undefined) ??
+    active.find((item) => item.is_default) ??
+    active[0];
   if (!variant) {
     throw new CheckoutError(`«${product.title}» در حال حاضر قابل خرید نیست.`);
   }
@@ -123,7 +135,9 @@ export async function syncServerCart(items: StoredItem[]): Promise<ServerCart> {
   const valid = items.filter((item) => item.quantity > 0);
   if (valid.length === 0) throw new CheckoutError("سبد خرید خالی است.");
 
-  const resolved = await Promise.all(valid.map((item) => resolveVariant(item.id)));
+  const resolved = await Promise.all(
+    valid.map((item) => resolveVariant(item.id, item.variantId)),
+  );
 
   await call("/api/cart", { method: "DELETE" });
 

@@ -15,10 +15,12 @@ import type { ProductCardModel } from "@/lib/api/types";
 const PLACEHOLDER_IMAGE = "/images/product-1.jpg";
 
 type ApiVariant = {
+  id: number;
   price: number;
   final_price?: number;
   is_default?: boolean;
   is_active?: boolean;
+  attribute_values?: { attribute?: string; value: string }[];
 };
 type ApiImage = { image?: string | null; is_primary?: boolean };
 
@@ -30,9 +32,14 @@ type ApiProduct = {
   images?: ApiImage[];
 };
 
-function toCard(product: ApiProduct): ProductCardModel {
+function toCard(product: ApiProduct, variantId?: number): ProductCardModel {
+  // نسخهٔ انتخاب‌شدهٔ مشتری؛ وگرنه نسخهٔ پیش‌فرض محصول
   const variant =
-    product.variants?.find((item) => item.is_default) ?? product.variants?.[0];
+    (variantId
+      ? product.variants?.find((item) => item.id === variantId)
+      : undefined) ??
+    product.variants?.find((item) => item.is_default) ??
+    product.variants?.[0];
   const image =
     product.images?.find((item) => item.is_primary) ?? product.images?.[0];
   const brand =
@@ -40,10 +47,18 @@ function toCard(product: ApiProduct): ProductCardModel {
       ? product.brand
       : (product.brand?.title ?? "");
 
+  const attributes = (variant?.attribute_values ?? [])
+    .map((item) => (item.attribute ? `${item.attribute}: ${item.value}` : item.value))
+    .filter(Boolean)
+    .join("، ");
+
   return {
     id: String(product.id),
     title: product.title,
-    subtitle: brand || "رزین‌مال",
+    // ویژگی نسخه کنار نام برند می‌آید تا در سبد معلوم باشد کدام رنگ
+    // یا سایز انتخاب شده است
+    subtitle: attributes || brand || "رزین‌مال",
+    variantId: variant?.id,
     // قیمت بعد از تخفیف؛ سبد خرید با همین جمع می‌زند
     ...getVariantPricing(variant),
     image: image?.image ? toPublicPath(image.image) : PLACEHOLDER_IMAGE,
@@ -61,22 +76,37 @@ function toPublicPath(url: string): string {
   }
 }
 
-/** چند محصول را هم‌زمان می‌گیرد؛ شناسه‌های نامعتبر نادیده گرفته می‌شوند. */
+export type CartLineRef = { id: string; variantId?: number };
+
+/**
+ * محصولات سبد خرید و علاقه‌مندی‌ها.
+ *
+ * کلید نتیجه «شناسهٔ محصول:شناسهٔ نسخه» است، چون یک محصول با دو نسخهٔ
+ * مختلف دو ردیف و دو قیمت دارد.
+ */
 export async function fetchProductsByIds(
-  ids: string[],
+  refs: (string | CartLineRef)[],
 ): Promise<Map<string, ProductCardModel>> {
-  const unique = Array.from(new Set(ids.filter((id) => /^\d+$/.test(id))));
+  const lines = refs
+    .map((ref) => (typeof ref === "string" ? { id: ref } : ref))
+    .filter((ref) => /^\d+$/.test(ref.id));
+
+  const unique = new Map<string, CartLineRef>();
+  for (const line of lines) {
+    unique.set(`${line.id}:${line.variantId ?? ""}`, line);
+  }
+
   const found = new Map<string, ProductCardModel>();
 
   await Promise.all(
-    unique.map(async (id) => {
+    Array.from(unique.entries()).map(async ([key, line]) => {
       try {
-        const response = await fetch(`/api/catalog/products/${id}`, {
+        const response = await fetch(`/api/catalog/products/${line.id}`, {
           credentials: "same-origin",
         });
         if (!response.ok) return;
         const data = (await response.json()) as ApiProduct;
-        found.set(String(data.id), toCard(data));
+        found.set(key, toCard(data, line.variantId));
       } catch {
         // محصول حذف شده یا شبکه قطع است؛ از قلم می‌افتد
       }

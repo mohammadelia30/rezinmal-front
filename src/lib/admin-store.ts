@@ -533,13 +533,21 @@ export async function uploadProductImage(
   productId: string,
   file: File,
   isPrimary: boolean,
+  alt: string,
 ): Promise<void> {
   const tooBig = checkImageFile(file);
   if (tooBig) throw new AdminActionError(tooBig);
 
+  if (!alt.trim()) {
+    throw new AdminActionError(
+      `برای «${file.name}» متن جایگزین تصویر را بنویسید.`,
+    );
+  }
+
   const form = new FormData();
   form.append("product", productId);
   form.append("image", file);
+  form.append("alt", alt.trim());
   form.append("is_primary", isPrimary ? "true" : "false");
 
   const response = await fetch(API_PATHS.productImages, {

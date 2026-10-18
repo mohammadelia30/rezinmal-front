@@ -74,6 +74,7 @@ export function ProductSearch({ items }: { items: ProductCardModel[] }) {
                 oldPrice={product.oldPrice}
                 discountPercent={product.discountPercent}
                 image={product.image}
+                imageAlt={product.imageAlt}
               />
             ))}
           </div>

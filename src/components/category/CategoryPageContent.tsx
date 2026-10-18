@@ -31,11 +31,12 @@ export function CategoryPageContent({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filteredProducts = useMemo(() => {
-    const ids = productsByCategory[activeCategory];
-    if (!ids || ids.length === 0) return products;
-    const idSet = new Set(ids);
-    const matched = products.filter((item) => idSet.has(item.id));
-    return matched.length ? matched : products;
+    if (activeCategory === "all") return products;
+
+    // دستهٔ خالی یعنی خالی. قبلاً در این حالت همهٔ محصولات نشان داده
+    // می‌شد و به نظر می‌رسید محصول در دسته‌ای است که انتخاب نشده.
+    const ids = new Set(productsByCategory[activeCategory] ?? []);
+    return products.filter((item) => ids.has(item.id));
   }, [activeCategory, products, productsByCategory]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
@@ -103,6 +104,7 @@ export function CategoryPageContent({
                     discountPercent={product.discountPercent}
                     rating="۴.۸"
                     image={product.image}
+                    imageAlt={product.imageAlt}
                   />
                 </Link>
               ))}

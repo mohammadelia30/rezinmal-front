@@ -32,11 +32,18 @@ export type ProductImage = {
   sort_order?: number;
 };
 
+export type AttributeValueDetail = {
+  id: number;
+  /** نام ویژگی، مثلاً «رنگ» */
+  attribute?: string;
+  value: string;
+};
+
 export type ProductVariantDetail = {
   id: number;
   sku: string;
   barcode?: string;
-  attribute_values?: unknown[];
+  attribute_values?: AttributeValueDetail[];
   price: number;
   /** قیمت بعد از تخفیف محصول/دسته؛ در نسخه‌های قدیمی بک‌اند نیست */
   final_price?: number;
@@ -129,8 +136,24 @@ export type ProductCardModel = {
   /** سئو؛ خالی یعنی از عنوان و توضیح محصول ساخته شود */
   metaTitle?: string;
   metaDescription?: string;
+  /** متن جایگزین تصویر اصلی؛ برای خواننده‌های صفحه و گوگل */
+  imageAlt?: string;
+  /** نسخه‌های فعال محصول؛ هرکدام قیمت خودش را دارد */
+  variants?: VariantOption[];
   /** قیمت قبل از تخفیف؛ فقط وقتی محصول تخفیف دارد */
   oldPrice?: string;
   discountPercent?: number;
   variantId?: number;
 };
+
+/** یک نسخهٔ قابل خرید: ترکیب ویژگی‌ها با قیمت خودش */
+export type VariantOption = {
+  id: number;
+  /** «رنگ: قرمز، سایز: بزرگ» */
+  label: string;
+  price: string;
+  oldPrice?: string;
+  discountPercent?: number;
+  rawPrice: number;
+};
+

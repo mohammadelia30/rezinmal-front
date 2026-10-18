@@ -64,6 +64,9 @@ const EMPTY_FORM = {
 
 type FormState = typeof EMPTY_FORM;
 
+/** تصویر انتخاب‌شده تا زدن «ذخیره»، همراه متن جایگزینش */
+type PendingImage = { file: File; alt: string };
+
 export function AdminProductsPage({
   products,
   categories,
@@ -85,7 +88,7 @@ export function AdminProductsPage({
   // تصویرهای انتخاب‌شده تا زدن «ذخیره» همین‌جا می‌مانند: هنگام ساخت
   // محصول هنوز شناسه‌ای وجود ندارد، و هنگام ویرایش هم آپلود فوری یعنی
   // فرم بسته شود و بقیهٔ تغییرهای همان فرم از دست برود.
-  const [pendingImages, setPendingImages] = useState<File[]>([]);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   // تصویرهای موجود که مدیر حذفشان کرده ولی هنوز ذخیره نزده است
   const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -183,6 +186,14 @@ export function AdminProductsPage({
       return;
     }
 
+    const missingAlt = pendingImages.find((image) => !image.alt.trim());
+    if (missingAlt) {
+      setError(
+        `برای «${missingAlt.file.name}» متن جایگزین تصویر را بنویسید.`,
+      );
+      return;
+    }
+
     const done = await run(async () => {
       const productId = await createProduct(toInput(), {
         sku: form.sku.trim() || `SKU-${Date.now()}`,
@@ -193,8 +204,13 @@ export function AdminProductsPage({
         minimumStock: Number(form.minimum_stock) || 0,
       });
 
-      for (const [index, file] of pendingImages.entries()) {
-        await uploadProductImage(String(productId), file, index === 0);
+      for (const [index, image] of pendingImages.entries()) {
+        await uploadProductImage(
+          String(productId),
+          image.file,
+          index === 0,
+          image.alt,
+        );
       }
     });
     if (done) closeForm();
@@ -210,6 +226,12 @@ export function AdminProductsPage({
     }
     if (form.categories.length === 0) {
       setError("حداقل یک دسته‌بندی انتخاب کنید.");
+      return;
+    }
+
+    const missing = pendingImages.find((image) => !image.alt.trim());
+    if (missing) {
+      setError(`برای «${missing.file.name}» متن جایگزین تصویر را بنویسید.`);
       return;
     }
 
@@ -245,11 +267,12 @@ export function AdminProductsPage({
         (image) => !removedImageIds.includes(image.id),
       ).length;
 
-      for (const [index, file] of pendingImages.entries()) {
+      for (const [index, image] of pendingImages.entries()) {
         await uploadProductImage(
           editing.id,
-          file,
+          image.file,
           remaining === 0 && index === 0,
+          image.alt,
         );
       }
     });
@@ -486,7 +509,10 @@ export function AdminProductsPage({
             }
 
             setError("");
-            setPendingImages((current) => [...current, ...files]);
+            setPendingImages((current) => [
+              ...current,
+              ...files.map((file) => ({ file, alt: "" })),
+            ]);
           }}
         />
 
@@ -539,27 +565,46 @@ export function AdminProductsPage({
 
         {pendingImages.length > 0 ? (
           <ul className="space-y-1 text-right">
-            {pendingImages.map((file, index) => (
+            {pendingImages.map((image, index) => (
               <li
-                key={`${file.name}-${index}`}
-                className="flex items-center justify-between gap-2 rounded-lg bg-[#fbf9f1] px-3 py-1.5 text-xs"
+                key={`${image.file.name}-${index}`}
+                className="rounded-lg bg-[#fbf9f1] px-3 py-2 text-xs"
               >
-                <button
-                  type="button"
-                  onClick={() =>
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingImages((current) =>
+                        current.filter((_, position) => position !== index),
+                      )
+                    }
+                    className="text-[#9b3d3d]"
+                    aria-label="حذف از فهرست"
+                  >
+                    ✕
+                  </button>
+                  <span className="truncate">
+                    {image.file.name}
+                    {index === 0 && firstIsPrimary ? " (تصویر اصلی)" : ""}
+                  </span>
+                </div>
+
+                {/* alt برای خواننده‌های صفحه و گوگل؛ بدون آن آپلود انجام
+                    نمی‌شود */}
+                <input
+                  value={image.alt}
+                  onChange={(event) =>
                     setPendingImages((current) =>
-                      current.filter((_, position) => position !== index),
+                      current.map((item, position) =>
+                        position === index
+                          ? { ...item, alt: event.target.value }
+                          : item,
+                      ),
                     )
                   }
-                  className="text-[#9b3d3d]"
-                  aria-label="حذف از فهرست"
-                >
-                  ✕
-                </button>
-                <span className="truncate">
-                  {file.name}
-                  {index === 0 && firstIsPrimary ? " (تصویر اصلی)" : ""}
-                </span>
+                  placeholder="متن جایگزین تصویر (Alt) — مثلاً: قالب سیلیکونی ماه تولد، نمای جلو"
+                  className="mt-2 min-h-9 w-full rounded-lg border border-[#e6dcc2] bg-white px-2.5 py-1.5 text-right text-xs outline-none transition focus:border-brand"
+                />
               </li>
             ))}
           </ul>

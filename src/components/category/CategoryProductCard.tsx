@@ -7,6 +7,8 @@ type CategoryProductCardProps = {
   discountPercent?: number;
   rating: string;
   image: string;
+  /** متن جایگزین تصویر؛ خالی باشد از عنوان محصول استفاده می‌شود */
+  imageAlt?: string;
 };
 
 export function CategoryProductCard({
@@ -15,6 +17,7 @@ export function CategoryProductCard({
   oldPrice,
   discountPercent,
   rating,
+  imageAlt,
   image,
 }: CategoryProductCardProps) {
   const isRemote = image.startsWith("http");
@@ -24,7 +27,7 @@ export function CategoryProductCard({
       <div className="relative aspect-[4/3.5] w-full overflow-hidden rounded-lg bg-[#f7f2fa]">
         <Image
           src={image}
-          alt={title}
+          alt={imageAlt || title}
           fill
           unoptimized={isRemote}
           sizes="(max-width: 1024px) 50vw, 25vw"

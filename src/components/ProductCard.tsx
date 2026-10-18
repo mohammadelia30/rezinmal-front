@@ -12,6 +12,8 @@ type ProductCardProps = {
   oldPrice?: string;
   discountPercent?: number;
   image: string;
+  /** متن جایگزین تصویر؛ خالی باشد از عنوان محصول استفاده می‌شود */
+  imageAlt?: string;
 };
 
 export function ProductCard({
@@ -22,6 +24,7 @@ export function ProductCard({
   oldPrice,
   discountPercent,
   image,
+  imageAlt,
 }: ProductCardProps) {
   const isRemote = image.startsWith("http");
 
@@ -34,7 +37,7 @@ export function ProductCard({
         >
           <Image
             src={image}
-            alt={title}
+            alt={imageAlt || title}
             fill
             unoptimized={isRemote}
             sizes="(max-width: 1024px) 50vw, 25vw"

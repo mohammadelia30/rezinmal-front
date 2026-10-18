@@ -6,6 +6,8 @@ import { useCart } from "@/lib/cart";
 
 type AddToCartButtonProps = {
   productId: string;
+  /** نسخهٔ انتخاب‌شده؛ خالی یعنی نسخهٔ پیش‌فرض */
+  variantId?: number;
   className?: string;
   label?: string;
   redirectToCart?: boolean;
@@ -13,6 +15,7 @@ type AddToCartButtonProps = {
 
 export function AddToCartButton({
   productId,
+  variantId,
   className = "",
   label = "خرید",
   redirectToCart = false,
@@ -22,7 +25,7 @@ export function AddToCartButton({
   const [added, setAdded] = useState(false);
 
   const handleClick = () => {
-    add(productId);
+    add(productId, 1, variantId);
     setAdded(true);
 
     if (redirectToCart) {

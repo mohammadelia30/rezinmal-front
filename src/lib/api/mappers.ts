@@ -3,6 +3,7 @@ import type {
   ProductDetail,
   ProductImage,
   ProductVariantDetail,
+  VariantOption,
 } from "@/lib/api/types";
 import { formatPrice, publicMediaUrl } from "@/lib/format";
 
@@ -16,14 +17,20 @@ export function getBrandTitle(
   return brand.title ?? "";
 }
 
+export function getPrimaryImageRecord(
+  images: ProductImage[] | undefined,
+): ProductImage | undefined {
+  if (!images?.length) return undefined;
+  return (
+    images.find((img) => img.is_primary) ??
+    [...images].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0]
+  );
+}
+
 export function getPrimaryImage(
   images: ProductImage[] | undefined,
 ): string {
-  if (!images?.length) return PLACEHOLDER_IMAGE;
-  const primary =
-    images.find((img) => img.is_primary) ??
-    [...images].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0];
-  const url = publicMediaUrl(primary?.image);
+  const url = publicMediaUrl(getPrimaryImageRecord(images)?.image);
   return url ?? PLACEHOLDER_IMAGE;
 }
 
@@ -61,6 +68,39 @@ export function getVariantPricing(
   };
 }
 
+/** «رنگ: قرمز، سایز: بزرگ» از ویژگی‌های نسخه */
+export function variantLabel(
+  variant: ProductVariantDetail,
+  fallback: string,
+): string {
+  const parts = (variant.attribute_values ?? [])
+    .map((item) =>
+      item.attribute ? `${item.attribute}: ${item.value}` : item.value,
+    )
+    .filter(Boolean);
+
+  return parts.length ? parts.join("، ") : fallback;
+}
+
+/**
+ * نسخه‌های قابل خرید محصول.
+ *
+ * هر رنگ یا سایز در بک‌اند یک نسخهٔ جداست و قیمت خودش را دارد؛ فقط
+ * نسخه‌های فعال به مشتری نشان داده می‌شود.
+ */
+export function getVariantOptions(
+  product: ProductDetail,
+): VariantOption[] {
+  return (product.variants ?? [])
+    .filter((variant) => variant.is_active !== false)
+    .map((variant, index) => ({
+      id: variant.id,
+      label: variantLabel(variant, `نسخهٔ ${index + 1}`),
+      ...getVariantPricing(variant),
+      rawPrice: variant.final_price ?? variant.price,
+    }));
+}
+
 export function mapProductDetailToCard(
   product: ProductDetail,
 ): ProductCardModel {
@@ -74,6 +114,8 @@ export function mapProductDetailToCard(
     description: product.short_description || product.description || undefined,
     metaTitle: product.meta_title || undefined,
     metaDescription: product.meta_description || undefined,
+    imageAlt: getPrimaryImageRecord(product.images)?.alt || undefined,
+    variants: getVariantOptions(product),
     variantId: variant?.id,
   };
 }

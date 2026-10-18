@@ -72,6 +72,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   oldPrice={product.oldPrice}
                   discountPercent={product.discountPercent}
                   image={product.image}
+                  imageAlt={product.imageAlt}
                 />
               ))}
             </div>

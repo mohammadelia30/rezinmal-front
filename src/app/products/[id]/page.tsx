@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { ProductDetailActions } from "@/components/ProductDetailActions";
+import { ProductVariantPicker } from "@/components/ProductVariantPicker";
 import { shopNavLinks } from "@/data/home";
 import { getStoreProduct, getStoreProducts } from "@/lib/api";
 
@@ -79,7 +79,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-card lg:max-w-none">
               <Image
                 src={product.image}
-                alt={product.title}
+                alt={product.imageAlt || product.title}
                 fill
                 priority
                 unoptimized={isRemote}
@@ -98,28 +98,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1">
-                <p className="text-xl font-bold text-brand sm:text-2xl">
-                  {product.price}
-                </p>
-                {product.oldPrice ? (
-                  <>
-                    <del className="text-base text-muted sm:text-lg">
-                      {product.oldPrice}
-                    </del>
-                    <span className="rounded-full bg-[#c0392b] px-2.5 py-0.5 text-xs font-bold text-white sm:text-sm">
-                      {product.discountPercent?.toLocaleString("fa-IR")}٪ تخفیف
-                    </span>
-                  </>
-                ) : null}
-              </div>
-
               <p className="text-sm leading-7 text-foreground/80 sm:text-base sm:leading-8">
                 {product.description ||
                   "محصول دست‌ساز رزینی از مجموعه ویژه رزینمال؛ مناسب هدیه، دکور و استفاده روزمره."}
               </p>
 
-              <ProductDetailActions product={product} />
+              {/* قیمت و خرید کنار هم‌اند چون با انتخاب نسخه عوض می‌شوند */}
+              <ProductVariantPicker product={product} />
             </div>
           </div>
         </Container>
