@@ -246,6 +246,16 @@ export function AdminProductVariants({
         فقط یک حالت دارد، همین یک نسخه کافی است.
       </p>
 
+      {/* موجودی صفر یعنی بک‌اند خرید را رد می‌کند؛ بدون این هشدار،
+          محصول عادی به نظر می‌رسید و مشتری تازه سر پرداخت خطا می‌گرفت */}
+      {rows.length > 0 && rows.every((row) => !Number(row.stock)) ? (
+        <p className="mb-3 rounded-xl bg-[#fdf3e3] px-3 py-2 text-right text-xs leading-6 text-[#8a5a17]">
+          موجودی همهٔ نسخه‌ها صفر است؛ این محصول در سایت «ناموجود» نشان داده
+          می‌شود و مشتری نمی‌تواند آن را بخرد. برای فروش، «موجودی انبار» هر
+          نسخه را پر کنید.
+        </p>
+      ) : null}
+
       <datalist id="variant-attribute-names">
         {attributes.map((attribute) => (
           <option key={attribute.id} value={attribute.title} />
@@ -296,7 +306,12 @@ export function AdminProductVariants({
                   نمایش پیش‌فرض
                 </label>
               </div>
-              <span className="text-xs font-bold text-foreground">
+              <span className="flex items-center gap-2 text-xs font-bold text-foreground">
+                {!Number(row.stock) ? (
+                  <span className="rounded-full bg-[#efe9dd] px-2 py-0.5 text-[11px] font-medium text-muted">
+                    ناموجود
+                  </span>
+                ) : null}
                 {attributeSignature(row) ||
                   `نسخهٔ ${(index + 1).toLocaleString("fa-IR")}`}
               </span>

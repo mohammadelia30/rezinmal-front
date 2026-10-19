@@ -98,6 +98,9 @@ export function getVariantOptions(
       label: variantLabel(variant, `نسخهٔ ${index + 1}`),
       ...getVariantPricing(variant),
       rawPrice: variant.final_price ?? variant.price,
+      // بک‌اند قدیمی این فیلد را نمی‌فرستد؛ آن‌وقت مثل قبل همه‌چیز
+      // قابل خرید فرض می‌شود
+      inStock: variant.in_stock !== false,
     }));
 }
 
@@ -105,6 +108,7 @@ export function mapProductDetailToCard(
   product: ProductDetail,
 ): ProductCardModel {
   const variant = getDefaultVariant(product.variants);
+  const options = getVariantOptions(product);
   return {
     id: String(product.id),
     title: product.title,
@@ -115,8 +119,11 @@ export function mapProductDetailToCard(
     metaTitle: product.meta_title || undefined,
     metaDescription: product.meta_description || undefined,
     imageAlt: getPrimaryImageRecord(product.images)?.alt || undefined,
-    variants: getVariantOptions(product),
+    variants: options,
     variantId: variant?.id,
+    // هیچ نسخه‌ای موجودی ندارد: محصول را «ناموجود» نشان می‌دهیم به‌جای
+    // اینکه مشتری تا مرحلهٔ پرداخت برود و آنجا خطا بگیرد
+    soldOut: options.length > 0 && options.every((item) => !item.inStock),
   };
 }
 

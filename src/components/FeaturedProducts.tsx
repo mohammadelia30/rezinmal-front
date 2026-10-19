@@ -49,6 +49,7 @@ export function FeaturedProducts({
               discountPercent={product.discountPercent}
               image={product.image}
               imageAlt={product.imageAlt}
+              soldOut={product.soldOut}
             />
           ))}
         </div>
@@ -71,6 +72,7 @@ export function FeaturedProducts({
               discountPercent={product.discountPercent}
               image={product.image}
               imageAlt={product.imageAlt}
+              soldOut={product.soldOut}
             />
           ))}
         </div>

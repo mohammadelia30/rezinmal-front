@@ -19,11 +19,14 @@ export function ProductVariantPicker({
   product: ProductCardModel;
 }) {
   const options = (product.variants ?? []).filter((item) => item.id);
+  // نسخهٔ ناموجود نباید از اول انتخاب باشد، وگرنه دکمهٔ خرید بی‌دلیل
+  // خاموش به نظر می‌رسد
   const [selectedId, setSelectedId] = useState<number | undefined>(
-    options[0]?.id,
+    (options.find((item) => item.inStock) ?? options[0])?.id,
   );
 
   const selected = options.find((item) => item.id === selectedId) ?? options[0];
+  const soldOut = selected ? !selected.inStock : Boolean(product.soldOut);
   const price = selected?.price ?? product.price;
   const oldPrice = selected?.oldPrice ?? product.oldPrice;
   const discountPercent = selected?.discountPercent ?? product.discountPercent;
@@ -55,17 +58,20 @@ export function ProductVariantPicker({
                 <button
                   key={option.id}
                   type="button"
+                  disabled={!option.inStock}
                   onClick={() => setSelectedId(option.id)}
                   aria-pressed={active}
                   className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                    active
-                      ? "border-brand bg-brand-mist text-brand"
-                      : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
+                    !option.inStock
+                      ? "cursor-not-allowed border-[#e6dcc2] bg-[#f4f1ea] text-muted"
+                      : active
+                        ? "border-brand bg-brand-mist text-brand"
+                        : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
                   }`}
                 >
                   <span className="block">{option.label}</span>
                   <span className="mt-0.5 block text-xs text-muted">
-                    {option.price}
+                    {option.inStock ? option.price : "ناموجود"}
                   </span>
                 </button>
               );
@@ -75,13 +81,21 @@ export function ProductVariantPicker({
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <AddToCartButton
-          productId={product.id}
-          variantId={selected?.id}
-          label="افزودن به سبد خرید"
-          redirectToCart
-          className="inline-flex w-full rounded-lg bg-brand px-8 py-3 text-base font-bold text-white transition hover:bg-brand-dark sm:w-auto"
-        />
+        {/* خریدِ چیزی که موجودی ندارد در بک‌اند رد می‌شود؛ بهتر است
+            همین‌جا معلوم باشد تا مشتری تا درگاه پرداخت نرود */}
+        {soldOut ? (
+          <span className="inline-flex w-full items-center justify-center rounded-lg bg-[#f4f1ea] px-8 py-3 text-base font-bold text-muted sm:w-auto">
+            ناموجود
+          </span>
+        ) : (
+          <AddToCartButton
+            productId={product.id}
+            variantId={selected?.id}
+            label="افزودن به سبد خرید"
+            redirectToCart
+            className="inline-flex w-full rounded-lg bg-brand px-8 py-3 text-base font-bold text-white transition hover:bg-brand-dark sm:w-auto"
+          />
+        )}
 
         <div className="flex items-center gap-3">
           <FavoriteButton product={product} className="size-11 bg-brand-mist" />

@@ -14,6 +14,8 @@ type ProductCardProps = {
   image: string;
   /** متن جایگزین تصویر؛ خالی باشد از عنوان محصول استفاده می‌شود */
   imageAlt?: string;
+  /** هیچ نسخه‌ای موجودی ندارد */
+  soldOut?: boolean;
 };
 
 export function ProductCard({
@@ -25,6 +27,7 @@ export function ProductCard({
   discountPercent,
   image,
   imageAlt,
+  soldOut,
 }: ProductCardProps) {
   const isRemote = image.startsWith("http");
 
@@ -44,7 +47,11 @@ export function ProductCard({
             className="object-cover transition duration-500 hover:scale-105"
           />
         </Link>
-        {discountPercent ? (
+        {soldOut ? (
+          <span className="absolute start-2 top-2 z-10 rounded-full bg-[#4a3a55] px-2 py-0.5 text-[10px] font-bold text-white md:text-xs">
+            ناموجود
+          </span>
+        ) : discountPercent ? (
           <span className="absolute start-2 top-2 z-10 rounded-full bg-[#c0392b] px-2 py-0.5 text-[10px] font-bold text-white md:text-xs">
             {discountPercent.toLocaleString("fa-IR")}٪
           </span>
@@ -74,10 +81,17 @@ export function ProductCard({
         </div>
         <div className="mt-1.5 md:mt-2 md:flex md:items-center md:gap-2">
           <div className="hidden h-4 flex-1 rounded bg-bar md:block" />
-          <AddToCartButton
-            productId={id}
-            className="w-full rounded bg-[#e8dcc4] py-1 text-[10px] font-bold text-[#4a2a55] transition hover:bg-[#dfd0b0] md:w-auto md:rounded-lg md:bg-brand md:px-4 md:py-1.5 md:text-sm md:text-white md:hover:bg-brand-dark"
-          />
+          {/* افزودن محصول ناموجود به سبد، در مرحلهٔ پرداخت رد می‌شود */}
+          {soldOut ? (
+            <span className="block w-full rounded bg-[#efe9dd] py-1 text-center text-[10px] font-bold text-muted md:w-auto md:rounded-lg md:px-4 md:py-1.5 md:text-sm">
+              ناموجود
+            </span>
+          ) : (
+            <AddToCartButton
+              productId={id}
+              className="w-full rounded bg-[#e8dcc4] py-1 text-[10px] font-bold text-[#4a2a55] transition hover:bg-[#dfd0b0] md:w-auto md:rounded-lg md:bg-brand md:px-4 md:py-1.5 md:text-sm md:text-white md:hover:bg-brand-dark"
+            />
+          )}
         </div>
       </div>
     </article>

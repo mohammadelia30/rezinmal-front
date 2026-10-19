@@ -49,6 +49,8 @@ export type ProductVariantDetail = {
   final_price?: number;
   discount_amount?: number;
   weight?: number | null;
+  /** موجودی انبار دارد؛ در نسخه‌های قدیمی بک‌اند نیست */
+  in_stock?: boolean;
   is_default?: boolean;
   is_active?: boolean;
 };
@@ -144,6 +146,8 @@ export type ProductCardModel = {
   oldPrice?: string;
   discountPercent?: number;
   variantId?: number;
+  /** هیچ نسخه‌ای موجود نیست؛ محصول «ناموجود» نشان داده می‌شود */
+  soldOut?: boolean;
 };
 
 /** یک نسخهٔ قابل خرید: ترکیب ویژگی‌ها با قیمت خودش */
@@ -155,5 +159,7 @@ export type VariantOption = {
   oldPrice?: string;
   discountPercent?: number;
   rawPrice: number;
+  /** موجودی انبار دارد؛ وگرنه قابل خرید نیست */
+  inStock: boolean;
 };
 
