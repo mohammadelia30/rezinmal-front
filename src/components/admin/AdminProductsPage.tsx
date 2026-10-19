@@ -16,7 +16,16 @@ import {
   AdminToggleField,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminProductVariants,
+  emptyVariantRow,
+  toVariantInputs,
+  toVariantRows,
+  variantRowsError,
+  type VariantRow,
+} from "@/components/admin/AdminProductVariants";
 import type {
+  AdminAttribute,
   AdminBrandRow,
   AdminCategoryRow,
   AdminProductDetail,
@@ -26,22 +35,18 @@ import {
   PRODUCT_STATUS,
   checkImageFile,
   createProduct,
-  saveVariantDetails,
   deleteProduct,
   deleteProductImage,
+  saveProductVariants,
   setProductActive,
   updateProduct,
-  updateVariantPrice,
   uploadProductImage,
   type ProductInput,
 } from "@/lib/admin-store";
-import { toEnglishDigits } from "@/lib/digits";
 import { formatProductPrice } from "@/lib/price";
 
-/** ارقام فارسی هم پذیرفته می‌شود */
-const toDigits = (value: string) =>
-  toEnglishDigits(value).replace(/[^\d]/g, "");
-
+// قیمت، موجودی و کد کالا روی نسخه‌اند نه روی محصول، پس در فرم هم
+// همان‌جا گرفته می‌شوند
 const EMPTY_FORM = {
   title: "",
   short_description: "",
@@ -51,13 +56,6 @@ const EMPTY_FORM = {
   status: "2",
   is_featured: false,
   is_active: true,
-  price: "",
-  sku: "",
-  barcode: "",
-  // گرم
-  weight: "",
-  stock: "",
-  minimum_stock: "",
   meta_title: "",
   meta_description: "",
 };
@@ -71,10 +69,12 @@ export function AdminProductsPage({
   products,
   categories,
   brands,
+  attributes,
 }: {
   products: AdminProductDetail[];
   categories: AdminCategoryRow[];
   brands: AdminBrandRow[];
+  attributes: AdminAttribute[];
 }) {
   const router = useRouter();
   const { query, setQuery, filtered } = useSearchFilter(products, [
@@ -85,6 +85,8 @@ export function AdminProductsPage({
   const [editing, setEditing] = useState<AdminProductDetail | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  // نسخه‌های محصول؛ هر رنگ یا سایز با قیمت و موجودی خودش
+  const [variantRows, setVariantRows] = useState<VariantRow[]>([]);
   // تصویرهای انتخاب‌شده تا زدن «ذخیره» همین‌جا می‌مانند: هنگام ساخت
   // محصول هنوز شناسه‌ای وجود ندارد، و هنگام ویرایش هم آپلود فوری یعنی
   // فرم بسته شود و بقیهٔ تغییرهای همان فرم از دست برود.
@@ -117,6 +119,7 @@ export function AdminProductsPage({
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
+    setVariantRows([emptyVariantRow(true)]);
     setPendingImages([]);
     setRemovedImageIds([]);
     setCreating(true);
@@ -133,15 +136,10 @@ export function AdminProductsPage({
       status: product.status,
       is_featured: product.isFeatured,
       is_active: product.isActive,
-      price: String(product.price),
-      sku: product.sku,
-      barcode: product.barcode,
-      weight: product.weight == null ? "" : String(product.weight),
-      stock: String(product.stock),
-      minimum_stock: String(product.minimumStock),
       meta_title: product.metaTitle,
       meta_description: product.metaDescription,
     });
+    setVariantRows(toVariantRows(product.variants));
     setEditing(product);
     setPendingImages([]);
     setRemovedImageIds([]);
@@ -151,6 +149,7 @@ export function AdminProductsPage({
   const closeForm = () => {
     setCreating(false);
     setEditing(null);
+    setVariantRows([]);
     setPendingImages([]);
     setRemovedImageIds([]);
     setError("");
@@ -176,9 +175,9 @@ export function AdminProductsPage({
       setError("عنوان محصول را وارد کنید.");
       return;
     }
-    const price = Number(form.price);
-    if (!price || price <= 0) {
-      setError("قیمت معتبر وارد کنید.");
+    const variantProblem = variantRowsError(variantRows);
+    if (variantProblem) {
+      setError(variantProblem);
       return;
     }
     if (form.categories.length === 0) {
@@ -195,14 +194,11 @@ export function AdminProductsPage({
     }
 
     const done = await run(async () => {
-      const productId = await createProduct(toInput(), {
-        sku: form.sku.trim() || `SKU-${Date.now()}`,
-        price,
-        barcode: form.barcode.trim(),
-        weight: form.weight ? Number(form.weight) : null,
-        stock: Number(form.stock) || 0,
-        minimumStock: Number(form.minimum_stock) || 0,
-      });
+      const productId = await createProduct(
+        toInput(),
+        toVariantInputs(variantRows),
+        attributes,
+      );
 
       for (const [index, image] of pendingImages.entries()) {
         await uploadProductImage(
@@ -224,6 +220,11 @@ export function AdminProductsPage({
       setError("عنوان محصول را وارد کنید.");
       return;
     }
+    const variantProblem = variantRowsError(variantRows);
+    if (variantProblem) {
+      setError(variantProblem);
+      return;
+    }
     if (form.categories.length === 0) {
       setError("حداقل یک دسته‌بندی انتخاب کنید.");
       return;
@@ -235,27 +236,19 @@ export function AdminProductsPage({
       return;
     }
 
-    const price = Number(form.price);
+    // نسخه‌هایی که مدیر از فرم برداشته، از محصول هم حذف می‌شوند
+    const removedVariantIds = editing.variants
+      .filter((variant) => !variantRows.some((row) => row.id === variant.id))
+      .map((variant) => variant.id);
+
     const done = await run(async () => {
       await updateProduct(editing.id, toInput());
-      if (editing.variantId && price > 0 && price !== editing.price) {
-        await updateVariantPrice(editing.variantId, price);
-      }
-
-      if (editing.variantId) {
-        await saveVariantDetails(
-          editing.variantId,
-          editing.inventoryId,
-          {
-            barcode: form.barcode.trim(),
-            weight: form.weight ? Number(form.weight) : null,
-          },
-          {
-            stock: Number(form.stock) || 0,
-            minimumStock: Number(form.minimum_stock) || 0,
-          },
-        );
-      }
+      await saveProductVariants(
+        editing.id,
+        toVariantInputs(variantRows),
+        removedVariantIds,
+        attributes,
+      );
 
       for (const imageId of removedImageIds) {
         await deleteProductImage(imageId);
@@ -316,48 +309,6 @@ export function AdminProductsPage({
           onChange={(value) => set("title", value)}
           required
         />
-        <AdminField
-          label="قیمت (تومان)"
-          value={form.price}
-          onChange={(value) => set("price", value.replace(/\D/g, ""))}
-          dir="ltr"
-          required={mode === "create"}
-        />
-        <AdminField
-          label="کد کالا (SKU)"
-          value={form.sku}
-          onChange={(value) => set("sku", value)}
-          dir="ltr"
-          placeholder="خالی بماند، خودکار ساخته می‌شود"
-        />
-        <AdminField
-          label="موجودی انبار"
-          value={form.stock}
-          onChange={(value) => set("stock", toDigits(value))}
-          dir="ltr"
-          placeholder="۰"
-        />
-        <AdminField
-          label="هشدار کمبود موجودی"
-          value={form.minimum_stock}
-          onChange={(value) => set("minimum_stock", toDigits(value))}
-          dir="ltr"
-          placeholder="۰"
-        />
-        <AdminField
-          label="وزن (گرم)"
-          value={form.weight}
-          onChange={(value) => set("weight", toDigits(value))}
-          dir="ltr"
-          placeholder="اختیاری"
-        />
-        <AdminField
-          label="بارکد"
-          value={form.barcode}
-          onChange={(value) => set("barcode", value.trim())}
-          dir="ltr"
-          placeholder="اختیاری"
-        />
         <AdminSelect
           label="وضعیت انتشار"
           value={form.status}
@@ -375,6 +326,13 @@ export function AdminProductsPage({
           }))}
         />
       </div>
+
+      <AdminProductVariants
+        rows={variantRows}
+        attributes={attributes}
+        disabled={busy}
+        onChange={setVariantRows}
+      />
 
       <AdminTextarea
         label="توضیح کوتاه"
@@ -684,6 +642,16 @@ export function AdminProductsPage({
               </td>
               <td className="px-4 py-3 font-bold text-brand">
                 {formatProductPrice(product.price)}
+                {/* محصول چند نسخه‌ای یک قیمت ندارد؛ بازهٔ قیمت را نشان
+                    می‌دهیم تا فهرست گمراه‌کننده نباشد */}
+                {product.variants.length > 1 ? (
+                  <span className="mt-1 block text-xs font-normal text-muted">
+                    {product.variants.length.toLocaleString("fa-IR")} نسخه، تا{" "}
+                    {formatProductPrice(
+                      Math.max(...product.variants.map((item) => item.price)),
+                    )}
+                  </span>
+                ) : null}
               </td>
               <td className="px-4 py-3">
                 <AdminBadge

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminProductsPage } from "@/components/admin/AdminProductsPage";
 import {
+  getAdminAttributes,
   getAdminBrands,
   getAdminCategories,
   getAdminProductDetails,
@@ -14,16 +15,18 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requirePanelPermission("panel_products");
-  const [products, categories, brands] = await Promise.all([
+  const [products, categories, brands, attributes] = await Promise.all([
     getAdminProductDetails(),
     getAdminCategories(),
     getAdminBrands(),
+    getAdminAttributes(),
   ]);
   return (
     <AdminProductsPage
       products={products}
       categories={categories}
       brands={brands}
+      attributes={attributes}
     />
   );
 }

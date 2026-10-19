@@ -20,6 +20,10 @@ const API_MESSAGES: [RegExp, string][] = [
   [/percentage .*(exceed|cannot)|value__lte|max_100/i, "درصد تخفیف نمی‌تواند بیشتر از ۱۰۰ باشد."],
   [/greater than zero/i, "مقدار باید بیشتر از صفر باشد."],
   [/expiration date must be after/i, "تاریخ پایان باید بعد از تاریخ شروع باشد."],
+  [/with this sku|sku already exists/i, "این کد کالا (SKU) قبلاً برای محصول دیگری ثبت شده است."],
+  [/with this barcode|barcode already exists/i, "این بارکد قبلاً برای محصول دیگری ثبت شده است."],
+  [/with this title already exists/i, "این عنوان قبلاً ثبت شده است."],
+  [/attribute, value must make a unique set/i, "این مقدار برای این ویژگی قبلاً ثبت شده است."],
   [/coupon with this code already exists|code already exists|unique/i, "این کد تخفیف قبلاً ثبت شده است."],
   [/code cannot be empty/i, "کد تخفیف را وارد کنید."],
   [/datetime has wrong format|date has wrong format/i, "تاریخ وارد شده معتبر نیست."],
@@ -459,13 +463,24 @@ function productBody(input: ProductInput) {
   };
 }
 
-/**
- * ساخت محصول همراه با یک واریانت پیش‌فرض.
- *
- * قیمت در بک‌اند روی واریانت است نه خود محصول، پس محصولی که واریانت
- * نداشته باشد در فروشگاه بدون قیمت نمایش داده می‌شود.
- */
+// ==========================================================
+// نسخه‌های محصول (رنگ، سایز و ... هرکدام با قیمت خودش)
+// ==========================================================
+//
+// قیمت و موجودی در بک‌اند روی نسخه است نه روی خود محصول، پس هر رنگ یا
+// سایز یک نسخهٔ جداست و محصولِ بدون نسخه در فروشگاه بی‌قیمت دیده
+// می‌شود. ویژگی‌ها هم جدا از نسخه ذخیره می‌شوند: «رنگ» یک Attribute و
+// «آبی» یک AttributeValue است.
+
+/** یک ویژگی و مقدارش، همان‌طور که مدیر در فرم می‌نویسد */
+export type VariantAttributeInput = { name: string; value: string };
+
 export type VariantInput = {
+  /** خالی یعنی نسخهٔ تازه */
+  id: string;
+  /** رکورد موجودی؛ خالی یعنی باید ساخته شود */
+  inventoryId: string;
+  attributes: VariantAttributeInput[];
   sku: string;
   price: number;
   barcode: string;
@@ -473,66 +488,142 @@ export type VariantInput = {
   weight: number | null;
   stock: number;
   minimumStock: number;
+  isDefault: boolean;
+  isActive: boolean;
 };
+
+/** ویژگی‌های ثبت‌شده، همان‌طور که صفحه از سرور گرفته است */
+export type AttributeCatalog = {
+  id: string;
+  title: string;
+  values: { id: string; value: string }[];
+}[];
+
+const attributeKey = (name: string, value: string) =>
+  `${name.trim()}\u0000${value.trim()}`;
+
+/**
+ * شناسهٔ مقدار یک ویژگی؛ اگر نباشد ساخته می‌شود.
+ *
+ * مدیر «رنگ» و «آبی» را تایپ می‌کند و نباید درگیر این شود که کدام‌شان
+ * از قبل در دیتابیس هست. چیزی که ساخته می‌شود در حافظه می‌ماند تا
+ * نسخهٔ بعدیِ همان فرم دوباره نسازد و به خطای تکراری نخورد.
+ */
+function attributeResolver(known: AttributeCatalog) {
+  const attributeIds = new Map<string, number>();
+  const valueIds = new Map<string, number>();
+
+  for (const attribute of known) {
+    attributeIds.set(attribute.title.trim(), Number(attribute.id));
+    for (const value of attribute.values) {
+      valueIds.set(
+        attributeKey(attribute.title, value.value),
+        Number(value.id),
+      );
+    }
+  }
+
+  return async function resolve(
+    pair: VariantAttributeInput,
+  ): Promise<number> {
+    const name = pair.name.trim();
+    const value = pair.value.trim();
+
+    const existing = valueIds.get(attributeKey(name, value));
+    if (existing) return existing;
+
+    let attributeId = attributeIds.get(name);
+    if (!attributeId) {
+      const attribute = await send<{ id: number }>(API_PATHS.attributes, {
+        method: "POST",
+        body: { title: name },
+      });
+      attributeId = attribute.id;
+      attributeIds.set(name, attributeId);
+    }
+
+    const created = await send<{ id: number }>(API_PATHS.attributeValues, {
+      method: "POST",
+      body: { attribute: attributeId, value },
+    });
+    valueIds.set(attributeKey(name, value), created.id);
+    return created.id;
+  };
+}
+
+/** کد کالای خالی را خودمان می‌سازیم؛ در بک‌اند یکتا و اجباری است */
+const variantSku = (variant: VariantInput, index: number) =>
+  variant.sku.trim() || `SKU-${Date.now()}-${index + 1}`;
+
+export async function saveProductVariants(
+  productId: string,
+  variants: VariantInput[],
+  removedVariantIds: string[],
+  attributes: AttributeCatalog,
+): Promise<void> {
+  const resolve = attributeResolver(attributes);
+
+  for (const variantId of removedVariantIds) {
+    await send(API_PATHS.variant(variantId), { method: "DELETE" });
+  }
+
+  for (const [index, variant] of variants.entries()) {
+    const values: number[] = [];
+    for (const pair of variant.attributes) {
+      if (!pair.name.trim() || !pair.value.trim()) continue;
+      values.push(await resolve(pair));
+    }
+
+    const body = {
+      product: Number(productId),
+      sku: variantSku(variant, index),
+      price: variant.price,
+      barcode: variant.barcode.trim() || null,
+      weight: variant.weight,
+      attribute_values: values,
+      is_default: variant.isDefault,
+      is_active: variant.isActive,
+    };
+
+    const saved = variant.id
+      ? await send<{ id: number }>(API_PATHS.variant(variant.id), {
+          method: "PATCH",
+          body,
+        })
+      : await send<{ id: number }>(API_PATHS.variants, {
+          method: "POST",
+          body,
+        });
+
+    // بدون رکورد موجودی، محصول به سبد خرید اضافه نمی‌شود
+    if (variant.inventoryId) {
+      await send(API_PATHS.inventory(variant.inventoryId), {
+        method: "PATCH",
+        body: { stock: variant.stock, minimum_stock: variant.minimumStock },
+      });
+    } else {
+      await createInventory(
+        String(saved.id),
+        variant.stock,
+        variant.minimumStock,
+      );
+    }
+  }
+}
 
 export async function createProduct(
   input: ProductInput,
-  variant: VariantInput,
+  variants: VariantInput[],
+  attributes: AttributeCatalog,
 ): Promise<number> {
   const created = await send<{ id: number }>(API_PATHS.products, {
     method: "POST",
     body: productBody(input),
   });
 
-  const createdVariant = await send<{ id: number }>(API_PATHS.variants, {
-    method: "POST",
-    body: {
-      product: created.id,
-      sku: variant.sku,
-      price: variant.price,
-      barcode: variant.barcode || null,
-      weight: variant.weight,
-      is_default: true,
-      is_active: true,
-    },
-  });
-
-  // بدون رکورد موجودی، محصول به سبد خرید اضافه نمی‌شود
-  await createInventory(
-    String(createdVariant.id),
-    variant.stock,
-    variant.minimumStock,
-  );
+  await saveProductVariants(String(created.id), variants, [], attributes);
 
   return created.id;
-}
-
-/**
- * موجودی و مشخصات انبارِ یک نسخه.
- *
- * محصول‌های قدیمی ممکن است اصلاً رکورد موجودی نداشته باشند، پس اگر
- * نبود ساخته می‌شود.
- */
-export async function saveVariantDetails(
-  variantId: string,
-  inventoryId: string,
-  input: { barcode: string; weight: number | null },
-  stock: { stock: number; minimumStock: number },
-): Promise<void> {
-  await send(API_PATHS.variant(variantId), {
-    method: "PATCH",
-    body: { barcode: input.barcode || null, weight: input.weight },
-  });
-
-  if (inventoryId) {
-    await send(API_PATHS.inventory(inventoryId), {
-      method: "PATCH",
-      body: { stock: stock.stock, minimum_stock: stock.minimumStock },
-    });
-    return;
-  }
-
-  await createInventory(variantId, stock.stock, stock.minimumStock);
 }
 
 export async function updateProduct(
@@ -547,16 +638,6 @@ export async function updateProduct(
 
 export async function deleteProduct(id: string): Promise<void> {
   await send(API_PATHS.product(id), { method: "DELETE" });
-}
-
-export async function updateVariantPrice(
-  variantId: string,
-  price: number,
-): Promise<void> {
-  await send(API_PATHS.variant(variantId), {
-    method: "PATCH",
-    body: { price },
-  });
 }
 
 /** بیشترین حجم تصویر؛ باید با client_max_body_size در nginx بک‌اند بخواند */

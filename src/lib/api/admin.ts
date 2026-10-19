@@ -417,6 +417,29 @@ export async function getAdminBrands(): Promise<AdminBrandRow[]> {
   }));
 }
 
+/**
+ * یک نسخهٔ محصول: رنگ یا سایزِ مشخص، با قیمت و موجودی خودش.
+ *
+ * قیمت در بک‌اند روی نسخه است نه روی محصول، پس «رنگ آبی ۱۲۰ هزار و
+ * رنگ قرمز ۱۵۰ هزار» یعنی دو نسخه.
+ */
+export type AdminProductVariant = {
+  id: string;
+  sku: string;
+  barcode: string;
+  price: number;
+  /** وزن به گرم */
+  weight: number | null;
+  isDefault: boolean;
+  isActive: boolean;
+  stock: number;
+  minimumStock: number;
+  /** رکورد موجودی؛ خالی یعنی هنوز ساخته نشده */
+  inventoryId: string;
+  /** مثلاً [{ name: "رنگ", value: "آبی" }] */
+  attributes: { name: string; value: string }[];
+};
+
 /** محصول با تمام فیلدهایی که فرم ویرایش لازم دارد */
 export type AdminProductDetail = {
   id: string;
@@ -431,17 +454,12 @@ export type AdminProductDetail = {
   /** سئو: عنوان و توضیحی که در نتیجهٔ گوگل دیده می‌شود */
   metaTitle: string;
   metaDescription: string;
+  /** قیمت نسخهٔ پیش‌فرض؛ برای ستون قیمت در فهرست */
   price: number;
+  /** کد کالای نسخهٔ پیش‌فرض؛ برای جست‌وجو در فهرست */
   sku: string;
-  variantId: string;
-  barcode: string;
-  /** وزن به گرم */
-  weight: number | null;
-  /** موجودی انبار؛ بدون آن محصول به سبد خرید اضافه نمی‌شود */
-  stock: number;
-  minimumStock: number;
-  /** رکورد موجودی؛ خالی یعنی هنوز ساخته نشده */
-  inventoryId: string;
+  /** همهٔ نسخه‌ها، شامل پیش‌فرض؛ قیمت و موجودی این‌جاست */
+  variants: AdminProductVariant[];
   images: { id: string; url: string; isPrimary: boolean }[];
 };
 
@@ -466,10 +484,6 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
       const variant =
         detail.variants?.find((item) => item.is_default) ?? detail.variants?.[0];
       const brand = detail.brand;
-      const inventory = variant
-        ? stockByVariant.get(String(variant.id))
-        : undefined;
-
       return {
         id: String(detail.id),
         title: detail.title,
@@ -487,12 +501,25 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
         metaDescription: detail.meta_description ?? "",
         price: variant?.price ?? 0,
         sku: variant?.sku ?? "",
-        variantId: variant ? String(variant.id) : "",
-        barcode: variant?.barcode ?? "",
-        weight: variant?.weight ?? null,
-        stock: inventory?.stock ?? 0,
-        minimumStock: inventory?.minimum ?? 0,
-        inventoryId: inventory?.id ?? "",
+        variants: (detail.variants ?? []).map((item) => {
+          const stock = stockByVariant.get(String(item.id));
+          return {
+            id: String(item.id),
+            sku: item.sku ?? "",
+            barcode: item.barcode ?? "",
+            price: item.price ?? 0,
+            weight: item.weight ?? null,
+            isDefault: Boolean(item.is_default),
+            isActive: item.is_active !== false,
+            stock: stock?.stock ?? 0,
+            minimumStock: stock?.minimum ?? 0,
+            inventoryId: stock?.id ?? "",
+            attributes: (item.attribute_values ?? []).map((value) => ({
+              name: value.attribute ?? "",
+              value: value.value,
+            })),
+          };
+        }),
         images: (detail.images ?? []).map((image) => ({
           id: String(image.id),
           url: publicMediaUrl(image.image) ?? "",
@@ -500,6 +527,38 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
         })),
       };
     });
+}
+
+
+// ==========================================================
+// ویژگی‌ها (رنگ، سایز و ...)
+// ==========================================================
+
+type ApiAttribute = {
+  id: number;
+  title: string;
+  values?: { id: number; value: string }[];
+};
+
+/** یک ویژگی با مقدارهایی که تا الان برایش ثبت شده */
+export type AdminAttribute = {
+  id: string;
+  title: string;
+  values: { id: string; value: string }[];
+};
+
+export async function getAdminAttributes(): Promise<AdminAttribute[]> {
+  const items = await serverApiFetch<ApiAttribute[]>(API_PATHS.attributes);
+  if (!Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    id: String(item.id),
+    title: item.title,
+    values: (item.values ?? []).map((value) => ({
+      id: String(value.id),
+      value: value.value,
+    })),
+  }));
 }
 
 
