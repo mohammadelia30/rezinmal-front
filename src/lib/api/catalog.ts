@@ -8,13 +8,19 @@ import type {
   CategoryList,
   ProductCardModel,
   ProductDetail,
-  ProductList,
 } from "@/lib/api/types";
 
 const revalidate = { next: { revalidate: 60 } } as const;
 
-export async function listProducts(): Promise<ProductList[]> {
-  return apiFetch<ProductList[]>(API_PATHS.products, revalidate);
+/**
+ * فهرست محصولات، با همان جزئیاتی که صفحهٔ محصول دارد.
+ *
+ * بک‌اند تصویر، قیمت و نسخه‌های هر محصول را داخل همین فهرست می‌دهد؛
+ * قبلاً برای هر محصول یک درخواست جدا فرستاده می‌شد که روی صد محصول
+ * یعنی صد رفت‌وبرگشت و چند ثانیه انتظار.
+ */
+export async function listProducts(): Promise<ProductDetail[]> {
+  return apiFetch<ProductDetail[]>(API_PATHS.products, revalidate);
 }
 
 export async function getProduct(id: string | number): Promise<ProductDetail> {
@@ -56,19 +62,8 @@ export async function getStoreCatalog(options?: {
     const scoped = options?.featuredOnly
       ? active.filter((item) => item.is_featured)
       : active;
-    const source = scoped.length ? scoped : active;
+    const valid = scoped.length ? scoped : active;
 
-    const details = await Promise.all(
-      source.map(async (item) => {
-        try {
-          return await getProduct(item.id);
-        } catch {
-          return null;
-        }
-      }),
-    );
-
-    const valid = details.filter((item): item is ProductDetail => Boolean(item));
     const cards = valid.map(mapProductDetailToCard);
     const productsByCategory: Record<string, string[]> = {};
 

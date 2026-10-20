@@ -1,5 +1,5 @@
 import { API_PATHS, getApiBaseUrl } from "@/lib/api/config";
-import { getStoreProduct, getStoreProducts } from "@/lib/api/catalog";
+import { getStoreProducts } from "@/lib/api/catalog";
 import type { ProductCardModel } from "@/lib/api/types";
 
 /** ارقام فارسی را به لاتین تبدیل می‌کند تا جست‌وجوی عددی هم کار کند. */
@@ -53,9 +53,14 @@ export async function searchProducts(
       );
 
       if (ids.length > 0) {
-        const products = (await Promise.all(ids.map(getStoreProduct))).filter(
-          (item): item is ProductCardModel => Boolean(item),
-        );
+        // یک درخواست برای کل فهرست، نه یکی به ازای هر نتیجه: جست‌وجو
+        // تا ۵۰ نتیجه برمی‌گرداند و آن ۵۰ رفت‌وبرگشت کل صفحه را کند
+        // می‌کرد
+        const all = await getStoreProducts();
+        const byId = new Map(all.map((item) => [item.id, item]));
+        const products = ids
+          .map((id) => byId.get(id))
+          .filter((item): item is ProductCardModel => Boolean(item));
         // سندی که محصولش دیگر وجود ندارد نادیده گرفته می‌شود
         if (products.length > 0) return { products, usedFallback: false };
       }

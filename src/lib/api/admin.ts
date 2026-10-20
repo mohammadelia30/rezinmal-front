@@ -13,7 +13,7 @@ import {
 import { getPrimaryImage } from "@/lib/api/mappers";
 import { publicMediaUrl } from "@/lib/format";
 import { toDateInput } from "@/lib/tehran-date";
-import type { ProductDetail, ProductList } from "@/lib/api/types";
+import type { ProductDetail } from "@/lib/api/types";
 
 /**
  * لایهٔ دادهٔ پنل مدیریت.
@@ -137,16 +137,22 @@ export async function getAdminInvoices(): Promise<AdminInvoice[]> {
   return orders.map(toAdminInvoice);
 }
 
+/**
+ * همهٔ محصولات با جزئیاتشان، در یک درخواست.
+ *
+ * فهرست بک‌اند خودش تصویر، قیمت و نسخه‌ها را می‌دهد؛ قبل از آن برای
+ * هر محصول یک درخواست جدا فرستاده می‌شد و باز کردن صفحهٔ محصولات پنل
+ * روی صد محصول چند ثانیه طول می‌کشید.
+ */
+async function listAdminProducts(): Promise<ProductDetail[]> {
+  const list = await serverApiFetch<ProductDetail[]>(API_PATHS.products);
+  return Array.isArray(list) ? list : [];
+}
+
 export async function getAdminProducts(): Promise<AdminProduct[]> {
-  const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
-  if (!Array.isArray(list)) return [];
+  const list = await listAdminProducts();
 
-  const details = await Promise.all(
-    list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
-  );
-
-  return details
-    .filter((detail): detail is ProductDetail => Boolean(detail))
+  return list
     .map((detail) => {
       const variant = detail.variants?.[0];
       return {
@@ -464,13 +470,8 @@ export type AdminProductDetail = {
 };
 
 export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
-  const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
-  if (!Array.isArray(list)) return [];
-
   const [details, inventories] = await Promise.all([
-    Promise.all(
-      list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
-    ),
+    listAdminProducts(),
     getInventories(),
   ]);
 
@@ -479,7 +480,6 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
   );
 
   return details
-    .filter((detail): detail is ProductDetail => Boolean(detail))
     .map((detail) => {
       const variant =
         detail.variants?.find((item) => item.is_default) ?? detail.variants?.[0];
@@ -727,16 +727,10 @@ export type VariantOption = {
 };
 
 export async function getVariantOptions(): Promise<VariantOption[]> {
-  const list = await serverApiFetch<ProductList[]>(API_PATHS.products);
-  if (!Array.isArray(list)) return [];
-
-  const details = await Promise.all(
-    list.map((item) => serverApiFetch<ProductDetail>(API_PATHS.product(item.id))),
-  );
+  const details = await listAdminProducts();
 
   const options: VariantOption[] = [];
   for (const detail of details) {
-    if (!detail) continue;
     for (const variant of detail.variants ?? []) {
       options.push({
         id: String(variant.id),

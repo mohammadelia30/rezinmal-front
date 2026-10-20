@@ -55,17 +55,6 @@ export type ProductVariantDetail = {
   is_active?: boolean;
 };
 
-export type ProductList = {
-  id: number;
-  title: string;
-  slug?: string;
-  categories: CategoryList[];
-  brand: string;
-  status?: number;
-  is_featured?: boolean;
-  is_active?: boolean;
-};
-
 export type ProductDetail = {
   id: number;
   title: string;
