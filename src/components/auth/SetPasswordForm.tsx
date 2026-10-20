@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { AuthShell } from "@/components/auth/AuthShell";
-import { takeAuthRedirect } from "@/lib/auth-flow";
+import { PasswordRules } from "@/components/PasswordRules";
+import { readLoginPhone, takeAuthRedirect } from "@/lib/auth-flow";
+import { passwordErrorInPersian, passwordProblem } from "@/lib/password";
 
 /**
  * تعریف رمز عبور بعد از تأیید شمارهٔ موبایل.
@@ -19,12 +21,18 @@ export function SetPasswordForm() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // برای قانون «شبیه شمارهٔ موبایل نباشد»؛ sessionStorage فقط در مرورگر
+  // هست، پس روی سرور خالی می‌ماند
+  const [phone] = useState<string | undefined>(() =>
+    typeof window === "undefined" ? undefined : (readLoginPhone() ?? undefined),
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (password.length < 8) {
-      setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+    const problem = passwordProblem(password, phone);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (password !== confirm) {
@@ -62,7 +70,9 @@ export function SetPasswordForm() {
                 ? String(data.password_confirm[0])
                 : "ثبت رمز عبور ناموفق بود.";
 
-        setError(detail);
+        setError(
+          passwordErrorInPersian(detail, "ثبت رمز عبور ناموفق بود."),
+        );
         return;
       }
 
@@ -93,6 +103,8 @@ export function SetPasswordForm() {
           type="password"
           autoComplete="new-password"
         />
+
+        <PasswordRules password={password} phone={phone} />
 
         <AuthField
           id="confirm-password"

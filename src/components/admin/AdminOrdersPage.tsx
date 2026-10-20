@@ -18,6 +18,10 @@ import {
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
+import {
   AdminActionError,
   changeOrdersStatus,
   type BulkStatusResult,
@@ -83,6 +87,7 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
   const { query, setQuery, filtered } = useSearchFilter(byStatus, [
     "code", "customer", "phone", "date",
   ]);
+  const pager = usePagination(filtered);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<AdminOrderStatus | "">("");
@@ -96,9 +101,10 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
     return map;
   }, [orders]);
 
-  // انتخاب فقط در سفارش‌هایی که هنوز روی صفحه‌اند معنا دارد
+  // انتخاب فقط در سفارش‌هایی که هنوز روی صفحه‌اند معنا دارد: «انتخاب
+  // همه» یعنی همین صفحه، نه کل فهرست
   const selectedOrders = orders.filter((order) => selected.has(order.id));
-  const visibleIds = filtered.map((order) => order.id);
+  const visibleIds = pager.items.map((order) => order.id);
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
   const someVisibleSelected = visibleIds.some((id) => selected.has(id));
@@ -244,90 +250,93 @@ export function AdminOrdersPage({ orders }: { orders: AdminOrder[] }) {
           {orders.length ? "سفارشی با این مشخصات پیدا نشد." : "هنوز سفارشی ثبت نشده است."}
         </p>
       ) : (
-        <AdminTable
-          minWidth={960}
-          headers={["", "کد سفارش", "مشتری", "تاریخ", "مبلغ", "وضعیت", "عملیات"]}
-        >
-          <tr className="border-b border-[#efe6d4] bg-[#fbf9f1] text-right">
-            <td className="px-4 py-2" colSpan={7}>
-              <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-xs font-medium text-muted">
-                <input
-                  type="checkbox"
-                  checked={allVisibleSelected}
-                  ref={(input) => {
-                    if (input) input.indeterminate = someVisibleSelected && !allVisibleSelected;
-                  }}
-                  onChange={toggleAllVisible}
-                  className="size-4 accent-brand"
-                />
-                انتخاب همهٔ {visibleIds.length.toLocaleString("fa-IR")} سفارش این فهرست
-              </label>
-            </td>
-          </tr>
-
-          {filtered.map((order) => {
-            const isSelected = selected.has(order.id);
-            const next = orderStatusTransitions[order.status];
-
-            return (
-              <tr
-                key={order.id}
-                className={`border-b border-[#efe6d4] text-right last:border-b-0 ${
-                  isSelected ? "bg-brand-mist/30" : ""
-                }`}
-              >
-                <td className="w-10 px-4 py-3">
+        <>
+          <AdminTable
+            minWidth={960}
+            headers={["", "کد سفارش", "مشتری", "تاریخ", "مبلغ", "وضعیت", "عملیات"]}
+          >
+            <tr className="border-b border-[#efe6d4] bg-[#fbf9f1] text-right">
+              <td className="px-4 py-2" colSpan={7}>
+                <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-xs font-medium text-muted">
                   <input
                     type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggle(order.id)}
-                    aria-label={`انتخاب سفارش ${order.code}`}
+                    checked={allVisibleSelected}
+                    ref={(input) => {
+                      if (input) input.indeterminate = someVisibleSelected && !allVisibleSelected;
+                    }}
+                    onChange={toggleAllVisible}
                     className="size-4 accent-brand"
                   />
-                </td>
-                <td className="px-4 py-3 font-bold text-foreground">{order.code}</td>
-                <td className="px-4 py-3">
-                  {order.customer}
-                  <span className="mt-0.5 block text-xs text-muted" dir="ltr">
-                    {order.phone}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-muted">{order.date}</td>
-                <td className="px-4 py-3 font-bold text-brand">
-                  {formatProductPrice(order.total)}
-                </td>
-                <td className="px-4 py-3">
-                  <AdminBadge className={orderStatusStyles[order.status]}>
-                    {orderStatusLabels[order.status]}
-                  </AdminBadge>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    {next.map((status) => (
-                      <AdminButton
-                        key={status}
-                        variant={status === "cancelled" ? "danger" : "ghost"}
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => apply([order.id], status)}
+                  انتخاب همهٔ {visibleIds.length.toLocaleString("fa-IR")} سفارش این صفحه
+                </label>
+              </td>
+            </tr>
+
+            {pager.items.map((order) => {
+              const isSelected = selected.has(order.id);
+              const next = orderStatusTransitions[order.status];
+
+              return (
+                <tr
+                  key={order.id}
+                  className={`border-b border-[#efe6d4] text-right last:border-b-0 ${
+                    isSelected ? "bg-brand-mist/30" : ""
+                  }`}
+                >
+                  <td className="w-10 px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggle(order.id)}
+                      aria-label={`انتخاب سفارش ${order.code}`}
+                      className="size-4 accent-brand"
+                    />
+                  </td>
+                  <td className="px-4 py-3 font-bold text-foreground">{order.code}</td>
+                  <td className="px-4 py-3">
+                    {order.customer}
+                    <span className="mt-0.5 block text-xs text-muted" dir="ltr">
+                      {order.phone}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted">{order.date}</td>
+                  <td className="px-4 py-3 font-bold text-brand">
+                    {formatProductPrice(order.total)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <AdminBadge className={orderStatusStyles[order.status]}>
+                      {orderStatusLabels[order.status]}
+                    </AdminBadge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {next.map((status) => (
+                        <AdminButton
+                          key={status}
+                          variant={status === "cancelled" ? "danger" : "ghost"}
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => apply([order.id], status)}
+                        >
+                          {ACTION_LABELS[status]}
+                        </AdminButton>
+                      ))}
+                      <a
+                        href={API_PATHS.orderPrint(order.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap text-foreground transition hover:bg-[#f6f1e7]"
                       >
-                        {ACTION_LABELS[status]}
-                      </AdminButton>
-                    ))}
-                    <a
-                      href={API_PATHS.orderPrint(order.id)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#e6dcc2] px-3 py-1.5 text-xs font-medium whitespace-nowrap text-foreground transition hover:bg-[#f6f1e7]"
-                    >
-                      چاپ
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </AdminTable>
+                        چاپ
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {selectedOrders.length > 0 ? (

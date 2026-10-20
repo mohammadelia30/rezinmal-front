@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { PasswordInput } from "@/components/PasswordInput";
+import { PasswordRules } from "@/components/PasswordRules";
+import { passwordErrorInPersian, passwordProblem } from "@/lib/password";
 
 /**
  * تعریف یا تغییر رمز عبور از داخل پروفایل.
@@ -15,6 +17,8 @@ import { PasswordInput } from "@/components/PasswordInput";
  */
 export function DashboardPasswordCard() {
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  // برای قانون «شبیه شمارهٔ موبایل نباشد»
+  const [phone, setPhone] = useState<string | undefined>();
   const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -32,9 +36,12 @@ export function DashboardPasswordCard() {
           cache: "no-store",
         });
         const data = (await response.json()) as {
-          user?: { hasPassword?: boolean } | null;
+          user?: { hasPassword?: boolean; phoneNumber?: string } | null;
         };
-        if (active) setHasPassword(Boolean(data.user?.hasPassword));
+        if (active) {
+          setHasPassword(Boolean(data.user?.hasPassword));
+          setPhone(data.user?.phoneNumber ?? undefined);
+        }
       } catch {
         if (active) setHasPassword(false);
       }
@@ -48,8 +55,9 @@ export function DashboardPasswordCard() {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (password.length < 8) {
-      setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+    const problem = passwordProblem(password, phone);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (password !== confirm) {
@@ -95,12 +103,13 @@ export function DashboardPasswordCard() {
               (value) => typeof value === "string" || Array.isArray(value),
             )
           : null;
+        const message = Array.isArray(first)
+          ? String(first[0])
+          : typeof first === "string"
+            ? first
+            : "";
         setError(
-          Array.isArray(first)
-            ? String(first[0])
-            : typeof first === "string"
-              ? first
-              : "ثبت رمز عبور ناموفق بود.",
+          passwordErrorInPersian(message, "ثبت رمز عبور ناموفق بود."),
         );
         return;
       }
@@ -189,6 +198,8 @@ export function DashboardPasswordCard() {
             />
           </label>
         </div>
+
+        <PasswordRules password={password} phone={phone} />
 
         <button
           type="submit"

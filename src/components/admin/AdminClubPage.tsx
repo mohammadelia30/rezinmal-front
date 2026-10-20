@@ -15,6 +15,10 @@ import {
   AdminToggleField,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
 import type { ClubLevelRow, ClubMemberRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -65,6 +69,7 @@ export function AdminClubPage({
     "phone",
     "levelName",
   ]);
+  const pager = usePagination(filtered);
 
   const run = async (action: () => Promise<void>) => {
     setError("");
@@ -233,50 +238,53 @@ export function AdminClubPage({
             : "موردی با این جست‌وجو پیدا نشد."}
         </p>
       ) : (
-        <AdminTable
-          minWidth={860}
-          headers={[
-            "کاربر",
-            "موبایل",
-            "سطح",
-            "مجموع خرید",
-            "تعداد خرید",
-            "عضویت از",
-          ]}
+        <>
+          <AdminTable
+            minWidth={860}
+            headers={[
+              "کاربر",
+              "موبایل",
+              "سطح",
+              "مجموع خرید",
+              "تعداد خرید",
+              "عضویت از",
+            ]}
         >
-          {filtered.map((member) => (
-            <tr
-              key={member.userId}
-              className="border-b border-[#efe6d4] text-right last:border-b-0"
-            >
-              <td className="px-4 py-3 font-bold text-foreground">
-                {member.fullName}
-              </td>
-              <td className="px-4 py-3" dir="ltr">
-                {member.phone}
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-1.5">
-                  {member.byAdmin ? (
-                    <AdminBadge className="bg-[#fdf3e3] text-[#8a6a1f]">
-                      دستی
+            {pager.items.map((member) => (
+              <tr
+                key={member.userId}
+                className="border-b border-[#efe6d4] text-right last:border-b-0"
+              >
+                <td className="px-4 py-3 font-bold text-foreground">
+                  {member.fullName}
+                </td>
+                <td className="px-4 py-3" dir="ltr">
+                  {member.phone}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {member.byAdmin ? (
+                      <AdminBadge className="bg-[#fdf3e3] text-[#8a6a1f]">
+                        دستی
+                      </AdminBadge>
+                    ) : null}
+                    <AdminBadge className="bg-brand-mist text-brand">
+                      {member.levelName}
                     </AdminBadge>
-                  ) : null}
-                  <AdminBadge className="bg-brand-mist text-brand">
-                    {member.levelName}
-                  </AdminBadge>
-                </div>
-              </td>
-              <td className="px-4 py-3 font-bold text-brand">
-                {formatProductPrice(member.totalAmount)}
-              </td>
-              <td className="px-4 py-3">
-                {member.totalCount.toLocaleString("fa-IR")}
-              </td>
-              <td className="px-4 py-3 text-muted">{member.since}</td>
-            </tr>
-          ))}
-        </AdminTable>
+                  </div>
+                </td>
+                <td className="px-4 py-3 font-bold text-brand">
+                  {formatProductPrice(member.totalAmount)}
+                </td>
+                <td className="px-4 py-3">
+                  {member.totalCount.toLocaleString("fa-IR")}
+                </td>
+                <td className="px-4 py-3 text-muted">{member.since}</td>
+              </tr>
+            ))}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (

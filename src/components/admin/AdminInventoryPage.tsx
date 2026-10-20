@@ -13,6 +13,10 @@ import {
   AdminTable,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
 import type { InventoryRow, VariantOption } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -79,6 +83,7 @@ export function AdminInventoryPage({
     "productTitle",
     "sku",
   ]);
+  const pager = usePagination(filtered);
 
   const lowCount = rows.filter((row) => row.isLow).length;
 
@@ -147,96 +152,99 @@ export function AdminInventoryPage({
             : "موردی با این جست‌وجو پیدا نشد."}
         </p>
       ) : (
-        <AdminTable
-          minWidth={880}
-          headers={[
-            "محصول",
-            "کد کالا",
-            "موجودی",
-            "رزرو",
-            "قابل فروش",
-            "حد نصاب",
-            "عملیات",
-          ]}
-        >
-          {filtered.map((row) => {
-            const busy = busyId === row.id;
+        <>
+          <AdminTable
+            minWidth={880}
+            headers={[
+              "محصول",
+              "کد کالا",
+              "موجودی",
+              "رزرو",
+              "قابل فروش",
+              "حد نصاب",
+              "عملیات",
+            ]}
+          >
+            {pager.items.map((row) => {
+              const busy = busyId === row.id;
 
-            return (
-              <tr
-                key={row.id}
-                className="border-b border-[#efe6d4] text-right last:border-b-0"
-              >
-                <td className="px-4 py-3 font-bold text-foreground">
-                  {row.productTitle}
-                </td>
-                <td className="px-4 py-3 text-muted" dir="ltr">
-                  {row.sku}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    {row.isLow ? (
-                      <AdminBadge className="bg-[#fde8e8] text-[#9b3d3d]">
-                        کم
-                      </AdminBadge>
-                    ) : null}
-                    <span className="font-bold">
-                      {row.stock.toLocaleString("fa-IR")}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-muted">
-                  {row.reserved.toLocaleString("fa-IR")}
-                </td>
-                <td className="px-4 py-3 font-bold text-brand">
-                  {row.available.toLocaleString("fa-IR")}
-                </td>
-                <td className="px-4 py-3 text-muted">
-                  {row.minimum.toLocaleString("fa-IR")}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    <AdminButton
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => {
-                        const qty = ask("چه تعداد اضافه شود؟");
-                        if (qty) run(row.id, () => changeStock(row.id, qty, "increase"));
-                      }}
-                    >
-                      افزایش
-                    </AdminButton>
-                    <AdminButton
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => {
-                        const qty = ask("چه تعداد کم شود؟");
-                        if (qty) run(row.id, () => changeStock(row.id, qty, "decrease"));
-                      }}
-                    >
-                      کاهش
-                    </AdminButton>
-                    <AdminButton
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => {
-                        const min = ask("حد نصاب جدید:", String(row.minimum));
-                        if (min !== null) {
-                          run(row.id, () => setMinimumStock(row.id, min));
-                        }
-                      }}
-                    >
-                      حد نصاب
-                    </AdminButton>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </AdminTable>
+              return (
+                <tr
+                  key={row.id}
+                  className="border-b border-[#efe6d4] text-right last:border-b-0"
+                >
+                  <td className="px-4 py-3 font-bold text-foreground">
+                    {row.productTitle}
+                  </td>
+                  <td className="px-4 py-3 text-muted" dir="ltr">
+                    {row.sku}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      {row.isLow ? (
+                        <AdminBadge className="bg-[#fde8e8] text-[#9b3d3d]">
+                          کم
+                        </AdminBadge>
+                      ) : null}
+                      <span className="font-bold">
+                        {row.stock.toLocaleString("fa-IR")}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    {row.reserved.toLocaleString("fa-IR")}
+                  </td>
+                  <td className="px-4 py-3 font-bold text-brand">
+                    {row.available.toLocaleString("fa-IR")}
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    {row.minimum.toLocaleString("fa-IR")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      <AdminButton
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => {
+                          const qty = ask("چه تعداد اضافه شود؟");
+                          if (qty) run(row.id, () => changeStock(row.id, qty, "increase"));
+                        }}
+                      >
+                        افزایش
+                      </AdminButton>
+                      <AdminButton
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => {
+                          const qty = ask("چه تعداد کم شود؟");
+                          if (qty) run(row.id, () => changeStock(row.id, qty, "decrease"));
+                        }}
+                      >
+                        کاهش
+                      </AdminButton>
+                      <AdminButton
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => {
+                          const min = ask("حد نصاب جدید:", String(row.minimum));
+                          if (min !== null) {
+                            run(row.id, () => setMinimumStock(row.id, min));
+                          }
+                        }}
+                      >
+                        حد نصاب
+                      </AdminButton>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (

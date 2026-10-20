@@ -14,6 +14,10 @@ import {
   AdminTable,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
 import { API_PATHS } from "@/lib/api/config";
 import { formatProductPrice } from "@/lib/price";
 
@@ -21,6 +25,7 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
   const { query, setQuery, filtered } = useSearchFilter(invoices, [
     "number", "orderCode", "customer",
   ]);
+  const pager = usePagination(filtered);
   const [selected, setSelected] = useState<AdminInvoice | null>(null);
 
   return (
@@ -47,7 +52,7 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
           "عملیات",
         ]}
       >
-        {filtered.map((invoice) => (
+        {pager.items.map((invoice) => (
           <tr
             key={invoice.id}
             className="border-b border-[#efe6d4] text-right last:border-b-0"
@@ -86,6 +91,7 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
           </tr>
         ))}
       </AdminTable>
+      <AdminPagination pager={pager} />
 
       {selected ? (
         <div

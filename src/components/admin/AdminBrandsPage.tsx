@@ -14,6 +14,10 @@ import {
   AdminToggleField,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
 import type { AdminBrandRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -29,6 +33,7 @@ export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
   const { query, setQuery, filtered } = useSearchFilter(brands, [
     "title", "description",
   ]);
+  const pager = usePagination(filtered);
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -117,48 +122,51 @@ export function AdminBrandsPage({ brands }: { brands: AdminBrandRow[] }) {
           هنوز برندی ثبت نشده است.
         </p>
       ) : (
-        <AdminTable headers={["نام برند", "توضیحات", "وضعیت", "عملیات"]}>
-          {filtered.map((row) => (
-            <tr
-              key={row.id}
-              className="border-b border-[#efe6d4] text-right last:border-b-0"
-            >
-              <td className="px-4 py-3 font-bold text-foreground">{row.title}</td>
-              <td className="px-4 py-3 text-muted">{row.description || "—"}</td>
-              <td className="px-4 py-3">
-                <AdminBadge
-                  className={
-                    row.isActive
-                      ? "bg-[#e4f5ea] text-[#2f6b45]"
-                      : "bg-[#fde8e8] text-[#9b3d3d]"
-                  }
-                >
-                  {row.isActive ? "فعال" : "غیرفعال"}
-                </AdminBadge>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap justify-end gap-1.5">
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => openEdit(row)}
+        <>
+          <AdminTable headers={["نام برند", "توضیحات", "وضعیت", "عملیات"]}>
+            {pager.items.map((row) => (
+              <tr
+                key={row.id}
+                className="border-b border-[#efe6d4] text-right last:border-b-0"
+              >
+                <td className="px-4 py-3 font-bold text-foreground">{row.title}</td>
+                <td className="px-4 py-3 text-muted">{row.description || "—"}</td>
+                <td className="px-4 py-3">
+                  <AdminBadge
+                    className={
+                      row.isActive
+                        ? "bg-[#e4f5ea] text-[#2f6b45]"
+                        : "bg-[#fde8e8] text-[#9b3d3d]"
+                    }
                   >
-                    ویرایش
-                  </AdminButton>
-                  <AdminButton
-                    variant="danger"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => handleDelete(row)}
-                  >
-                    حذف
-                  </AdminButton>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </AdminTable>
+                    {row.isActive ? "فعال" : "غیرفعال"}
+                  </AdminBadge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap justify-end gap-1.5">
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => openEdit(row)}
+                    >
+                      ویرایش
+                    </AdminButton>
+                    <AdminButton
+                      variant="danger"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => handleDelete(row)}
+                    >
+                      حذف
+                    </AdminButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (

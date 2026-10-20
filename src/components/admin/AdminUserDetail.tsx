@@ -20,6 +20,8 @@ import {
   setUserRoles,
   setUserStaff,
 } from "@/lib/admin-store";
+import { PasswordRules } from "@/components/PasswordRules";
+import { passwordProblem } from "@/lib/password";
 import { formatProductPrice } from "@/lib/price";
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -77,8 +79,9 @@ export function AdminUserDetailPage({
   const submitPassword = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (password.length < 8) {
-      setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+    const problem = passwordProblem(password, user.phone);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (password !== confirm) {
@@ -247,6 +250,8 @@ export function AdminUserDetailPage({
               onChange={setConfirm}
               type="password"
             />
+
+            <PasswordRules password={password} phone={user.phone} />
 
             <div className="flex justify-end gap-2">
               <AdminButton

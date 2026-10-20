@@ -15,6 +15,10 @@ import {
   AdminToggleField,
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
+import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
 import type { AdminArticleRow } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -51,6 +55,7 @@ export function AdminArticlesPage({
   const { query, setQuery, filtered } = useSearchFilter(articles, [
     "title", "summary",
   ]);
+  const pager = usePagination(filtered);
   const [form, setForm] = useState(EMPTY);
   const [cover, setCover] = useState<File | null>(null);
   const [currentCover, setCurrentCover] = useState("");
@@ -169,86 +174,89 @@ export function AdminArticlesPage({
             : "هنوز مقاله‌ای ننوشته‌اید."}
         </p>
       ) : (
-        <AdminTable
-          minWidth={760}
-          headers={["تصویر", "عنوان", "تاریخ انتشار", "وضعیت", "عملیات"]}
-        >
-          {filtered.map((row) => (
-            <tr
-              key={row.id}
-              className="border-b border-[#efe6d4] text-right last:border-b-0"
-            >
-              <td className="w-20 px-4 py-3">
-                {row.coverUrl ? (
-                  <div className="relative size-12 overflow-hidden rounded-lg bg-brand-mist">
-                    <Image
-                      src={row.coverUrl}
-                      alt={row.coverAlt}
-                      fill
-                      sizes="48px"
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <span className="text-xs text-muted">—</span>
-                )}
-              </td>
-              <td className="px-4 py-3">
-                <span className="font-bold text-foreground">{row.title}</span>
-                {row.summary ? (
-                  <span className="mt-0.5 block max-w-md truncate text-xs text-muted">
-                    {row.summary}
-                  </span>
-                ) : null}
-              </td>
-              <td className="px-4 py-3 text-muted">
-                {row.isPublished ? row.publishedAt : "—"}
-              </td>
-              <td className="px-4 py-3">
-                <AdminBadge
-                  className={
-                    row.isPublished
-                      ? "bg-[#e4f5ea] text-[#2f6b45]"
-                      : "bg-[#fff3d6] text-[#8a6a1f]"
-                  }
-                >
-                  {row.isPublished ? "منتشر شده" : "پیش‌نویس"}
-                </AdminBadge>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap justify-end gap-1.5">
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => openEdit(row)}
-                  >
-                    ویرایش
-                  </AdminButton>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() =>
-                      run(() => setArticlePublished(row.id, !row.isPublished))
+        <>
+          <AdminTable
+            minWidth={760}
+            headers={["تصویر", "عنوان", "تاریخ انتشار", "وضعیت", "عملیات"]}
+          >
+            {pager.items.map((row) => (
+              <tr
+                key={row.id}
+                className="border-b border-[#efe6d4] text-right last:border-b-0"
+              >
+                <td className="w-20 px-4 py-3">
+                  {row.coverUrl ? (
+                    <div className="relative size-12 overflow-hidden rounded-lg bg-brand-mist">
+                      <Image
+                        src={row.coverUrl}
+                        alt={row.coverAlt}
+                        fill
+                        sizes="48px"
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <span className="font-bold text-foreground">{row.title}</span>
+                  {row.summary ? (
+                    <span className="mt-0.5 block max-w-md truncate text-xs text-muted">
+                      {row.summary}
+                    </span>
+                  ) : null}
+                </td>
+                <td className="px-4 py-3 text-muted">
+                  {row.isPublished ? row.publishedAt : "—"}
+                </td>
+                <td className="px-4 py-3">
+                  <AdminBadge
+                    className={
+                      row.isPublished
+                        ? "bg-[#e4f5ea] text-[#2f6b45]"
+                        : "bg-[#fff3d6] text-[#8a6a1f]"
                     }
                   >
-                    {row.isPublished ? "بازگشت به پیش‌نویس" : "انتشار"}
-                  </AdminButton>
-                  <AdminButton
-                    variant="danger"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => handleDelete(row)}
-                  >
-                    حذف
-                  </AdminButton>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </AdminTable>
+                    {row.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                  </AdminBadge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap justify-end gap-1.5">
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => openEdit(row)}
+                    >
+                      ویرایش
+                    </AdminButton>
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() =>
+                        run(() => setArticlePublished(row.id, !row.isPublished))
+                      }
+                    >
+                      {row.isPublished ? "بازگشت به پیش‌نویس" : "انتشار"}
+                    </AdminButton>
+                    <AdminButton
+                      variant="danger"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => handleDelete(row)}
+                    >
+                      حذف
+                    </AdminButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (

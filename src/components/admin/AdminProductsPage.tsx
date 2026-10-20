@@ -17,6 +17,10 @@ import {
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
+import {
   AdminProductVariants,
   emptyVariantRow,
   toVariantInputs,
@@ -80,6 +84,7 @@ export function AdminProductsPage({
   const { query, setQuery, filtered } = useSearchFilter(products, [
     "title", "sku",
   ]);
+  const pager = usePagination(filtered);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<AdminProductDetail | null>(null);
@@ -616,87 +621,90 @@ export function AdminProductsPage({
           هنوز محصولی ثبت نشده است. با دکمهٔ «افزودن محصول» شروع کنید.
         </p>
       ) : (
-        <AdminTable minWidth={720} headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
-          {filtered.map((product) => (
-            <tr
-              key={product.id}
-              className="border-b border-[#efe6d4] text-right last:border-b-0"
-            >
-              <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-3">
-                  <p className="font-bold text-foreground">{product.title}</p>
-                  <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-brand-mist">
-                    <Image
-                      src={
-                        product.images.find((image) => image.isPrimary)?.url ??
-                        product.images[0]?.url ??
-                        "/images/product-1.jpg"
-                      }
-                      alt={product.title}
-                      fill
-                      sizes="48px"
-                      className="object-cover"
-                    />
+        <>
+          <AdminTable minWidth={720} headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
+            {pager.items.map((product) => (
+              <tr
+                key={product.id}
+                className="border-b border-[#efe6d4] text-right last:border-b-0"
+              >
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-3">
+                    <p className="font-bold text-foreground">{product.title}</p>
+                    <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-brand-mist">
+                      <Image
+                        src={
+                          product.images.find((image) => image.isPrimary)?.url ??
+                          product.images[0]?.url ??
+                          "/images/product-1.jpg"
+                        }
+                        alt={product.title}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td className="px-4 py-3 font-bold text-brand">
-                {formatProductPrice(product.price)}
-                {/* محصول چند نسخه‌ای یک قیمت ندارد؛ بازهٔ قیمت را نشان
-                    می‌دهیم تا فهرست گمراه‌کننده نباشد */}
-                {product.variants.length > 1 ? (
-                  <span className="mt-1 block text-xs font-normal text-muted">
-                    {product.variants.length.toLocaleString("fa-IR")} نسخه، تا{" "}
-                    {formatProductPrice(
-                      Math.max(...product.variants.map((item) => item.price)),
-                    )}
-                  </span>
-                ) : null}
-              </td>
-              <td className="px-4 py-3">
-                <AdminBadge
-                  className={
-                    product.isActive
-                      ? "bg-[#e4f5ea] text-[#2f6b45]"
-                      : "bg-[#fde8e8] text-[#9b3d3d]"
-                  }
-                >
-                  {product.isActive ? "فعال" : "غیرفعال"}
-                </AdminBadge>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap justify-end gap-1.5">
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => openEdit(product)}
-                  >
-                    ویرایش
-                  </AdminButton>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() =>
-                      run(() => setProductActive(product.id, !product.isActive))
+                </td>
+                <td className="px-4 py-3 font-bold text-brand">
+                  {formatProductPrice(product.price)}
+                  {/* محصول چند نسخه‌ای یک قیمت ندارد؛ بازهٔ قیمت را نشان
+                      می‌دهیم تا فهرست گمراه‌کننده نباشد */}
+                  {product.variants.length > 1 ? (
+                    <span className="mt-1 block text-xs font-normal text-muted">
+                      {product.variants.length.toLocaleString("fa-IR")} نسخه، تا{" "}
+                      {formatProductPrice(
+                        Math.max(...product.variants.map((item) => item.price)),
+                      )}
+                    </span>
+                  ) : null}
+                </td>
+                <td className="px-4 py-3">
+                  <AdminBadge
+                    className={
+                      product.isActive
+                        ? "bg-[#e4f5ea] text-[#2f6b45]"
+                        : "bg-[#fde8e8] text-[#9b3d3d]"
                     }
                   >
-                    {product.isActive ? "غیرفعال" : "فعال"}
-                  </AdminButton>
-                  <AdminButton
-                    variant="danger"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => handleDelete(product)}
-                  >
-                    حذف
-                  </AdminButton>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </AdminTable>
+                    {product.isActive ? "فعال" : "غیرفعال"}
+                  </AdminBadge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap justify-end gap-1.5">
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => openEdit(product)}
+                    >
+                      ویرایش
+                    </AdminButton>
+                    <AdminButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() =>
+                        run(() => setProductActive(product.id, !product.isActive))
+                      }
+                    >
+                      {product.isActive ? "غیرفعال" : "فعال"}
+                    </AdminButton>
+                    <AdminButton
+                      variant="danger"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => handleDelete(product)}
+                    >
+                      حذف
+                    </AdminButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {creating ? (

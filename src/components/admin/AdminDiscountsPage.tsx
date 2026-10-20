@@ -19,6 +19,10 @@ import {
 } from "@/components/admin/AdminUI";
 import { AdminSearch, useSearchFilter } from "@/components/admin/AdminSearch";
 import {
+  AdminPagination,
+  usePagination,
+} from "@/components/admin/AdminPagination";
+import {
   AdminActionError,
   createCoupon,
   createProductDiscount,
@@ -200,6 +204,7 @@ function CouponsSection({
   const [listError, setListError] = useState("");
   const [busy, setBusy] = useState(false);
   const { query, setQuery, filtered } = useSearchFilter(coupons, ["code"]);
+  const pager = usePagination(filtered);
 
   const levelName = new Map(levels.map((level) => [level.id, level.name]));
   const lockedLevels = editing?.levelIds ?? [];
@@ -320,11 +325,12 @@ function CouponsSection({
           message={coupons.length ? "کدی با این مشخصات پیدا نشد." : "هنوز کد تخفیفی ثبت نشده است."}
         />
       ) : (
-        <AdminTable
-          minWidth={900}
-          headers={["کد", "مقدار", "مخاطب", "استفاده", "اعتبار", "وضعیت", "عملیات"]}
-        >
-          {filtered.map((coupon) => {
+        <>
+          <AdminTable
+            minWidth={900}
+            headers={["کد", "مقدار", "مخاطب", "استفاده", "اعتبار", "وضعیت", "عملیات"]}
+          >
+            {pager.items.map((coupon) => {
             const state = STATE_BADGE[stateOf(coupon.active, coupon.startsAt, coupon.expiresAt)];
             const audience = coupon.levelIds.length
               ? coupon.levelIds.map((id) => levelName.get(id) ?? "سطح حذف‌شده").join("، ")
@@ -391,7 +397,9 @@ function CouponsSection({
               </tr>
             );
           })}
-        </AdminTable>
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (
@@ -571,6 +579,7 @@ function ProductDiscountsSection({
   const [listError, setListError] = useState("");
   const [busy, setBusy] = useState(false);
   const { query, setQuery, filtered } = useSearchFilter(discounts, ["targetTitle"]);
+  const pager = usePagination(filtered);
 
   const set = <K extends keyof ProductDiscountForm>(key: K, value: ProductDiscountForm[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -673,8 +682,9 @@ function ProductDiscountsSection({
           message={discounts.length ? "تخفیفی با این مشخصات پیدا نشد." : "هنوز تخفیفی روی محصولات ثبت نشده است."}
         />
       ) : (
-        <AdminTable minWidth={820} headers={["روی", "مقدار", "اعتبار", "وضعیت", "عملیات"]}>
-          {filtered.map((discount) => {
+        <>
+          <AdminTable minWidth={820} headers={["روی", "مقدار", "اعتبار", "وضعیت", "عملیات"]}>
+            {pager.items.map((discount) => {
             const state = STATE_BADGE[stateOf(discount.active, discount.startsAt, discount.expiresAt)];
             return (
               <tr key={discount.id} className="border-b border-[#efe6d4] text-right last:border-b-0">
@@ -725,7 +735,9 @@ function ProductDiscountsSection({
               </tr>
             );
           })}
-        </AdminTable>
+          </AdminTable>
+          <AdminPagination pager={pager} />
+        </>
       )}
 
       {open ? (
