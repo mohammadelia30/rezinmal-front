@@ -99,12 +99,12 @@ export function SetPasswordForm() {
             setPassword(value);
             setError("");
           }}
-          placeholder="حداقل ۸ کاراکتر"
+          placeholder="حرف بزرگ، حرف کوچک، عدد و نشانه"
           type="password"
           autoComplete="new-password"
         />
 
-        <PasswordRules password={password} phone={phone} />
+        <PasswordRules password={password} />
 
         <AuthField
           id="confirm-password"

@@ -242,7 +242,7 @@ export function AdminUserDetailPage({
               value={password}
               onChange={setPassword}
               type="password"
-              placeholder="حداقل ۸ کاراکتر"
+              placeholder="حرف بزرگ، حرف کوچک، عدد و نشانه"
             />
             <AdminField
               label="تکرار رمز عبور"
@@ -251,7 +251,7 @@ export function AdminUserDetailPage({
               type="password"
             />
 
-            <PasswordRules password={password} phone={user.phone} />
+            <PasswordRules password={password} />
 
             <div className="flex justify-end gap-2">
               <AdminButton

@@ -8,7 +8,7 @@
  */
 
 export type PasswordRule = {
-  id: "length" | "numeric" | "similar" | "common";
+  id: "length" | "lower" | "upper" | "digit" | "symbol";
   label: string;
   ok: boolean;
 };
@@ -59,10 +59,10 @@ function looksLikeAccount(password: string, phone?: string): boolean {
   return tail.length >= 7 && value.includes(tail);
 }
 
-export function checkPassword(
-  password: string,
-  phone?: string,
-): PasswordRule[] {
+/** نشانه‌های اَسکی؛ حرف فارسی به‌جای نشانه حساب نمی‌شود */
+const SYMBOL = /[!-/:-@[-`{-~]/;
+
+export function checkPassword(password: string): PasswordRule[] {
   const value = password.trim();
 
   return [
@@ -72,34 +72,58 @@ export function checkPassword(
       ok: value.length >= MIN_PASSWORD_LENGTH,
     },
     {
-      id: "numeric",
-      label: "فقط از عدد ساخته نشده باشد",
-      ok: value.length > 0 && !/^\d+$/.test(value),
+      id: "lower",
+      label: "یک حرف کوچک انگلیسی داشته باشد (a تا z)",
+      ok: /[a-z]/.test(value),
     },
     {
-      id: "similar",
-      label: "شبیه شمارهٔ موبایل شما نباشد",
-      ok: value.length > 0 && !looksLikeAccount(value, phone),
+      id: "upper",
+      label: "یک حرف بزرگ انگلیسی داشته باشد (A تا Z)",
+      ok: /[A-Z]/.test(value),
     },
     {
-      id: "common",
-      label: "از رمزهای خیلی رایج نباشد",
-      ok: value.length > 0 && !COMMON_PASSWORDS.has(value.toLowerCase()),
+      id: "digit",
+      label: "یک عدد داشته باشد (۰ تا ۹)",
+      ok: /[0-9]/.test(value),
+    },
+    {
+      id: "symbol",
+      label: "یک نشانه داشته باشد (مثل ! یا @ یا #)",
+      ok: SYMBOL.test(value),
     },
   ];
 }
 
-/** اولین قانونی که رعایت نشده، به زبان آدمیزاد؛ خالی یعنی رمز قبول است */
+/**
+ * اولین ایرادی که رمز دارد؛ خالی یعنی قبول است.
+ *
+ * دو قانون آخر در فهرست تیک‌ها نیستند (بک‌اند هم جداگانه می‌گیردشان)
+ * ولی اگر رمز به آن‌ها بخورد، باید پیش از ارسال معلوم شود.
+ */
 export function passwordProblem(password: string, phone?: string): string {
-  const failed = checkPassword(password, phone).find((rule) => !rule.ok);
-  if (!failed) return "";
+  const failed = checkPassword(password).find((rule) => !rule.ok);
 
-  return {
-    length: `رمز عبور باید حداقل ${MIN_PASSWORD_LENGTH.toLocaleString("fa-IR")} کاراکتر باشد.`,
-    numeric: "رمز عبور نمی‌تواند فقط عدد باشد.",
-    similar: "رمز عبور نباید شبیه شمارهٔ موبایل شما باشد.",
-    common: "این رمز عبور خیلی رایج است؛ رمز دیگری انتخاب کنید.",
-  }[failed.id];
+  if (failed) {
+    return {
+      length: `رمز عبور باید حداقل ${MIN_PASSWORD_LENGTH.toLocaleString("fa-IR")} کاراکتر باشد.`,
+      lower: "رمز عبور باید دست‌کم یک حرف کوچک انگلیسی داشته باشد.",
+      upper: "رمز عبور باید دست‌کم یک حرف بزرگ انگلیسی داشته باشد.",
+      digit: "رمز عبور باید دست‌کم یک عدد داشته باشد.",
+      symbol: "رمز عبور باید دست‌کم یک نشانه مثل ! یا @ داشته باشد.",
+    }[failed.id];
+  }
+
+  const value = password.trim();
+
+  if (looksLikeAccount(value, phone)) {
+    return "رمز عبور نباید شبیه شمارهٔ موبایل شما باشد.";
+  }
+
+  if (COMMON_PASSWORDS.has(value.toLowerCase())) {
+    return "این رمز عبور خیلی رایج است؛ رمز دیگری انتخاب کنید.";
+  }
+
+  return "";
 }
 
 /** پیام انگلیسی بک‌اند، به فارسی */
@@ -107,6 +131,7 @@ const BACKEND_MESSAGES: [RegExp, string][] = [
   [/too short|at least \d+ characters/i, `رمز عبور باید حداقل ${MIN_PASSWORD_LENGTH.toLocaleString("fa-IR")} کاراکتر باشد.`],
   [/too common/i, "این رمز عبور خیلی رایج است؛ رمز دیگری انتخاب کنید."],
   [/entirely numeric/i, "رمز عبور نمی‌تواند فقط عدد باشد."],
+  [/must contain|not complex/i, "رمز عبور باید حرف کوچک و بزرگ انگلیسی، عدد و نشانه داشته باشد."],
   [/too similar/i, "رمز عبور نباید شبیه شمارهٔ موبایل شما باشد."],
   [/do not match|didn't match|must match/i, "رمز عبور و تکرار آن یکسان نیستند."],
   [/different from the old password/i, "رمز تازه باید با رمز قبلی فرق داشته باشد."],

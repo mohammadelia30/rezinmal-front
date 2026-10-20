@@ -178,7 +178,7 @@ export function DashboardPasswordCard() {
             <PasswordInput
               value={password}
               autoComplete="new-password"
-              placeholder="حداقل ۸ کاراکتر"
+              placeholder="حرف بزرگ، حرف کوچک، عدد و نشانه"
               onChange={setPassword}
               className="min-h-11 w-full rounded-xl border border-[#e6dcc2] bg-[#fbf9f1] py-2.5 pr-3 pl-10 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
               togglePadding="px-2.5"
@@ -199,7 +199,7 @@ export function DashboardPasswordCard() {
           </label>
         </div>
 
-        <PasswordRules password={password} phone={phone} />
+        <PasswordRules password={password} />
 
         <button
           type="submit"

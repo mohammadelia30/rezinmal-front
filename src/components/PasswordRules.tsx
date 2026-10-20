@@ -3,21 +3,19 @@
 import { checkPassword } from "@/lib/password";
 
 /**
- * چهار قانون رمز عبور، با تیک خوردن همزمان با تایپ.
+ * قانون‌های رمز عبور، با تیک خوردن همزمان با تایپ.
  *
  * تا وقتی چیزی تایپ نشده خاکستری‌اند؛ این‌طور کاربر از اول می‌داند چه
  * چیزی لازم است، نه اینکه بعد از زدن دکمه پیام خطا بگیرد.
  */
 export function PasswordRules({
   password,
-  phone,
   className = "",
 }: {
   password: string;
-  phone?: string;
   className?: string;
 }) {
-  const rules = checkPassword(password, phone);
+  const rules = checkPassword(password);
   const touched = password.length > 0;
 
   return (
