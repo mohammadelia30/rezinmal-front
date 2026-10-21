@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { ProductGallery } from "@/components/ProductGallery";
 import { ProductVariantPicker } from "@/components/ProductVariantPicker";
 import { shopNavLinks } from "@/data/home";
 import { getStoreProduct, getStoreProducts } from "@/lib/api";
@@ -59,8 +59,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const product = await getStoreProduct(id);
   if (!product) notFound();
 
-  const isRemote = product.image.startsWith("http");
-
   return (
     <div className="flex min-h-dvh w-full flex-col bg-background">
       <Header links={shopNavLinks} />
@@ -76,17 +74,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
-            <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-card lg:max-w-none">
-              <Image
-                src={product.image}
-                alt={product.imageAlt || product.title}
-                fill
-                priority
-                unoptimized={isRemote}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
+            <ProductGallery
+              title={product.title}
+              images={
+                product.images?.length
+                  ? product.images
+                  : [{ url: product.image, alt: product.imageAlt }]
+              }
+            />
 
             <div className="space-y-4 text-right sm:space-y-5">
               <div>

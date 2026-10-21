@@ -34,6 +34,32 @@ export function getPrimaryImage(
   return url ?? PLACEHOLDER_IMAGE;
 }
 
+/**
+ * همهٔ تصویرهای محصول، با تصویر اصلی در اول.
+ *
+ * تا امروز فقط تصویر اصلی به سایت می‌رسید؛ فروشنده سه عکس برای یک
+ * محصول می‌گذاشت و مشتری فقط یکی را می‌دید.
+ */
+export function getProductImages(
+  images: ProductImage[] | undefined,
+): { url: string; alt?: string }[] {
+  if (!images?.length) return [];
+
+  const primary = getPrimaryImageRecord(images);
+
+  return [...images]
+    .sort((a, b) => {
+      if (a.id === primary?.id) return -1;
+      if (b.id === primary?.id) return 1;
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    })
+    .map((image) => ({
+      url: publicMediaUrl(image.image) ?? "",
+      alt: image.alt || undefined,
+    }))
+    .filter((image) => image.url);
+}
+
 export function getDefaultVariant(
   variants: ProductVariantDetail[] | undefined,
 ): ProductVariantDetail | undefined {
@@ -119,6 +145,7 @@ export function mapProductDetailToCard(
     metaTitle: product.meta_title || undefined,
     metaDescription: product.meta_description || undefined,
     imageAlt: getPrimaryImageRecord(product.images)?.alt || undefined,
+    images: getProductImages(product.images),
     categories: (product.categories ?? []).map((item) => ({
       id: String(item.id),
       title: item.title,
