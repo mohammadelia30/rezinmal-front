@@ -25,7 +25,7 @@ export function MobileCategories({
             href={`/categories?category=${category.id}`}
             className="flex w-[88px] shrink-0 flex-col items-center gap-1.5 rounded-[10px] bg-white px-2 py-2.5 shadow-[0px_1px_2px_rgba(0,0,0,0.07)]"
           >
-            <span className="relative size-12 overflow-hidden rounded-full bg-brand-mist">
+            <span className="relative flex size-12 items-center justify-center overflow-hidden rounded-full bg-brand-mist">
               {category.image ? (
                 <Image
                   src={category.image}
@@ -35,7 +35,11 @@ export function MobileCategories({
                   sizes="48px"
                   className="object-cover"
                 />
-              ) : null}
+              ) : (
+                <span className="text-base font-bold text-brand">
+                  {category.title.trim().charAt(0)}
+                </span>
+              )}
             </span>
             <span className="line-clamp-2 text-center text-[11px] font-bold leading-4 text-[#33203c]">
               {category.title}

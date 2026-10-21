@@ -13,17 +13,10 @@ import { publicMediaUrl } from "@/lib/format";
 export type StoreCategory = {
   id: string;
   title: string;
-  /** تصویری که در پنل برای دسته گذاشته شده؛ خالی یعنی تصویر پیش‌فرض */
+  /** تصویری که در پنل برای دسته گذاشته شده؛ خالی یعنی بدون تصویر */
   image: string | null;
   productCount: number;
 };
-
-/** وقتی دسته تصویر ندارد، از این‌ها به ترتیب استفاده می‌شود */
-const FALLBACK_IMAGES = [
-  "/images/cat-molds.jpg",
-  "/images/cat-resin.jpg",
-  "/images/cat-tools.jpg",
-];
 
 export async function getStoreCategoryTiles(): Promise<StoreCategory[]> {
   const [categories, catalog] = await Promise.all([
@@ -31,15 +24,15 @@ export async function getStoreCategoryTiles(): Promise<StoreCategory[]> {
     getStoreCatalog(),
   ]);
 
-  return categories.map((category, index) => {
+  return categories.map((category) => {
     const id = String(category.id);
 
     return {
       id,
       title: category.title,
-      image:
-        publicMediaUrl(category.image) ??
-        FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
+      // تصویر قرضی نمی‌گذاریم: عکس قالب روی دستهٔ «ابزارآلات» از
+      // نداشتن عکس بدتر است. تصویر دسته در پنل گذاشته می‌شود.
+      image: publicMediaUrl(category.image) ?? null,
       productCount: catalog.productsByCategory[id]?.length ?? 0,
     };
   });

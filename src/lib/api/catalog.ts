@@ -98,9 +98,14 @@ export async function getStoreProduct(
 export async function getStoreCategories(): Promise<CategoryList[]> {
   try {
     const categories = await listCategories();
+    // ترتیب پنل، و برای دسته‌هایی که ترتیبشان یکی است، قدیمی‌تر جلوتر؛
+    // بدون این، ترتیب روی صفحهٔ اصلی هر بار می‌توانست عوض شود
     return categories
       .filter((item) => item.is_active !== false)
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      .sort(
+        (a, b) =>
+          (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id,
+      );
   } catch {
     return [];
   }

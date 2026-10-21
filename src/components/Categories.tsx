@@ -37,7 +37,7 @@ export function Categories({
               href={`/categories?category=${category.id}`}
               className="flex flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)]"
             >
-              <div className="relative aspect-[111/88] w-full overflow-hidden bg-brand-mist">
+              <div className="relative flex aspect-[111/88] w-full items-center justify-center overflow-hidden bg-brand-mist">
                 {category.image ? (
                   <Image
                     src={category.image}
@@ -47,7 +47,12 @@ export function Categories({
                     sizes="50vw"
                     className="object-cover"
                   />
-                ) : null}
+                ) : (
+                  // دسته‌ای که هنوز در پنل تصویر نگرفته
+                  <span className="px-2 text-center text-xs font-bold text-brand">
+                    {category.title}
+                  </span>
+                )}
               </div>
               <div className="flex flex-1 flex-col px-1.5 pb-2 pt-1.5">
                 <h3 className="line-clamp-1 text-right text-[11px] font-bold text-[#3d2447]">
@@ -87,7 +92,7 @@ export function Categories({
                 href={`/categories?category=${category.id}`}
                 className="flex flex-col overflow-hidden rounded-2xl bg-card transition hover:shadow-[0_6px_24px_rgba(78,42,84,0.12)]"
               >
-                <div className="relative aspect-[6/5] w-full overflow-hidden bg-brand-mist">
+                <div className="relative flex aspect-[6/5] w-full items-center justify-center overflow-hidden bg-brand-mist">
                   {category.image ? (
                     <Image
                       src={category.image}
@@ -97,7 +102,11 @@ export function Categories({
                       sizes="(max-width: 1024px) 50vw, 360px"
                       className="object-cover transition duration-500 hover:scale-105"
                     />
-                  ) : null}
+                  ) : (
+                    <span className="px-3 text-center text-lg font-bold text-brand">
+                      {category.title}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center justify-between gap-2 px-4 py-3.5">
                   <span className="text-xs text-muted">{count(category)}</span>
