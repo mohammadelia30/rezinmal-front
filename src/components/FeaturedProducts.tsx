@@ -4,9 +4,6 @@ import type { ProductCardModel } from "@/lib/api/types";
 
 type FeaturedProductsProps = {
   title?: string;
-  mobileTitle?: string;
-  /** home = Figma 25:5 educational pair; all = full 2-col grid */
-  mobileMode?: "home" | "all";
   items?: ProductCardModel[];
 };
 
@@ -14,19 +11,19 @@ function toCards(items?: ProductCardModel[]): ProductCardModel[] {
   return items ?? [];
 }
 
+/**
+ * شبکهٔ محصولات.
+ *
+ * نسخهٔ موبایل صفحهٔ اصلی قبلاً فقط دو محصول را زیر عنوان «مجموعه
+ * محصولات آموزشی» نشان می‌داد؛ فروشگاه قالب می‌فروشد، نه دورهٔ
+ * آموزشی، و مشتری بقیهٔ محصول‌ها را اصلاً نمی‌دید.
+ */
 export function FeaturedProducts({
   title = "مجموعه محصولات ویژه",
-  mobileTitle = "مجموعه محصولات آموزشی",
-  mobileMode = "all",
   items,
 }: FeaturedProductsProps) {
   const products = toCards(items);
-  const mobileItems =
-    mobileMode === "home"
-      ? products.slice(2, 4).length
-        ? products.slice(2, 4)
-        : products.slice(0, 2)
-      : products;
+  const mobileItems = products;
 
   return (
     <section
@@ -35,7 +32,7 @@ export function FeaturedProducts({
     >
       <div className="px-4 md:hidden">
         <h2 className="mb-3 text-right text-sm font-bold text-[#3d2447]">
-          {mobileMode === "home" ? mobileTitle : title}
+          {title}
         </h2>
         <div className="grid grid-cols-2 gap-2">
           {mobileItems.map((product) => (

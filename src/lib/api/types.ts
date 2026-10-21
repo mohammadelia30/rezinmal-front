@@ -129,6 +129,8 @@ export type ProductCardModel = {
   metaDescription?: string;
   /** متن جایگزین تصویر اصلی؛ برای خواننده‌های صفحه و گوگل */
   imageAlt?: string;
+  /** دسته‌بندی‌هایی که محصول در آن‌هاست */
+  categories?: { id: string; title: string }[];
   /** نسخه‌های فعال محصول؛ هرکدام قیمت خودش را دارد */
   variants?: VariantOption[];
   /** قیمت قبل از تخفیف؛ فقط وقتی محصول تخفیف دارد */

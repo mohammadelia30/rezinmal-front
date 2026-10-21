@@ -18,14 +18,23 @@ type CategoryPageContentProps = {
   products: ProductCardModel[];
   /** Map category id -> product ids belonging to it (from API). Empty = show all. */
   productsByCategory?: Record<string, string[]>;
+  /** دسته‌ای که از لینک آمده؛ خالی یعنی «همه» */
+  initialCategory?: string;
 };
 
 export function CategoryPageContent({
   filters,
   products,
   productsByCategory = {},
+  initialCategory,
 }: CategoryPageContentProps) {
-  const initialId = filters[0]?.id ?? "all";
+  // پیش از این همیشه اولین دسته انتخاب می‌شد: کسی که روی «قالب‌ها»
+  // کلیک کرده بود، محصول‌های دستهٔ دیگری را می‌دید و خیال می‌کرد
+  // محصولش در دستهٔ اشتباه ثبت شده است.
+  const initialId =
+    initialCategory && filters.some((item) => item.id === initialCategory)
+      ? initialCategory
+      : "all";
   const [activeCategory, setActiveCategory] = useState(initialId);
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);

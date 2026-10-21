@@ -96,6 +96,23 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <p className="mt-2 text-sm text-muted sm:text-base">
                   {product.subtitle}
                 </p>
+
+                {/* دستهٔ واقعی محصول؛ تا امروز هیچ‌جای صفحه نوشته
+                    نمی‌شد و معلوم نبود محصول کجا ثبت شده است */}
+                {product.categories?.length ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                    {product.categories.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/categories?category=${category.id}`}
+                        className="rounded-full bg-brand-mist px-3 py-1 text-xs font-medium text-brand transition hover:bg-brand/10"
+                      >
+                        {category.title}
+                      </Link>
+                    ))}
+                    <span className="text-xs text-muted">دسته‌بندی:</span>
+                  </div>
+                ) : null}
               </div>
 
               <p className="text-sm leading-7 text-foreground/80 sm:text-base sm:leading-8">

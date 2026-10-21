@@ -11,6 +11,7 @@ import {
   getStoreArticles,
   getStoreProducts,
 } from "@/lib/api";
+import { getStoreCategoryTiles } from "@/lib/api/store-categories";
 
 /**
  * عنوان و توضیح صفحهٔ اصلی از تنظیمات پنل می‌آید تا مدیر بدون تغییر کد
@@ -34,9 +35,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const [products, articles] = await Promise.all([
+  const [products, articles, categories] = await Promise.all([
     getStoreProducts({ featuredOnly: true }),
     getStoreArticles(),
+    getStoreCategoryTiles(),
   ]);
 
   return (
@@ -44,10 +46,11 @@ export default async function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <MobileCategories />
-        <Categories products={products} />
+        <MobileCategories categories={categories} />
+        <Categories categories={categories} />
         <div id="gallery">
-          <FeaturedProducts mobileMode="home" items={products} />
+          {/* صفحهٔ اصلی فقط نمونه نشان می‌دهد؛ بقیه در صفحهٔ محصولات */}
+          <FeaturedProducts title="محصولات رزین‌مال" items={products.slice(0, 8)} />
         </div>
         <Articles articles={articles} />
       </main>

@@ -10,16 +10,25 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoriesPage() {
-  const [apiCategories, catalog] = await Promise.all([
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const [{ category }, apiCategories, catalog] = await Promise.all([
+    searchParams,
     getStoreCategories(),
     getStoreCatalog(),
   ]);
 
-  const filters = apiCategories.map((item) => ({
-    id: String(item.id),
-    label: item.title,
-  }));
+  // «همه» اول فهرست است تا صفحه هیچ‌وقت خالی باز نشود
+  const filters = [
+    { id: "all", label: "همهٔ محصولات" },
+    ...apiCategories.map((item) => ({
+      id: String(item.id),
+      label: item.title,
+    })),
+  ];
 
   const products = catalog.products;
 
@@ -31,6 +40,7 @@ export default async function CategoriesPage() {
           filters={filters}
           products={products}
           productsByCategory={catalog.productsByCategory}
+          initialCategory={category}
         />
       </main>
     </div>

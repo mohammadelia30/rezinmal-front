@@ -1,15 +1,17 @@
+// عنوان‌های منو تا امروز کلمه‌های بی‌معنی طرح اولیه بودند («سبک کلات»،
+// «مهموره»، «مسوری»)، پس مشتری از روی منو نمی‌فهمید فروشگاه کجاست.
 export const navLinks = [
-  { label: "سبک کلات", href: "/categories" },
-  { label: "مهموره", href: "/products" },
-  { label: "خاص آموزی", href: "/blog" },
-  { label: "سنتلی", href: "#gallery" },
-  { label: "منیبک", href: "#contact" },
+  { label: "فروشگاه", href: "/products" },
+  { label: "دسته‌بندی‌ها", href: "/categories" },
+  { label: "مقالات", href: "/blog" },
+  { label: "گالری", href: "#gallery" },
+  { label: "ارتباط با ما", href: "#contact" },
 ] as const;
 
 export const shopNavLinks = [
   { label: "فروشگاه", href: "/products" },
-  { label: "مسوری", href: "/categories" },
-  { label: "آموزش", href: "/blog" },
+  { label: "دسته‌بندی‌ها", href: "/categories" },
+  { label: "مقالات", href: "/blog" },
   { label: "گالری", href: "/#gallery" },
   { label: "ارتباط با ما", href: "/#contact" },
 ] as const;
@@ -43,64 +45,6 @@ export const heroSlides = [
   },
 ] as const;
 
-export const categories = [
-  {
-    id: "resin",
-    title: "رنگ و رزین پورینگ",
-    subtitle: "مورینگ",
-    price: "تومان",
-    image: "/images/cat-resin.jpg",
-    variant: "product" as const,
-  },
-  {
-    id: "molds",
-    title: "قالب‌های سیلیکونی",
-    image: "/images/cat-molds.jpg",
-    variant: "wide" as const,
-  },
-  {
-    id: "tools",
-    title: "ابزارآلات",
-    image: "/images/cat-tools.jpg",
-    variant: "simple" as const,
-  },
-] as const;
-
-/** Mobile homepage quick categories (Figma 25:93) */
-export const mobileCategories = [
-  {
-    id: "clock",
-    title: "ساعت",
-    subtitle: "محصولات رزینی دست‌ساز",
-    image: "/images/product-1.jpg",
-    layout: "row" as const,
-    href: "/categories",
-  },
-  {
-    id: "molds",
-    title: "قالب‌های سیلیکونی",
-    subtitle: null,
-    image: "/images/cat-molds.jpg",
-    layout: "tile" as const,
-    href: "/categories",
-  },
-  {
-    id: "tools",
-    title: "ابزارآلات",
-    subtitle: null,
-    image: "/images/cat-tools.jpg",
-    layout: "tile" as const,
-    href: "/categories",
-  },
-  {
-    id: "accessories",
-    title: "اکسسوری",
-    subtitle: "زیورآلات و اکسسوری رزینی",
-    image: "/images/product-3.jpg",
-    layout: "row" as const,
-    href: "/categories",
-  },
-] as const;
 
 export const products = [
   {

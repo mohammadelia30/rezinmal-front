@@ -119,6 +119,10 @@ export function mapProductDetailToCard(
     metaTitle: product.meta_title || undefined,
     metaDescription: product.meta_description || undefined,
     imageAlt: getPrimaryImageRecord(product.images)?.alt || undefined,
+    categories: (product.categories ?? []).map((item) => ({
+      id: String(item.id),
+      title: item.title,
+    })),
     variants: options,
     variantId: variant?.id,
     // هیچ نسخه‌ای موجودی ندارد: محصول را «ناموجود» نشان می‌دهیم به‌جای
