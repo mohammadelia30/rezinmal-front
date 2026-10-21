@@ -24,6 +24,7 @@ const API_MESSAGES: [RegExp, string][] = [
   [/with this barcode|barcode already exists/i, "این بارکد قبلاً برای محصول دیگری ثبت شده است."],
   [/with this title already exists/i, "این عنوان قبلاً ثبت شده است."],
   [/attribute, value must make a unique set/i, "این مقدار برای این ویژگی قبلاً ثبت شده است."],
+  [/valid image|corrupted image/i, "این فایل تصویر معتبری نیست؛ عکس را با فرمت JPG یا PNG بفرستید."],
   [/coupon with this code already exists|code already exists|unique/i, "این کد تخفیف قبلاً ثبت شده است."],
   [/code cannot be empty/i, "کد تخفیف را وارد کنید."],
   [/datetime has wrong format|date has wrong format/i, "تاریخ وارد شده معتبر نیست."],
@@ -643,8 +644,17 @@ export async function deleteProduct(id: string): Promise<void> {
 /** بیشترین حجم تصویر؛ باید با client_max_body_size در nginx بک‌اند بخواند */
 export const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 
+const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif|tiff?)$/i;
+
 export function checkImageFile(file: File): string {
-  if (!file.type.startsWith("image/")) {
+  // بعضی گالری‌های اندروید نوع فایل را خالی می‌دهند؛ قبلاً همین باعث
+  // می‌شد انتخاب عکس با پیام «تصویر نیست» رد شود و هیچ درخواستی هم به
+  // سرور نرود. وقتی نوع معلوم نیست، به پسوند نگاه می‌کنیم.
+  const looksLikeImage = file.type
+    ? file.type.startsWith("image/")
+    : IMAGE_EXTENSIONS.test(file.name);
+
+  if (!looksLikeImage) {
     return `«${file.name}» تصویر نیست.`;
   }
   if (file.size > MAX_IMAGE_BYTES) {

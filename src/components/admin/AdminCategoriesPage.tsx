@@ -155,13 +155,29 @@ export function AdminCategoriesPage({
         </p>
       ) : (
         <>
-          <AdminTable headers={["عنوان", "والد", "ترتیب", "وضعیت", "عملیات"]}>
+          <AdminTable headers={["عنوان", "تصویر", "والد", "ترتیب", "وضعیت", "عملیات"]}>
             {pager.items.map((row) => (
               <tr
                 key={row.id}
                 className="border-b border-[#efe6d4] text-right last:border-b-0"
               >
                 <td className="px-4 py-3 font-bold text-foreground">{row.title}</td>
+                {/* بدون این ستون معلوم نبود تصویر دسته ذخیره شده یا نه */}
+                <td className="px-4 py-3">
+                  {row.imageUrl ? (
+                    <div className="relative size-10 overflow-hidden rounded-lg bg-brand-mist">
+                      <Image
+                        src={row.imageUrl}
+                        alt=""
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted">ندارد</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-muted">{row.parentTitle}</td>
                 <td className="px-4 py-3">
                   {row.sortOrder.toLocaleString("fa-IR")}
