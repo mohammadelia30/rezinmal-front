@@ -53,6 +53,14 @@ const nextConfig: NextConfig = {
   images: {
     // تصاویر از مسیر نسبی /media سرو می‌شوند، پس میزبان بیرونی لازم نیست.
     remotePatterns: [],
+
+    // پیش‌فرض Next روی تصویرِ بهینه‌شده هدر
+    // `Content-Disposition: attachment` می‌گذارد، یعنی «این یک فایل
+    // دانلودی است». خزندهٔ تصویر گوگل چنین پاسخی را ایندکس نمی‌کند و
+    // عکس محصول‌ها در «تصاویر گوگل» بالا نمی‌آمد. محتوای این مسیر
+    // فقط عکس محصول خودمان است و Next هم روی همین پاسخ
+    // nosniff و script-src 'none' می‌گذارد.
+    contentDispositionType: "inline",
   },
 
   /**

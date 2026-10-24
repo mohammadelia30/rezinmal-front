@@ -8,6 +8,8 @@ import { ProductGallery } from "@/components/ProductGallery";
 import { ProductVariantPicker } from "@/components/ProductVariantPicker";
 import { shopNavLinks } from "@/data/home";
 import { getStoreProduct, getStoreProducts } from "@/lib/api";
+import { absoluteUrl } from "@/lib/site";
+import type { ProductCardModel } from "@/lib/api/types";
 
 type ProductPageProps = {
   params: Promise<{ id: string }>;
@@ -54,6 +56,45 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * دادهٔ ساختاریافتهٔ محصول برای گوگل.
+ *
+ * گوگل تصویر را وقتی به محصول نسبت می‌دهد که بداند این صفحه یک
+ * محصول است و کدام عکس‌ها مال اوست. آدرس عکس‌ها کامل داده می‌شود،
+ * چون مسیر نسبی را موتور جست‌وجو نمی‌تواند دنبال کند.
+ */
+function productJsonLd(product: ProductCardModel) {
+  const images = (
+    product.images?.length
+      ? product.images.map((item) => item.url)
+      : [product.image]
+  )
+    .filter(Boolean)
+    .map(absoluteUrl);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description:
+      product.metaDescription ||
+      product.description ||
+      `${product.title} از ${product.subtitle}`,
+    image: images,
+    brand: { "@type": "Brand", name: product.subtitle },
+    offers: {
+      "@type": "Offer",
+      url: absoluteUrl(`/products/${product.id}`),
+      // قیمت‌ها در پنل به تومان وارد می‌شوند و واحد استاندارد ریال است
+      priceCurrency: "IRR",
+      price: product.rawPrice ? product.rawPrice * 10 : undefined,
+      availability: product.soldOut
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+    },
+  };
+}
+
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params;
   const product = await getStoreProduct(id);
@@ -61,6 +102,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productJsonLd(product)),
+        }}
+      />
       <Header links={shopNavLinks} />
       <main className="flex-1 py-8 sm:py-14">
         <Container>

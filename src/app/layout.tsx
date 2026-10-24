@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -9,6 +10,10 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
+  // بدون metadataBase، Next آدرس پایه را localhost:3000 می‌گیرد و
+  // og:image و canonical هر صفحه به آدرسی اشاره می‌کند که از بیرون
+  // اصلاً وجود ندارد — نه گوگل تصویر را می‌دید، نه تلگرام
+  metadataBase: new URL(SITE_URL),
   title: "رزین‌مال | فروشگاه و آموزش هنر رزین",
   description:
     "زیبایی را خودتان بسازید با کیت‌های آموزش، مواد اولیه و ابزارآلات تخصصی رزین‌مال.",
