@@ -1,18 +1,18 @@
 // عنوان‌های منو تا امروز کلمه‌های بی‌معنی طرح اولیه بودند («سبک کلات»،
 // «مهموره»، «مسوری»)، پس مشتری از روی منو نمی‌فهمید فروشگاه کجاست.
 export const navLinks = [
-  { label: "فروشگاه", href: "/products" },
+  { label: "صفحهٔ اصلی", href: "/" },
+  { label: "محصولات", href: "/products" },
   { label: "دسته‌بندی‌ها", href: "/categories" },
   { label: "مقالات", href: "/blog" },
-  { label: "گالری", href: "#gallery" },
   { label: "ارتباط با ما", href: "#contact" },
 ] as const;
 
 export const shopNavLinks = [
-  { label: "فروشگاه", href: "/products" },
+  { label: "صفحهٔ اصلی", href: "/" },
+  { label: "محصولات", href: "/products" },
   { label: "دسته‌بندی‌ها", href: "/categories" },
   { label: "مقالات", href: "/blog" },
-  { label: "گالری", href: "/#gallery" },
   { label: "ارتباط با ما", href: "/#contact" },
 ] as const;
 

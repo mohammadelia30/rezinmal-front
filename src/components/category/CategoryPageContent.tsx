@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CategoryPagination } from "@/components/category/CategoryPagination";
-import { CategoryProductCard } from "@/components/category/CategoryProductCard";
+import { ProductCard } from "@/components/ProductCard";
 import {
   CategorySidebar,
   type CategoryFilterItem,
@@ -11,7 +10,7 @@ import {
 import { Container } from "@/components/Container";
 import type { ProductCardModel } from "@/lib/api/types";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
 
 type CategoryPageContentProps = {
   filters: CategoryFilterItem[];
@@ -99,23 +98,24 @@ export function CategoryPageContent({
               محصولی در این دسته‌بندی یافت نشد.
             </p>
           ) : (
+            // همان کارت بقیهٔ سایت: دکمهٔ خریدش واقعاً کار می‌کند و
+            // محصول ناموجود را «ناموجود» نشان می‌دهد. کارت قبلی یک
+            // دکمهٔ تزئینی داشت و امتیاز ۴.۸ را هم برای همهٔ محصول‌ها
+            // ثابت می‌نوشت.
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
               {visibleProducts.map((product) => (
-                <Link
+                <ProductCard
                   key={`${activeCategory}-${product.id}`}
-                  href={`/products/${product.id}`}
-                  className="block"
-                >
-                  <CategoryProductCard
-                    title={product.title}
-                    price={product.price}
-                    oldPrice={product.oldPrice}
-                    discountPercent={product.discountPercent}
-                    rating="۴.۸"
-                    image={product.image}
-                    imageAlt={product.imageAlt}
-                  />
-                </Link>
+                  id={product.id}
+                  title={product.title}
+                  subtitle={product.subtitle}
+                  price={product.price}
+                  oldPrice={product.oldPrice}
+                  discountPercent={product.discountPercent}
+                  image={product.image}
+                  imageAlt={product.imageAlt}
+                  soldOut={product.soldOut}
+                />
               ))}
             </div>
           )}

@@ -7,6 +7,15 @@ import { ProductSearch } from "@/components/ProductSearch";
 import { shopNavLinks } from "@/data/home";
 import { getStoreProducts } from "@/lib/api";
 
+/**
+ * همیشه هنگام درخواست ساخته می‌شود، نه موقع build.
+ *
+ * این صفحه داده‌اش را از بک‌اند می‌گیرد و موقع ساختن ایمیج داکر،
+ * بک‌اند در دسترس نیست؛ نتیجه‌اش یک نسخهٔ خالی بود که تا دقیقه‌ها بعد
+ * از هر استقرار به مشتری نشان داده می‌شد.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "محصولات | رزینمال",
   description: "مجموعه محصولات ویژه رزینمال؛ زیورآلات، قالب و آثار رزینی.",
