@@ -622,7 +622,10 @@ export function AdminProductsPage({
         </p>
       ) : (
         <>
-          <AdminTable minWidth={720} headers={["محصول", "قیمت", "وضعیت", "عملیات"]}>
+          <AdminTable
+            minWidth={820}
+            headers={["محصول", "قیمت", "موجودی", "وضعیت", "عملیات"]}
+          >
             {pager.items.map((product) => (
               <tr
                 key={product.id}
@@ -658,6 +661,24 @@ export function AdminProductsPage({
                       )}
                     </span>
                   ) : null}
+                </td>
+                {/* بدون این ستون معلوم نبود موجودی ذخیره شده یا نه؛
+                    محصول با موجودی صفر در سایت «ناموجود» است */}
+                <td className="px-4 py-3">
+                  {(() => {
+                    const stock = product.variants.reduce(
+                      (total, variant) => total + variant.stock,
+                      0,
+                    );
+
+                    return stock > 0 ? (
+                      <span className="font-bold text-[#2f6b45]">
+                        {stock.toLocaleString("fa-IR")}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[#9b3d3d]">ناموجود</span>
+                    );
+                  })()}
                 </td>
                 <td className="px-4 py-3">
                   <AdminBadge
