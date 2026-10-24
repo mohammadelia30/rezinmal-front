@@ -37,6 +37,8 @@ export type AttributeValueDetail = {
   /** نام ویژگی، مثلاً «رنگ» */
   attribute?: string;
   value: string;
+  /** کد رنگ مثل #2A7FFF؛ فقط مقدارهای رنگ آن را دارند */
+  color_hex?: string;
 };
 
 export type ProductVariantDetail = {
@@ -150,6 +152,10 @@ export type VariantOption = {
   id: number;
   /** «رنگ: قرمز، سایز: بزرگ» */
   label: string;
+  /** رنگ این نسخه، اگر ویژگی رنگش کد رنگ داشته باشد */
+  color?: { name: string; hex: string };
+  /** چند ویژگی دارد؛ یکی بودنش یعنی تفاوت نسخه‌ها فقط همان ویژگی است */
+  attributeCount: number;
   price: string;
   oldPrice?: string;
   discountPercent?: number;

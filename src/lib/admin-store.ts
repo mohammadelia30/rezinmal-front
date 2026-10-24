@@ -474,7 +474,12 @@ function productBody(input: ProductInput) {
 // «آبی» یک AttributeValue است.
 
 /** یک ویژگی و مقدارش، همان‌طور که مدیر در فرم می‌نویسد */
-export type VariantAttributeInput = { name: string; value: string };
+export type VariantAttributeInput = {
+  name: string;
+  value: string;
+  /** کد رنگ مقدار، مثل #2A7FFF؛ خالی یعنی این مقدار رنگ نیست */
+  colorHex: string;
+};
 
 export type VariantInput = {
   /** خالی یعنی نسخهٔ تازه */
@@ -497,7 +502,7 @@ export type VariantInput = {
 export type AttributeCatalog = {
   id: string;
   title: string;
-  values: { id: string; value: string }[];
+  values: { id: string; value: string; colorHex: string }[];
 }[];
 
 const attributeKey = (name: string, value: string) =>
@@ -513,14 +518,14 @@ const attributeKey = (name: string, value: string) =>
 function attributeResolver(known: AttributeCatalog) {
   const attributeIds = new Map<string, number>();
   const valueIds = new Map<string, number>();
+  const valueColors = new Map<string, string>();
 
   for (const attribute of known) {
     attributeIds.set(attribute.title.trim(), Number(attribute.id));
     for (const value of attribute.values) {
-      valueIds.set(
-        attributeKey(attribute.title, value.value),
-        Number(value.id),
-      );
+      const key = attributeKey(attribute.title, value.value);
+      valueIds.set(key, Number(value.id));
+      valueColors.set(key, value.colorHex);
     }
   }
 
@@ -529,9 +534,23 @@ function attributeResolver(known: AttributeCatalog) {
   ): Promise<number> {
     const name = pair.name.trim();
     const value = pair.value.trim();
+    const color = pair.colorHex.trim().toUpperCase();
+    const key = attributeKey(name, value);
 
-    const existing = valueIds.get(attributeKey(name, value));
-    if (existing) return existing;
+    const existing = valueIds.get(key);
+    if (existing) {
+      // رنگ روی خود مقدار ثبت است، نه روی این محصول: اگر مدیر رنگ
+      // «آبی» را عوض کند، همان رنگ جای دیگری هم که «آبی» دارد عوض
+      // می‌شود. این همان رفتاری است که از یک پالت مشترک می‌خواهیم.
+      if (color && color !== (valueColors.get(key) ?? "").toUpperCase()) {
+        await send(API_PATHS.attributeValue(existing), {
+          method: "PATCH",
+          body: { color_hex: color },
+        });
+        valueColors.set(key, color);
+      }
+      return existing;
+    }
 
     let attributeId = attributeIds.get(name);
     if (!attributeId) {
@@ -545,9 +564,10 @@ function attributeResolver(known: AttributeCatalog) {
 
     const created = await send<{ id: number }>(API_PATHS.attributeValues, {
       method: "POST",
-      body: { attribute: attributeId, value },
+      body: { attribute: attributeId, value, color_hex: color },
     });
-    valueIds.set(attributeKey(name, value), created.id);
+    valueIds.set(key, created.id);
+    valueColors.set(key, color);
     return created.id;
   };
 }

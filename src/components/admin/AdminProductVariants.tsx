@@ -14,13 +14,32 @@ import { toEnglishDigits } from "@/lib/digits";
  * نام‌هایی که قبلاً ثبت شده پیشنهاد می‌شود.
  */
 
+/** یک ویژگی روی سطر فرم؛ رنگ فقط برای ویژگی‌های رنگ پر می‌شود */
+export type VariantAttributeRow = {
+  name: string;
+  value: string;
+  colorHex: string;
+};
+
+/** رنگِ پیش‌فرض کادر انتخاب رنگ، تا مدیر از صفر شروع نکند */
+const FIRST_COLOR = "#c0392b";
+
+/**
+ * آیا این ویژگی رنگ است؟
+ *
+ * کد رنگ روی مقدار ویژگی ذخیره می‌شود و فقط برای رنگ معنا دارد؛ کنار
+ * «سایز: بزرگ» کادر انتخاب رنگ گیج‌کننده است.
+ */
+export const isColorAttribute = (name: string) =>
+  /رنگ|colour|color/i.test(name.trim());
+
 /** سطر فرم؛ همهٔ عددها متن‌اند تا تایپ‌کردن طبیعی باشد */
 export type VariantRow = {
   /** کلید ثابت برای React؛ نسخهٔ تازه هنوز شناسهٔ سرور ندارد */
   key: string;
   id: string;
   inventoryId: string;
-  attributes: { name: string; value: string }[];
+  attributes: VariantAttributeRow[];
   price: string;
   stock: string;
   minimumStock: string;
@@ -58,6 +77,14 @@ export function emptyVariantRow(isDefault: boolean): VariantRow {
   };
 }
 
+/** نسخهٔ تازه‌ای که از اول ویژگی «رنگ» دارد */
+export function colorVariantRow(isDefault: boolean): VariantRow {
+  return {
+    ...emptyVariantRow(isDefault),
+    attributes: [{ name: "رنگ", value: "", colorHex: FIRST_COLOR }],
+  };
+}
+
 export function toVariantRows(
   variants: AdminProductVariant[],
 ): VariantRow[] {
@@ -82,6 +109,10 @@ export function toVariantRows(
 
 const filledAttributes = (row: VariantRow) =>
   row.attributes.filter((item) => item.name.trim() && item.value.trim());
+
+/** رنگ نمایشی سطر، برای نقطهٔ کنار عنوان نسخه */
+const rowColor = (row: VariantRow) =>
+  row.attributes.find((item) => item.colorHex.trim())?.colorHex ?? "";
 
 const attributeSignature = (row: VariantRow) =>
   filledAttributes(row)
@@ -188,6 +219,63 @@ function Cell({
   );
 }
 
+/**
+ * کادر انتخاب رنگ یک مقدار ویژگی.
+ *
+ * رنگ اختیاری است: تا مدیر «انتخاب رنگ» را نزند هیچ کدی ثبت نمی‌شود و
+ * همان نام رنگ به مشتری نشان داده می‌شود.
+ */
+function ColorCell({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block text-right">
+      <span className="mb-1 block text-[11px] font-medium text-muted">
+        رنگ نمایشی
+      </span>
+      {value ? (
+        <span className="flex min-h-9 items-center justify-end gap-2 rounded-lg border border-[#e6dcc2] bg-white px-2.5 py-1">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange("")}
+            className="text-xs text-[#9b3d3d]"
+            aria-label="حذف رنگ"
+            title="حذف رنگ"
+          >
+            ✕
+          </button>
+          <span dir="ltr" className="flex-1 text-left text-xs text-muted">
+            {value.toUpperCase()}
+          </span>
+          <input
+            type="color"
+            value={value}
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.value)}
+            className="size-6 shrink-0 cursor-pointer rounded border border-[#e6dcc2] bg-white"
+          />
+        </span>
+      ) : (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange(FIRST_COLOR)}
+          className="min-h-9 w-full rounded-lg border border-dashed border-[#e6dcc2] bg-white px-2.5 py-1.5 text-xs text-muted transition hover:border-brand hover:text-brand"
+        >
+          انتخاب رنگ
+        </button>
+      )}
+    </label>
+  );
+}
+
 export function AdminProductVariants({
   rows,
   attributes,
@@ -226,24 +314,47 @@ export function AdminProductVariants({
   const valuesOf = (name: string) =>
     attributes.find((item) => item.title.trim() === name.trim())?.values ?? [];
 
+  const knownColor = (name: string, value: string) =>
+    valuesOf(name).find(
+      (item) => item.value.trim() === value.trim(),
+    )?.colorHex ?? "";
+
   return (
     <div className="rounded-xl border border-[#efe6d4] p-3">
       <div className="mb-1 flex items-center justify-between gap-3">
-        <AdminButton
-          variant="ghost"
-          size="sm"
-          disabled={disabled}
-          onClick={() => onChange([...rows, emptyVariantRow(rows.length === 0)])}
-        >
-          افزودن نسخه
-        </AdminButton>
+        <div className="flex flex-wrap items-center gap-1">
+          {/* راه کوتاه برای کار همیشگی: یک محصول با چند رنگ. ویژگی
+              «رنگ» از قبل پر است و فقط نام رنگ و موجودی می‌ماند. */}
+          <AdminButton
+            variant="ghost"
+            size="sm"
+            disabled={disabled}
+            onClick={() =>
+              onChange([...rows, colorVariantRow(rows.length === 0)])
+            }
+          >
+            افزودن رنگ
+          </AdminButton>
+          <AdminButton
+            variant="ghost"
+            size="sm"
+            disabled={disabled}
+            onClick={() =>
+              onChange([...rows, emptyVariantRow(rows.length === 0)])
+            }
+          >
+            افزودن نسخه
+          </AdminButton>
+        </div>
         <span className="text-sm font-medium text-foreground">
           نسخه‌ها و ویژگی‌ها
         </span>
       </div>
       <p className="mb-3 text-right text-xs text-muted">
-        هر رنگ یا سایز یک نسخه است و قیمت و موجودی خودش را دارد. اگر محصول
-        فقط یک حالت دارد، همین یک نسخه کافی است.
+        هر رنگ یا سایز یک نسخه است و قیمت و موجودی خودش را دارد. برای
+        محصول چندرنگ، «افزودن رنگ» را بزنید و برای هر رنگ موجودی‌اش را
+        بنویسید؛ همان رنگ‌ها در صفحهٔ محصول به‌شکل پالت انتخاب می‌شوند.
+        اگر محصول فقط یک حالت دارد، همین یک نسخه کافی است.
       </p>
 
       {/* موجودی صفر یعنی بک‌اند خرید را رد می‌کند؛ بدون این هشدار،
@@ -314,6 +425,13 @@ export function AdminProductVariants({
                 ) : null}
                 {attributeSignature(row) ||
                   `نسخهٔ ${(index + 1).toLocaleString("fa-IR")}`}
+                {rowColor(row) ? (
+                  <span
+                    aria-hidden
+                    className="size-4 shrink-0 rounded-full border border-[#d9cfbb]"
+                    style={{ backgroundColor: rowColor(row) }}
+                  />
+                ) : null}
               </span>
             </div>
 
@@ -339,7 +457,13 @@ export function AdminProductVariants({
                   >
                     ✕
                   </button>
-                  <div className="grid flex-1 gap-2 sm:grid-cols-2">
+                  <div
+                    className={`grid flex-1 gap-2 ${
+                      isColorAttribute(pair.name)
+                        ? "sm:grid-cols-3"
+                        : "sm:grid-cols-2"
+                    }`}
+                  >
                     <Cell
                       label="ویژگی"
                       value={pair.name}
@@ -364,12 +488,36 @@ export function AdminProductVariants({
                         update(index, {
                           attributes: row.attributes.map((item, position) =>
                             position === pairIndex
-                              ? { ...item, value }
+                              ? {
+                                  ...item,
+                                  value,
+                                  // رنگی که قبلاً برای همین مقدار ثبت
+                                  // شده خودش می‌آید؛ وگرنه مدیر باید
+                                  // «آبی» را هر بار دوباره رنگ کند
+                                  colorHex:
+                                    knownColor(pair.name, value) ||
+                                    item.colorHex,
+                                }
                               : item,
                           ),
                         })
                       }
                     />
+                    {isColorAttribute(pair.name) ? (
+                      <ColorCell
+                        value={pair.colorHex}
+                        disabled={disabled}
+                        onChange={(value) =>
+                          update(index, {
+                            attributes: row.attributes.map((item, position) =>
+                              position === pairIndex
+                                ? { ...item, colorHex: value }
+                                : item,
+                            ),
+                          })
+                        }
+                      />
+                    ) : null}
                     <datalist id={`variant-values-${row.key}-${pairIndex}`}>
                       {valuesOf(pair.name).map((item) => (
                         <option key={item.id} value={item.value} />
@@ -385,7 +533,10 @@ export function AdminProductVariants({
                 disabled={disabled}
                 onClick={() =>
                   update(index, {
-                    attributes: [...row.attributes, { name: "", value: "" }],
+                    attributes: [
+                      ...row.attributes,
+                      { name: "", value: "", colorHex: "" },
+                    ],
                   })
                 }
               >

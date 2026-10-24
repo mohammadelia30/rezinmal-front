@@ -108,6 +108,27 @@ export function variantLabel(
   return parts.length ? parts.join("، ") : fallback;
 }
 
+const HEX = /^#[0-9A-Fa-f]{6}$/;
+
+/**
+ * رنگ یک نسخه، از ویژگی‌هایش.
+ *
+ * رنگ روی خودِ مقدار ویژگی ثبت می‌شود («آبی» → #2A7FFF)، پس هر نسخه‌ای
+ * که مقدار رنگ‌دار دارد در صفحهٔ محصول به‌شکل پالت دیده می‌شود. مقدارِ
+ * بی‌رنگ (مثل «سایز: بزرگ») نادیده گرفته می‌شود.
+ */
+export function variantColor(
+  variant: ProductVariantDetail,
+): { name: string; hex: string } | undefined {
+  const match = (variant.attribute_values ?? []).find((item) =>
+    HEX.test(item.color_hex ?? ""),
+  );
+
+  return match
+    ? { name: match.value, hex: (match.color_hex as string).toUpperCase() }
+    : undefined;
+}
+
 /**
  * نسخه‌های قابل خرید محصول.
  *
@@ -122,6 +143,8 @@ export function getVariantOptions(
     .map((variant, index) => ({
       id: variant.id,
       label: variantLabel(variant, `نسخهٔ ${index + 1}`),
+      color: variantColor(variant),
+      attributeCount: (variant.attribute_values ?? []).length,
       ...getVariantPricing(variant),
       rawPrice: variant.final_price ?? variant.price,
       // بک‌اند قدیمی این فیلد را نمی‌فرستد؛ آن‌وقت مثل قبل همه‌چیز

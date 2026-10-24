@@ -26,6 +26,11 @@ export function ProductVariantPicker({
   );
 
   const selected = options.find((item) => item.id === selectedId) ?? options[0];
+  // وقتی تفاوت نسخه‌ها فقط رنگ است، پالت رنگ از فهرست نوشته‌ها
+  // گویاتر است؛ نسخه‌ای که سایز هم دارد همان دکمه‌های قبلی را می‌گیرد
+  const palette =
+    options.length > 1 &&
+    options.every((item) => item.color && item.attributeCount === 1);
   const soldOut = selected ? !selected.inStock : Boolean(product.soldOut);
   const price = selected?.price ?? product.price;
   const oldPrice = selected?.oldPrice ?? product.oldPrice;
@@ -48,35 +53,98 @@ export function ProductVariantPicker({
       {options.length > 1 ? (
         <div>
           <p className="mb-2 text-sm font-medium text-foreground">
-            انتخاب نوع محصول
+            {palette ? "انتخاب رنگ" : "انتخاب نوع محصول"}
           </p>
-          <div className="flex flex-wrap justify-start gap-2">
-            {options.map((option) => {
-              const active = option.id === selected?.id;
 
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  disabled={!option.inStock}
-                  onClick={() => setSelectedId(option.id)}
-                  aria-pressed={active}
-                  className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                    !option.inStock
-                      ? "cursor-not-allowed border-[#e6dcc2] bg-[#f4f1ea] text-muted"
-                      : active
-                        ? "border-brand bg-brand-mist text-brand"
-                        : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
-                  }`}
-                >
-                  <span className="block">{option.label}</span>
-                  <span className="mt-0.5 block text-xs text-muted">
-                    {option.inStock ? option.price : "ناموجود"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {palette ? (
+            <>
+              <div className="flex flex-wrap justify-start gap-3">
+                {options.map((option) => {
+                  const active = option.id === selected?.id;
+                  const color = option.color as { name: string; hex: string };
+
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      disabled={!option.inStock}
+                      onClick={() => setSelectedId(option.id)}
+                      aria-pressed={active}
+                      aria-label={
+                        option.inStock
+                          ? `${color.name} — ${option.price}`
+                          : `${color.name} — ناموجود`
+                      }
+                      title={
+                        option.inStock
+                          ? `${color.name} — ${option.price}`
+                          : `${color.name} — ناموجود`
+                      }
+                      className={`relative size-10 rounded-full border-2 transition ${
+                        active
+                          ? "border-brand ring-2 ring-brand/30"
+                          : "border-[#e6dcc2] hover:border-brand/50"
+                      } ${option.inStock ? "" : "cursor-not-allowed opacity-50"}`}
+                      style={{ backgroundColor: color.hex }}
+                    >
+                      {/* رنگ ناموجود خط خورده نشان داده می‌شود؛ وگرنه
+                          مشتری رویش کلیک می‌کند و دلیلش را نمی‌فهمد */}
+                      {option.inStock ? null : (
+                        <span
+                          aria-hidden
+                          className="absolute inset-0 m-auto h-0.5 w-9 rotate-45 rounded-full bg-[#6b5b73]"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="mt-2 text-sm text-muted">
+                {selected?.color?.name}
+                {selected && !selected.inStock ? " — ناموجود" : ""}
+              </p>
+            </>
+          ) : (
+            <div className="flex flex-wrap justify-start gap-2">
+              {options.map((option) => {
+                const active = option.id === selected?.id;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    disabled={!option.inStock}
+                    onClick={() => setSelectedId(option.id)}
+                    aria-pressed={active}
+                    className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                      !option.inStock
+                        ? "cursor-not-allowed border-[#e6dcc2] bg-[#f4f1ea] text-muted"
+                        : active
+                          ? "border-brand bg-brand-mist text-brand"
+                          : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
+                    }`}
+                  >
+                    <span className="flex items-center justify-start gap-2">
+                      {/* نسخه‌ای که هم رنگ دارد و هم سایز، رنگش را
+                          این‌جا به‌شکل یک نقطه نشان می‌دهد */}
+                      {option.color ? (
+                        <span
+                          aria-hidden
+                          className="size-4 shrink-0 rounded-full border border-[#d9cfbb]"
+                          style={{ backgroundColor: option.color.hex }}
+                        />
+                      ) : null}
+                      {option.label}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {option.inStock ? option.price : "ناموجود"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : null}
 

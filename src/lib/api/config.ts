@@ -71,6 +71,8 @@ export const API_PATHS = {
   homeCategories: "/api/catalog/home/",
   attributes: "/api/catalog/attributes/",
   attributeValues: "/api/catalog/attribute-values/",
+  attributeValue: (id: string | number) =>
+    `/api/catalog/attribute-values/${id}/`,
   orderConfirm: (id: string | number) => `/api/orders/orders/${id}/confirm/`,
   orderCancel: (id: string | number) => `/api/orders/orders/${id}/cancel/`,
   orderPreparing: (id: string | number) => `/api/orders/orders/${id}/preparing/`,

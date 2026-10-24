@@ -442,8 +442,8 @@ export type AdminProductVariant = {
   minimumStock: number;
   /** رکورد موجودی؛ خالی یعنی هنوز ساخته نشده */
   inventoryId: string;
-  /** مثلاً [{ name: "رنگ", value: "آبی" }] */
-  attributes: { name: string; value: string }[];
+  /** مثلاً [{ name: "رنگ", value: "آبی", colorHex: "#2A7FFF" }] */
+  attributes: { name: string; value: string; colorHex: string }[];
 };
 
 /** محصول با تمام فیلدهایی که فرم ویرایش لازم دارد */
@@ -517,6 +517,7 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
             attributes: (item.attribute_values ?? []).map((value) => ({
               name: value.attribute ?? "",
               value: value.value,
+              colorHex: value.color_hex ?? "",
             })),
           };
         }),
@@ -537,14 +538,15 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
 type ApiAttribute = {
   id: number;
   title: string;
-  values?: { id: number; value: string }[];
+  values?: { id: number; value: string; color_hex?: string }[];
 };
 
 /** یک ویژگی با مقدارهایی که تا الان برایش ثبت شده */
 export type AdminAttribute = {
   id: string;
   title: string;
-  values: { id: string; value: string }[];
+  /** رنگ روی خود مقدار ثبت می‌شود؛ خالی یعنی مقدارِ بی‌رنگ مثل «بزرگ» */
+  values: { id: string; value: string; colorHex: string }[];
 };
 
 export async function getAdminAttributes(): Promise<AdminAttribute[]> {
@@ -557,6 +559,7 @@ export async function getAdminAttributes(): Promise<AdminAttribute[]> {
     values: (item.values ?? []).map((value) => ({
       id: String(value.id),
       value: value.value,
+      colorHex: value.color_hex ?? "",
     })),
   }));
 }
