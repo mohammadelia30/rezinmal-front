@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { SectionHeading } from "@/components/SectionHeading";
 import type { StoreCategory } from "@/lib/api/store-categories";
 
 /**
@@ -26,44 +27,54 @@ export function Categories({
   return (
     <>
       {/* موبایل */}
-      <section className="bg-[#f6f1e7] px-4 py-4 md:hidden">
-        <h2 className="mb-3 text-right text-sm font-bold text-[#3d2447]">
-          دسته‌بندی‌های اصلی
-        </h2>
-        <div className="grid grid-cols-2 gap-2">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/categories?category=${category.id}`}
-              className="flex flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)]"
-            >
-              <div className="relative flex aspect-[111/88] w-full items-center justify-center overflow-hidden bg-brand-mist">
-                {category.image ? (
-                  <Image
-                    src={category.image}
-                    alt={category.title}
-                    fill
-                    unoptimized={category.image.startsWith("http")}
-                    sizes="50vw"
-                    className="object-cover"
-                  />
-                ) : (
-                  // دسته‌ای که هنوز در پنل تصویر نگرفته
-                  <span className="px-2 text-center text-xs font-bold text-brand">
+      <section className="bg-[#f6f1e7] px-4 py-2 md:hidden">
+        <div className="rounded-2xl bg-[#f0e9f4] p-3 ring-1 ring-[#e3d7ec]">
+          <SectionHeading
+            title="دسته‌بندی‌های اصلی"
+            href="/categories"
+            size="lg"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/categories?category=${category.id}`}
+                className="flex flex-col overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)]"
+              >
+                <div className="relative flex aspect-[111/88] w-full items-center justify-center overflow-hidden bg-[#faf6ee]">
+                  {category.image ? (
+                    <Image
+                      src={category.image}
+                      alt={category.title}
+                      fill
+                      unoptimized={category.image.startsWith("http")}
+                      sizes="50vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    // دسته‌ای که هنوز در پنل تصویر نگرفته: به‌جای یک
+                    // مستطیل خالی، حرف اول دسته در یک دایره
+                    <span className="flex flex-col items-center justify-center gap-1 px-2 text-center">
+                      <span className="flex size-8 items-center justify-center rounded-full bg-brand-mist text-sm font-bold text-brand">
+                        {category.title.trim().charAt(0)}
+                      </span>
+                      <span className="line-clamp-1 text-[10px] font-medium text-[#7a6a80]">
+                        {category.title}
+                      </span>
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col px-1.5 pb-2 pt-1.5">
+                  <h3 className="line-clamp-1 text-right text-[11px] font-bold text-[#3d2447]">
                     {category.title}
+                  </h3>
+                  <span className="mt-0.5 text-right text-[10px] text-[#7a6a80]">
+                    {count(category)}
                   </span>
-                )}
-              </div>
-              <div className="flex flex-1 flex-col px-1.5 pb-2 pt-1.5">
-                <h3 className="line-clamp-1 text-right text-[11px] font-bold text-[#3d2447]">
-                  {category.title}
-                </h3>
-                <span className="mt-0.5 text-right text-[10px] text-[#7a6a80]">
-                  {count(category)}
-                </span>
-              </div>
-            </Link>
-          ))}
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -73,17 +84,11 @@ export function Categories({
         className="hidden scroll-mt-20 bg-background py-12 sm:py-16 md:block lg:py-20"
       >
         <Container>
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-2 sm:mb-10">
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-brand transition hover:text-brand-dark"
-            >
-              مشاهده همه
-            </Link>
-            <h2 className="text-right text-xl font-bold text-foreground sm:text-2xl md:text-3xl">
-              دسته‌بندی‌های اصلی
-            </h2>
-          </div>
+          <SectionHeading
+            title="دسته‌بندی‌های اصلی"
+            href="/categories"
+            size="lg"
+          />
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
             {categories.map((category) => (
@@ -92,7 +97,7 @@ export function Categories({
                 href={`/categories?category=${category.id}`}
                 className="flex flex-col overflow-hidden rounded-2xl bg-card transition hover:shadow-[0_6px_24px_rgba(78,42,84,0.12)]"
               >
-                <div className="relative flex aspect-[6/5] w-full items-center justify-center overflow-hidden bg-brand-mist">
+                <div className="relative flex aspect-[6/5] w-full items-center justify-center overflow-hidden bg-[#faf6ee]">
                   {category.image ? (
                     <Image
                       src={category.image}
@@ -103,8 +108,13 @@ export function Categories({
                       className="object-cover transition duration-500 hover:scale-105"
                     />
                   ) : (
-                    <span className="px-3 text-center text-lg font-bold text-brand">
-                      {category.title}
+                    <span className="flex flex-col items-center justify-center gap-2 px-3 text-center">
+                      <span className="flex size-14 items-center justify-center rounded-full bg-brand-mist text-xl font-bold text-brand">
+                        {category.title.trim().charAt(0)}
+                      </span>
+                      <span className="text-sm font-medium text-muted">
+                        {category.title}
+                      </span>
                     </span>
                   )}
                 </div>

@@ -17,7 +17,7 @@ export function MobileCategories({
   if (categories.length === 0) return null;
 
   return (
-    <section className="bg-[#f6f1e7] px-4 pb-5 md:hidden" id="shop-mobile">
+    <section className="bg-[#f6f1e7] px-4 py-2 md:hidden" id="shop-mobile">
       <div className="flex gap-2 overflow-x-auto pb-1">
         {categories.map((category) => (
           <Link

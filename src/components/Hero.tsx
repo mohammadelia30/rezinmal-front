@@ -8,61 +8,71 @@ export function Hero() {
   return (
     <>
       {/* Mobile — Figma 25:93 */}
-      <section className="bg-[#f6f1e7] px-4 pb-4 pt-2 md:hidden">
-        <h1 className="mb-3 text-right text-lg font-bold leading-[1.6] text-[#33203c]">
-          <span className="block">زیبایی را خودتان بسازید با</span>
-          <span className="block">کیت‌های آموزش رزینمال</span>
-        </h1>
-
-        <div className="relative mb-3">
-          <div
-            aria-hidden
-            className="absolute -bottom-2 left-0 h-[72%] w-[18px] rounded-s-md bg-[#c6a9d8]"
-          />
-          <div
-            aria-hidden
-            className="absolute -bottom-2.5 left-3 right-10 h-2.5 rounded-md bg-[#dcc8ea]/80"
-          />
-
-          <div className="relative aspect-[237/192] overflow-hidden rounded-[10px] bg-brand-mist shadow-sm">
-            <Image
-              src={heroSlides[0].src}
-              alt={heroSlides[0].alt}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
+      <section className="bg-[#f6f1e7] px-4 pb-2 pt-3 md:hidden">
+        {/* تیتر، عکس و دکمه داخل یک قاب‌اند. قبلاً تیتر متنِ خالی روی
+            پس‌زمینه بود و بالای صفحه ناتمام به نظر می‌رسید. */}
+        <div className="rounded-2xl bg-white p-3 shadow-[0px_1px_6px_rgba(61,36,71,0.08)]">
+          <h1 className="mb-3 flex items-start gap-2 text-right text-lg font-bold leading-[1.6] text-[#33203c]">
+            <span
+              aria-hidden
+              className="mt-1.5 h-10 w-1 shrink-0 rounded-full bg-brand"
             />
+            <span>
+              <span className="block">زیبایی را خودتان بسازید با</span>
+              <span className="block">کیت‌های آموزش رزینمال</span>
+            </span>
+          </h1>
+
+          <div className="relative mb-3">
+            <div
+              aria-hidden
+              className="absolute -bottom-2 left-0 h-[72%] w-[18px] rounded-s-md bg-[#c6a9d8]"
+            />
+            <div
+              aria-hidden
+              className="absolute -bottom-2.5 left-3 right-10 h-2.5 rounded-md bg-[#dcc8ea]/80"
+            />
+
+            <div className="relative aspect-[237/192] overflow-hidden rounded-[10px] bg-brand-mist shadow-sm">
+              <Image
+                src={heroSlides[0].src}
+                alt={heroSlides[0].alt}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
+
+            <div className="absolute bottom-2 right-1.5 z-10 flex flex-col gap-1.5">
+              <div className="relative size-10 overflow-hidden rounded-md shadow-md ring-2 ring-white">
+                <Image
+                  src={heroSlides[1].src}
+                  alt={heroSlides[1].alt}
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="relative size-10 overflow-hidden rounded-md shadow-md ring-2 ring-white">
+                <Image
+                  src={heroSlides[2].src}
+                  alt={heroSlides[2].alt}
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="absolute bottom-2 right-1.5 z-10 flex flex-col gap-1.5">
-            <div className="relative size-10 overflow-hidden rounded-md shadow-md ring-2 ring-white">
-              <Image
-                src={heroSlides[1].src}
-                alt={heroSlides[1].alt}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative size-10 overflow-hidden rounded-md shadow-md ring-2 ring-white">
-              <Image
-                src={heroSlides[2].src}
-                alt={heroSlides[2].alt}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
-            </div>
-          </div>
+          <Link
+            href="/blog"
+            className="flex w-full items-center justify-center rounded-md bg-[#5f4270] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark"
+          >
+            {hero.cta}
+          </Link>
         </div>
-
-        <Link
-          href="/blog"
-          className="flex w-full items-center justify-center rounded-md bg-[#5f4270] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark"
-        >
-          {hero.cta}
-        </Link>
       </section>
 
       {/* Desktop / tablet */}
