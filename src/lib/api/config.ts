@@ -67,6 +67,8 @@ export const API_PATHS = {
   productImages: "/api/catalog/images/",
   productImage: (id: string | number) => `/api/catalog/images/${id}/`,
   variant: (id: string | number) => `/api/catalog/variants/${id}/`,
+  /** دسته‌بندی‌های صفحهٔ اصلی، هرکدام با چند محصول خودش */
+  homeCategories: "/api/catalog/home/",
   attributes: "/api/catalog/attributes/",
   attributeValues: "/api/catalog/attribute-values/",
   orderConfirm: (id: string | number) => `/api/orders/orders/${id}/confirm/`,

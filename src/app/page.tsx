@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import { Articles } from "@/components/Articles";
 import { Categories } from "@/components/Categories";
-import { FeaturedProducts } from "@/components/FeaturedProducts";
+import { CategorySections } from "@/components/CategorySections";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { MobileCategories } from "@/components/MobileCategories";
-import {
-  getPublicSiteInfo,
-  getStoreArticles,
-  getStoreProducts,
-} from "@/lib/api";
-import { getStoreCategoryTiles } from "@/lib/api/store-categories";
+import { getPublicSiteInfo, getStoreArticles } from "@/lib/api";
+import { getHomeCategories } from "@/lib/api/store-categories";
 
 /**
  * عنوان و توضیح صفحهٔ اصلی از تنظیمات پنل می‌آید تا مدیر بدون تغییر کد
@@ -35,22 +31,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const [products, articles, categories] = await Promise.all([
-    getStoreProducts(),
+  // یک درخواست: دسته‌ها همراه محصول‌های خودشان. بک‌اند محصول موجود را
+  // جلو می‌اندازد، پس چیزی که در صفحهٔ اصلی می‌آید قابل خرید است.
+  const [categories, articles] = await Promise.all([
+    getHomeCategories(),
     getStoreArticles(),
-    getStoreCategoryTiles(),
   ]);
-
-  // محصول قابل خرید جلوتر از ناموجود، و «نمایش در صفحهٔ اصلی» جلوتر از
-  // بقیه. قبلاً فقط محصول‌های نشان‌دار می‌آمدند، پس فروشنده موجودی یک
-  // محصول را پر می‌کرد و باز هم چیزی در صفحهٔ اصلی عوض نمی‌شد.
-  const highlighted = [...products]
-    .sort(
-      (a, b) =>
-        Number(a.soldOut ?? false) - Number(b.soldOut ?? false) ||
-        Number(b.featured ?? false) - Number(a.featured ?? false),
-    )
-    .slice(0, 8);
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
@@ -60,8 +46,7 @@ export default async function Home() {
         <MobileCategories categories={categories} />
         <Categories categories={categories} />
         <div id="gallery">
-          {/* صفحهٔ اصلی فقط نمونه نشان می‌دهد؛ بقیه در صفحهٔ محصولات */}
-          <FeaturedProducts title="محصولات رزین‌مال" items={highlighted} />
+          <CategorySections categories={categories} />
         </div>
         <Articles articles={articles} />
       </main>
