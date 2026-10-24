@@ -36,10 +36,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Home() {
   const [products, articles, categories] = await Promise.all([
-    getStoreProducts({ featuredOnly: true }),
+    getStoreProducts(),
     getStoreArticles(),
     getStoreCategoryTiles(),
   ]);
+
+  // محصول قابل خرید جلوتر از ناموجود، و «نمایش در صفحهٔ اصلی» جلوتر از
+  // بقیه. قبلاً فقط محصول‌های نشان‌دار می‌آمدند، پس فروشنده موجودی یک
+  // محصول را پر می‌کرد و باز هم چیزی در صفحهٔ اصلی عوض نمی‌شد.
+  const highlighted = [...products]
+    .sort(
+      (a, b) =>
+        Number(a.soldOut ?? false) - Number(b.soldOut ?? false) ||
+        Number(b.featured ?? false) - Number(a.featured ?? false),
+    )
+    .slice(0, 8);
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
@@ -50,7 +61,7 @@ export default async function Home() {
         <Categories categories={categories} />
         <div id="gallery">
           {/* صفحهٔ اصلی فقط نمونه نشان می‌دهد؛ بقیه در صفحهٔ محصولات */}
-          <FeaturedProducts title="محصولات رزین‌مال" items={products.slice(0, 8)} />
+          <FeaturedProducts title="محصولات رزین‌مال" items={highlighted} />
         </div>
         <Articles articles={articles} />
       </main>

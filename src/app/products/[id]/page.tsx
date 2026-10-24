@@ -95,7 +95,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 {/* دستهٔ واقعی محصول؛ تا امروز هیچ‌جای صفحه نوشته
                     نمی‌شد و معلوم نبود محصول کجا ثبت شده است */}
                 {product.categories?.length ? (
+                  // در صفحهٔ راست‌به‌چپ، اولین عنصر سمت راست می‌نشیند؛
+                  // برچسب باید اول بیاید وگرنه «ابزارآلات دسته‌بندی:»
+                  // خوانده می‌شود
                   <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                    <span className="text-xs text-muted">دسته‌بندی:</span>
                     {product.categories.map((category) => (
                       <Link
                         key={category.id}
@@ -105,7 +109,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         {category.title}
                       </Link>
                     ))}
-                    <span className="text-xs text-muted">دسته‌بندی:</span>
                   </div>
                 ) : null}
               </div>

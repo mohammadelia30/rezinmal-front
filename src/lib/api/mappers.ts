@@ -155,6 +155,7 @@ export function mapProductDetailToCard(
     // هیچ نسخه‌ای موجودی ندارد: محصول را «ناموجود» نشان می‌دهیم به‌جای
     // اینکه مشتری تا مرحلهٔ پرداخت برود و آنجا خطا بگیرد
     soldOut: options.length > 0 && options.every((item) => !item.inStock),
+    featured: Boolean(product.is_featured),
   };
 }
 

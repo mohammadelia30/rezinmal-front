@@ -141,6 +141,8 @@ export type ProductCardModel = {
   variantId?: number;
   /** هیچ نسخه‌ای موجود نیست؛ محصول «ناموجود» نشان داده می‌شود */
   soldOut?: boolean;
+  /** «نمایش در صفحهٔ اصلی» در پنل */
+  featured?: boolean;
 };
 
 /** یک نسخهٔ قابل خرید: ترکیب ویژگی‌ها با قیمت خودش */
