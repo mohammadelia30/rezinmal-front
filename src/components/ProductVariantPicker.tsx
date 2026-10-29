@@ -106,6 +106,9 @@ export function ProductVariantPicker({
               </p>
             </>
           ) : (
+            // عرض کمینهٔ یکسان: با «کد: ۱» کنار «سیلیکون داتینگ»،
+            // دکمه‌ها هر کدام یک اندازه می‌شدند و ردیف ناهموار به نظر
+            // می‌رسید
             <div className="flex flex-wrap justify-start gap-2">
               {options.map((option) => {
                 const active = option.id === selected?.id;
@@ -117,7 +120,7 @@ export function ProductVariantPicker({
                     disabled={!option.inStock}
                     onClick={() => setSelectedId(option.id)}
                     aria-pressed={active}
-                    className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                    className={`min-h-[3.25rem] min-w-[5.5rem] rounded-xl border px-3 py-2 text-center text-sm font-medium transition ${
                       !option.inStock
                         ? "cursor-not-allowed border-[#e6dcc2] bg-[#f4f1ea] text-muted"
                         : active
@@ -125,7 +128,7 @@ export function ProductVariantPicker({
                           : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
                     }`}
                   >
-                    <span className="flex items-center justify-start gap-2">
+                    <span className="flex items-center justify-center gap-2">
                       {/* نسخه‌ای که هم رنگ دارد و هم سایز، رنگش را
                           این‌جا به‌شکل یک نقطه نشان می‌دهد */}
                       {option.color ? (

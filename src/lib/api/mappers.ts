@@ -9,9 +9,7 @@ import { formatPrice, publicMediaUrl } from "@/lib/format";
 
 const PLACEHOLDER_IMAGE = "/images/product-1.jpg";
 
-export function getBrandTitle(
-  brand: ProductDetail["brand"],
-): string {
+export function getBrandTitle(brand: ProductDetail["brand"]): string {
   if (!brand) return "";
   if (typeof brand === "string") return brand;
   return brand.title ?? "";
@@ -27,9 +25,7 @@ export function getPrimaryImageRecord(
   );
 }
 
-export function getPrimaryImage(
-  images: ProductImage[] | undefined,
-): string {
+export function getPrimaryImage(images: ProductImage[] | undefined): string {
   const url = publicMediaUrl(getPrimaryImageRecord(images)?.image);
   return url ?? PLACEHOLDER_IMAGE;
 }
@@ -78,7 +74,10 @@ export function getDefaultVariant(
  */
 export function getVariantPricing(
   variant: Pick<ProductVariantDetail, "price" | "final_price"> | undefined,
-): Pick<ProductCardModel, "price" | "rawPrice" | "oldPrice" | "discountPercent"> {
+): Pick<
+  ProductCardModel,
+  "price" | "rawPrice" | "oldPrice" | "discountPercent"
+> {
   const base = variant?.price;
   const final = variant?.final_price ?? base;
   const discounted =
@@ -130,14 +129,25 @@ export function variantColor(
 }
 
 /**
+ * مرتب‌سازی طبیعیِ فارسی.
+ *
+ * بک‌اند نسخه‌ها را به هر ترتیبی که در دیتابیس باشند می‌فرستد، و
+ * مشتری «کد: ۳، کد: ۴، کد: ۲، کد: ۱» می‌دید. با numeric، «۹» قبل از
+ * «۱۰» می‌آید — مرتب‌سازی متنیِ ساده «۱۰» را قبل از «۲» می‌گذاشت و
+ * محصولی مثل فیمو با ۳۶ کد کاملاً به‌هم‌ریخته بود.
+ */
+const variantCollator = new Intl.Collator("fa", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+/**
  * نسخه‌های قابل خرید محصول.
  *
  * هر رنگ یا سایز در بک‌اند یک نسخهٔ جداست و قیمت خودش را دارد؛ فقط
  * نسخه‌های فعال به مشتری نشان داده می‌شود.
  */
-export function getVariantOptions(
-  product: ProductDetail,
-): VariantOption[] {
+export function getVariantOptions(product: ProductDetail): VariantOption[] {
   return (product.variants ?? [])
     .filter((variant) => variant.is_active !== false)
     .map((variant, index) => ({
@@ -150,7 +160,8 @@ export function getVariantOptions(
       // بک‌اند قدیمی این فیلد را نمی‌فرستد؛ آن‌وقت مثل قبل همه‌چیز
       // قابل خرید فرض می‌شود
       inStock: variant.in_stock !== false,
-    }));
+    }))
+    .sort((a, b) => variantCollator.compare(a.label, b.label));
 }
 
 export function mapProductDetailToCard(
@@ -181,4 +192,3 @@ export function mapProductDetailToCard(
     featured: Boolean(product.is_featured),
   };
 }
-
