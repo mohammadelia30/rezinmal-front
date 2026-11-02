@@ -18,7 +18,8 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "img-src 'self' data: blob:",
+  // نشان اینماد باید از دامنهٔ خودشان بیاید تا معتبر بماند
+  "img-src 'self' data: blob: https://trustseal.enamad.ir",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   // Next برای هیدریشن به اسکریپت inline نیاز دارد

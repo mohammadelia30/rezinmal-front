@@ -7,6 +7,7 @@ import {
   TwitterIcon,
   YoutubeIcon,
 } from "@/components/icons";
+import { TrustSeal } from "@/components/TrustSeal";
 import { footerContacts } from "@/data/home";
 
 const socials = [
@@ -67,9 +68,12 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-[#e6ddcd] pt-2 text-[10px] text-[#7a6a80]">
-          <p>© کلیه حقوق محفوظ است</p>
-          <p>گروه رزینمال</p>
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#e6ddcd] pt-3 text-[10px] text-[#7a6a80]">
+          <TrustSeal />
+          <div className="space-y-1 text-right">
+            <p>گروه رزینمال</p>
+            <p>© کلیه حقوق محفوظ است</p>
+          </div>
         </div>
       </div>
 
@@ -127,7 +131,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-footer-line pt-4 text-center text-xs text-[#8a7a6a] sm:flex-row sm:text-right sm:text-sm">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-footer-line pt-4 text-center text-xs text-[#8a7a6a] sm:flex-row sm:text-right sm:text-sm">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.png"
@@ -138,7 +142,12 @@ export function Footer() {
             />
             <p className="font-bold text-brand">گروه رزین‌مال</p>
           </div>
-          <p className="leading-6">© کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.</p>
+          <div className="flex items-center gap-4">
+            <p className="leading-6">
+              © کلیه حقوق مادی و معنوی سایت محفوظ می‌باشد.
+            </p>
+            <TrustSeal />
+          </div>
         </div>
       </Container>
     </footer>
