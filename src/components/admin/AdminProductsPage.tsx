@@ -59,6 +59,7 @@ const EMPTY_FORM = {
   categories: [] as string[],
   status: "2",
   is_featured: false,
+  is_over_30_cm: false,
   is_active: true,
   meta_title: "",
   meta_description: "",
@@ -140,6 +141,7 @@ export function AdminProductsPage({
       categories: product.categoryIds,
       status: product.status,
       is_featured: product.isFeatured,
+      is_over_30_cm: product.isOverThirtyCm,
       is_active: product.isActive,
       meta_title: product.metaTitle,
       meta_description: product.metaDescription,
@@ -168,6 +170,7 @@ export function AdminProductsPage({
     categories: form.categories,
     status: form.status,
     is_featured: form.is_featured,
+    is_over_30_cm: form.is_over_30_cm,
     is_active: form.is_active,
     meta_title: form.meta_title.trim(),
     meta_description: form.meta_description.trim(),
@@ -438,6 +441,21 @@ export function AdminProductsPage({
           checked={form.is_active}
           onChange={(value) => set("is_active", value)}
         />
+      </div>
+
+      {/* بک‌اند از روی همین گزینه تصمیم می‌گیرد سبد، بستهٔ بزرگ است یا
+          استاندارد؛ اگر حتی یک کالای بزرگ در سبد باشد، هزینهٔ بستهٔ
+          بزرگ حساب می‌شود. */}
+      <div className="rounded-xl border border-[#efe6d4] p-3">
+        <AdminToggleField
+          label="بزرگ‌تر از ۳۰ سانتی‌متر"
+          checked={form.is_over_30_cm}
+          onChange={(value) => set("is_over_30_cm", value)}
+        />
+        <p className="mt-2 text-right text-xs leading-6 text-muted">
+          اگر این کالا در سبد باشد، هزینهٔ بسته‌بندی بر اساس «بستهٔ بزرگ»
+          حساب می‌شود. مقدارش را در تنظیمات تعیین می‌کنید.
+        </p>
       </div>
 
       <div className="rounded-xl border border-[#efe6d4] p-3">

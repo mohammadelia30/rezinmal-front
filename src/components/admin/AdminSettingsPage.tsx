@@ -49,7 +49,7 @@ export function AdminSettingsPage({
       settings.free_shipping_min <=
         Math.max(settings.standard_shipping_cost, settings.large_shipping_cost)
     ) {
-      return "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ ارسال بیشتر باشد (یا صفر بماند).";
+      return "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ بسته‌بندی بیشتر باشد (یا صفر بماند).";
     }
     return "";
   };
@@ -135,7 +135,7 @@ export function AdminSettingsPage({
               }
             />
             <Field
-              label="هزینه ارسال بستهٔ استاندارد (تومان)"
+              label="هزینهٔ بسته‌بندی بستهٔ استاندارد (تومان)"
               hint="سفارش‌های ۱ یا ۲ عددی"
               value={String(settings.standard_shipping_cost ?? 0)}
               onChange={money("standard_shipping_cost")}
@@ -143,7 +143,7 @@ export function AdminSettingsPage({
               inputMode="numeric"
             />
             <Field
-              label="هزینه ارسال بستهٔ بزرگ (تومان)"
+              label="هزینهٔ بسته‌بندی بستهٔ بزرگ (تومان)"
               hint="سفارش‌های بیش از ۲ عدد"
               value={String(settings.large_shipping_cost ?? 0)}
               onChange={money("large_shipping_cost")}

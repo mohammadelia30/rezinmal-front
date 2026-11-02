@@ -28,7 +28,7 @@ const API_MESSAGES: [RegExp, string][] = [
   [/coupon with this code already exists|code already exists|unique/i, "این کد تخفیف قبلاً ثبت شده است."],
   [/code cannot be empty/i, "کد تخفیف را وارد کنید."],
   [/datetime has wrong format|date has wrong format/i, "تاریخ وارد شده معتبر نیست."],
-  [/free shipping minimum/i, "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ ارسال بیشتر باشد."],
+  [/free shipping minimum/i, "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ بسته‌بندی بیشتر باشد."],
   [/cannot change order status/i, "این تغییر وضعیت برای این سفارش مجاز نیست."],
   [/permission/i, "دسترسی لازم برای این کار را ندارید."],
   [/this field is required/i, "همهٔ فیلدهای لازم را پر کنید."],
@@ -437,6 +437,8 @@ export type ProductInput = {
   categories: string[];
   status: string;
   is_featured: boolean;
+  /** بزرگ‌تر از ۳۰ سانتی‌متر: هزینهٔ بستهٔ بزرگ برایش حساب می‌شود */
+  is_over_30_cm: boolean;
   is_active: boolean;
   meta_title: string;
   meta_description: string;
@@ -458,6 +460,7 @@ function productBody(input: ProductInput) {
     categories: input.categories.map(Number),
     status: Number(input.status) || 2,
     is_featured: input.is_featured,
+    is_over_30_cm: input.is_over_30_cm,
     is_active: input.is_active,
     meta_title: input.meta_title,
     meta_description: input.meta_description,

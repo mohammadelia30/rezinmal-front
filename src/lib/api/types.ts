@@ -67,6 +67,8 @@ export type ProductDetail = {
   description?: string;
   status?: number;
   is_featured?: boolean;
+  /** کالای بزرگ‌تر از ۳۰ سانتی‌متر؛ بک‌اند از روی آن بستهٔ بزرگ را تشخیص می‌دهد */
+  is_over_30_cm?: boolean;
   is_active?: boolean;
   meta_title?: string;
   meta_description?: string;

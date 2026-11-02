@@ -456,6 +456,8 @@ export type AdminProductDetail = {
   categoryIds: string[];
   status: string;
   isFeatured: boolean;
+  /** کالای بزرگ‌تر از ۳۰ سانتی‌متر؛ بستهٔ بزرگ می‌گیرد */
+  isOverThirtyCm: boolean;
   isActive: boolean;
   /** سئو: عنوان و توضیحی که در نتیجهٔ گوگل دیده می‌شود */
   metaTitle: string;
@@ -496,6 +498,7 @@ export async function getAdminProductDetails(): Promise<AdminProductDetail[]> {
         categoryIds: (detail.categories ?? []).map((item) => String(item.id)),
         status: detail.status == null ? "" : String(detail.status),
         isFeatured: Boolean(detail.is_featured),
+        isOverThirtyCm: Boolean(detail.is_over_30_cm),
         isActive: detail.is_active !== false,
         metaTitle: detail.meta_title ?? "",
         metaDescription: detail.meta_description ?? "",

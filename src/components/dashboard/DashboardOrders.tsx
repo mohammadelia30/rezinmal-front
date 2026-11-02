@@ -103,7 +103,7 @@ export function DashboardOrders({ orders }: { orders: DashboardOrder[] }) {
                   : "رایگان"}
               </dd>
               <dt className="text-muted">
-                هزینهٔ ارسال ({SHIPPING_LABELS[order.shippingType]})
+                هزینهٔ بسته‌بندی ({SHIPPING_LABELS[order.shippingType]})
               </dt>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-[#efe6d4] pt-2 font-bold">

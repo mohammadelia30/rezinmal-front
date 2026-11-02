@@ -151,7 +151,7 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
                   />
                 ) : null}
                 <Line
-                  label={`هزینهٔ ارسال (${shippingTypeLabels[selected.shippingType]})`}
+                  label={`هزینهٔ بسته‌بندی (${shippingTypeLabels[selected.shippingType]})`}
                   value={selected.shippingCost}
                   free={selected.shippingCost === 0}
                 />

@@ -248,10 +248,13 @@ export function CheckoutContent() {
                   {cart.shipping_cost > 0 ? formatProductPrice(cart.shipping_cost) : "رایگان"}
                 </span>
                 <span className="text-right">
-                  هزینهٔ ارسال
+                  هزینهٔ بسته‌بندی
+                  {/* بستهٔ بزرگ دیگر به تعداد اقلام ربطی ندارد: اگر حتی
+                      یک کالای بزرگ‌تر از ۳۰ سانتی‌متر در سبد باشد، کل
+                      سبد بستهٔ بزرگ حساب می‌شود. */}
                   <span className="block text-xs">
                     {cart.shipping_type === "large"
-                      ? "بستهٔ بزرگ (بیش از ۲ عدد)"
+                      ? "بستهٔ بزرگ (کالای بزرگ‌تر از ۳۰ سانتی‌متر)"
                       : "بستهٔ استاندارد"}
                   </span>
                 </span>
@@ -260,6 +263,13 @@ export function CheckoutContent() {
                 <span>{formatProductPrice(cart.total_amount)}</span>
                 <span>مبلغ قابل پرداخت</span>
               </div>
+
+              {/* آنچه این‌جا پرداخت می‌شود بسته‌بندی است، نه کرایهٔ
+                  تیپاکس؛ بدون این توضیح مشتری دم در غافلگیر می‌شد. */}
+              <p className="rounded-xl bg-[#fff3d6] px-4 py-3 text-right text-xs leading-6 text-[#8a6a1f]">
+                هزینهٔ ارسال به‌صورت تیپاکس پس‌کرایه است و توسط مشتری درب
+                منزل پرداخت می‌شود.
+              </p>
             </div>
           )}
 
