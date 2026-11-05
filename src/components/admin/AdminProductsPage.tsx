@@ -59,7 +59,9 @@ const EMPTY_FORM = {
   categories: [] as string[],
   status: "2",
   is_featured: false,
+  is_shipping_enabled: false,
   is_over_30_cm: false,
+  is_under_30_cm: false,
   is_active: true,
   meta_title: "",
   meta_description: "",
@@ -141,7 +143,9 @@ export function AdminProductsPage({
       categories: product.categoryIds,
       status: product.status,
       is_featured: product.isFeatured,
+      is_shipping_enabled: product.shippingEnabled,
       is_over_30_cm: product.isOverThirtyCm,
+      is_under_30_cm: product.isUnderThirtyCm,
       is_active: product.isActive,
       meta_title: product.metaTitle,
       meta_description: product.metaDescription,
@@ -170,7 +174,9 @@ export function AdminProductsPage({
     categories: form.categories,
     status: form.status,
     is_featured: form.is_featured,
+    is_shipping_enabled: form.is_shipping_enabled,
     is_over_30_cm: form.is_over_30_cm,
+    is_under_30_cm: form.is_under_30_cm,
     is_active: form.is_active,
     meta_title: form.meta_title.trim(),
     meta_description: form.meta_description.trim(),
@@ -443,18 +449,68 @@ export function AdminProductsPage({
         />
       </div>
 
-      {/* بک‌اند از روی همین گزینه تصمیم می‌گیرد سبد، بستهٔ بزرگ است یا
-          استاندارد؛ اگر حتی یک کالای بزرگ در سبد باشد، هزینهٔ بستهٔ
-          بزرگ حساب می‌شود. */}
+      {/* قاعدهٔ بک‌اند: تا بسته‌بندی روشن نشود هیچ اندازه‌ای ثبت
+          نمی‌شود، و با روشن بودنش باید دقیقاً یکی از دو اندازه انتخاب
+          شده باشد. همین‌جا رعایتش می‌کنیم تا ذخیره خطا نخورد. */}
       <div className="rounded-xl border border-[#efe6d4] p-3">
         <AdminToggleField
-          label="بزرگ‌تر از ۳۰ سانتی‌متر"
-          checked={form.is_over_30_cm}
-          onChange={(value) => set("is_over_30_cm", value)}
+          label="هزینهٔ بسته‌بندی دارد"
+          checked={form.is_shipping_enabled}
+          onChange={(value) =>
+            setForm((current) => ({
+              ...current,
+              is_shipping_enabled: value,
+              // خاموش که شد، اندازه معنا ندارد؛ روشن که شد اگر از قبل
+              // «بزرگ» بوده همان می‌ماند، وگرنه «کوچک» انتخاب می‌شود
+              // تا فرم هیچ‌وقت بدون اندازه ذخیره نشود
+              is_over_30_cm: value && current.is_over_30_cm,
+              is_under_30_cm: value && !current.is_over_30_cm,
+            }))
+          }
         />
+
+        {form.is_shipping_enabled ? (
+          <div className="mt-3 space-y-2">
+            <p className="text-right text-xs font-medium text-foreground">
+              اندازهٔ کالا
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                { key: "under", label: "کوچک‌تر از ۳۰ سانتی‌متر" },
+                { key: "over", label: "بزرگ‌تر از ۳۰ سانتی‌متر" },
+              ].map((option) => (
+                <label
+                  key={option.key}
+                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#efe6d4] bg-[#fbf9f1] px-4 py-2.5 text-right text-xs text-foreground"
+                >
+                  <input
+                    type="radio"
+                    name="shipping-size"
+                    className="size-4 accent-[#4e2a54]"
+                    checked={
+                      option.key === "over"
+                        ? form.is_over_30_cm
+                        : form.is_under_30_cm
+                    }
+                    onChange={() =>
+                      setForm((current) => ({
+                        ...current,
+                        is_over_30_cm: option.key === "over",
+                        is_under_30_cm: option.key === "under",
+                      }))
+                    }
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <p className="mt-2 text-right text-xs leading-6 text-muted">
-          اگر این کالا در سبد باشد، هزینهٔ بسته‌بندی بر اساس «بستهٔ بزرگ»
-          حساب می‌شود. مقدارش را در تنظیمات تعیین می‌کنید.
+          {form.is_shipping_enabled
+            ? "اگر این کالا در سبد باشد، هزینهٔ بسته‌بندی به سفارش اضافه می‌شود؛ کالای بزرگ‌تر از ۳۰ سانتی‌متر کل سبد را «بستهٔ بزرگ» می‌کند. مبلغ هر دو در تنظیمات تعیین می‌شود."
+            : "برای این کالا هیچ هزینهٔ بسته‌بندی گرفته نمی‌شود."}
         </p>
       </div>
 

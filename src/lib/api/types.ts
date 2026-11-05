@@ -67,8 +67,12 @@ export type ProductDetail = {
   description?: string;
   status?: number;
   is_featured?: boolean;
+  /** برای این کالا هزینهٔ بسته‌بندی گرفته می‌شود */
+  is_shipping_enabled?: boolean;
   /** کالای بزرگ‌تر از ۳۰ سانتی‌متر؛ بک‌اند از روی آن بستهٔ بزرگ را تشخیص می‌دهد */
   is_over_30_cm?: boolean;
+  /** کالای کوچک‌تر از ۳۰ سانتی‌متر؛ بستهٔ استاندارد */
+  is_under_30_cm?: boolean;
   is_active?: boolean;
   meta_title?: string;
   meta_description?: string;

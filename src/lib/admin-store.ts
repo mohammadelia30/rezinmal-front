@@ -29,6 +29,8 @@ const API_MESSAGES: [RegExp, string][] = [
   [/code cannot be empty/i, "کد تخفیف را وارد کنید."],
   [/datetime has wrong format|date has wrong format/i, "تاریخ وارد شده معتبر نیست."],
   [/free shipping minimum/i, "حداقل مبلغ ارسال رایگان باید از هر دو هزینهٔ بسته‌بندی بیشتر باشد."],
+  [/both larger and smaller/i, "یک کالا نمی‌تواند هم بزرگ‌تر و هم کوچک‌تر از ۳۰ سانتی‌متر باشد."],
+  [/exactly one shipping size/i, "وقتی هزینهٔ بسته‌بندی فعال است، اندازهٔ کالا را انتخاب کنید."],
   [/cannot change order status/i, "این تغییر وضعیت برای این سفارش مجاز نیست."],
   [/permission/i, "دسترسی لازم برای این کار را ندارید."],
   [/this field is required/i, "همهٔ فیلدهای لازم را پر کنید."],
@@ -437,8 +439,12 @@ export type ProductInput = {
   categories: string[];
   status: string;
   is_featured: boolean;
+  /** هزینهٔ بسته‌بندی برای این کالا گرفته می‌شود */
+  is_shipping_enabled: boolean;
   /** بزرگ‌تر از ۳۰ سانتی‌متر: هزینهٔ بستهٔ بزرگ برایش حساب می‌شود */
   is_over_30_cm: boolean;
+  /** کوچک‌تر از ۳۰ سانتی‌متر: بستهٔ استاندارد */
+  is_under_30_cm: boolean;
   is_active: boolean;
   meta_title: string;
   meta_description: string;
@@ -460,7 +466,15 @@ function productBody(input: ProductInput) {
     categories: input.categories.map(Number),
     status: Number(input.status) || 2,
     is_featured: input.is_featured,
-    is_over_30_cm: input.is_over_30_cm,
+    // وقتی بسته‌بندی خاموش است بک‌اند هر دو اندازه را رد می‌کند؛
+    // همین‌جا پاکشان می‌کنیم تا خطای اعتبارسنجی نگیریم
+    is_shipping_enabled: input.is_shipping_enabled,
+    is_over_30_cm: input.is_shipping_enabled && input.is_over_30_cm,
+    // هر دو با هم ممنوع است؛ «بزرگ» مقدم می‌ماند
+    is_under_30_cm:
+      input.is_shipping_enabled &&
+      input.is_under_30_cm &&
+      !input.is_over_30_cm,
     is_active: input.is_active,
     meta_title: input.meta_title,
     meta_description: input.meta_description,

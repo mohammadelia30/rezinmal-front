@@ -249,14 +249,18 @@ export function CheckoutContent() {
                 </span>
                 <span className="text-right">
                   هزینهٔ بسته‌بندی
-                  {/* بستهٔ بزرگ دیگر به تعداد اقلام ربطی ندارد: اگر حتی
-                      یک کالای بزرگ‌تر از ۳۰ سانتی‌متر در سبد باشد، کل
-                      سبد بستهٔ بزرگ حساب می‌شود. */}
-                  <span className="block text-xs">
-                    {cart.shipping_type === "large"
-                      ? "بستهٔ بزرگ (کالای بزرگ‌تر از ۳۰ سانتی‌متر)"
-                      : "بستهٔ استاندارد"}
-                  </span>
+                  {/* بستهٔ بزرگ به تعداد اقلام ربطی ندارد: اگر حتی یک
+                      کالای بزرگ‌تر از ۳۰ سانتی‌متر در سبد باشد، کل سبد
+                      بستهٔ بزرگ حساب می‌شود. و وقتی هیچ کالایی هزینهٔ
+                      بسته‌بندی ندارد مبلغ صفر است، که آن‌وقت نوشتن نوع
+                      بسته فقط گیج‌کننده است. */}
+                  {cart.shipping_cost > 0 ? (
+                    <span className="block text-xs">
+                      {cart.shipping_type === "large"
+                        ? "بستهٔ بزرگ (کالای بزرگ‌تر از ۳۰ سانتی‌متر)"
+                        : "بستهٔ استاندارد"}
+                    </span>
+                  ) : null}
                 </span>
               </div>
               <div className="flex items-center justify-between border-t border-[#efe6d4] pt-3 font-bold text-foreground">
@@ -265,8 +269,9 @@ export function CheckoutContent() {
               </div>
 
               {/* آنچه این‌جا پرداخت می‌شود بسته‌بندی است، نه کرایهٔ
-                  تیپاکس؛ بدون این توضیح مشتری دم در غافلگیر می‌شد. */}
-              <p className="rounded-xl bg-[#fff3d6] px-4 py-3 text-right text-xs leading-6 text-[#8a6a1f]">
+                  تیپاکس؛ بدون این توضیح مشتری دم در غافلگیر می‌شد.
+                  کارفرما خواست قرمز باشد تا از قلم نیفتد. */}
+              <p className="rounded-xl border border-[#e8b4ae] bg-[#fdeceb] px-4 py-3 text-right text-xs font-bold leading-6 text-[#c0392b]">
                 هزینهٔ ارسال به‌صورت تیپاکس پس‌کرایه است و توسط مشتری درب
                 منزل پرداخت می‌شود.
               </p>
