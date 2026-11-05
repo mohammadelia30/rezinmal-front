@@ -122,3 +122,23 @@ export function YoutubeIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function TelegramIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M21.9 4.3 18.9 19c-.2 1-.8 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.2.3-.5.5-1 .5l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.2 13 2.7 11.6c-1-.3-1-1 .2-1.4l17.6-6.8c.8-.3 1.5.2 1.4 1Z" />
+    </svg>
+  );
+}
+
+/**
+ * «بله» پیام‌رسان ایرانی است و نشان رسمی‌اش را نمی‌سازیم؛ یک حباب
+ * گفت‌وگوی ساده می‌گذاریم و نامش همیشه کنارش نوشته می‌شود.
+ */
+export function BaleIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 3c5 0 9 3.4 9 7.6 0 4.2-4 7.6-9 7.6a11 11 0 0 1-2.6-.3l-4.3 2.1c-.4.2-.9-.2-.8-.7l.8-3.3C3.2 14.7 3 12.7 3 10.6 3 6.4 7 3 12 3Z" />
+    </svg>
+  );
+}

@@ -5,6 +5,7 @@ import { CategorySections } from "@/components/CategorySections";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { MaterialChannels } from "@/components/MaterialChannels";
 import { MobileCategories } from "@/components/MobileCategories";
 import { getPublicSiteInfo, getStoreArticles } from "@/lib/api";
 import { getHomeCategories } from "@/lib/api/store-categories";
@@ -57,6 +58,7 @@ export default async function Home() {
         <div id="gallery">
           <CategorySections categories={categories} />
         </div>
+        <MaterialChannels />
         <Articles articles={articles} />
       </main>
       <Footer />

@@ -95,6 +95,34 @@ export const articles = [
   },
 ] as const;
 
+/**
+ * کانال‌های واقعی فروشگاه.
+ *
+ * تا امروز چهار آیکون شبکهٔ اجتماعی در فوتر بود که همه‌شان به `#`
+ * می‌رفتند — یعنی مشتری کلیک می‌کرد و هیچ اتفاقی نمی‌افتاد. این‌ها
+ * نشانی‌هایی است که خود فروشگاه می‌دهد.
+ */
+export const socialChannels = [
+  {
+    key: "telegram",
+    label: "کانال تلگرام",
+    handle: "@resinmall",
+    href: "https://t.me/resinmall",
+  },
+  {
+    key: "bale",
+    label: "کانال بله",
+    handle: "@resinmall",
+    href: "https://ble.ir/resinmall",
+  },
+  {
+    key: "instagram",
+    label: "دایرکت اینستاگرام",
+    handle: "@resinmall.ir",
+    href: "https://instagram.com/resinmall.ir",
+  },
+] as const;
+
 export const footerContacts = {
   phone: "۰۲۱ ۳۴۴۲ ۳۶۰",
   address: "گروه رزینمال، تهران",

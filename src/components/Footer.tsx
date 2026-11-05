@@ -1,21 +1,24 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Container } from "@/components/Container";
-import {
-  FacebookIcon,
-  InstagramIcon,
-  TwitterIcon,
-  YoutubeIcon,
-} from "@/components/icons";
+import { BaleIcon, InstagramIcon, TelegramIcon } from "@/components/icons";
 import { TrustSeal } from "@/components/TrustSeal";
-import { footerContacts } from "@/data/home";
+import { footerContacts, socialChannels } from "@/data/home";
 
-const socials = [
-  { label: "اینستاگرام", href: "#", icon: InstagramIcon },
-  { label: "توییتر", href: "#", icon: TwitterIcon },
-  { label: "فیسبوک", href: "#", icon: FacebookIcon },
-  { label: "یوتیوب", href: "#", icon: YoutubeIcon },
-] as const;
+/**
+ * چهار آیکون قبلی (اینستاگرام، توییتر، فیسبوک، یوتیوب) همگی به `#`
+ * می‌رفتند و هیچ‌کدام حساب واقعی فروشگاه نبودند. این سه، هستند.
+ */
+const ICONS = {
+  telegram: TelegramIcon,
+  bale: BaleIcon,
+  instagram: InstagramIcon,
+} as const;
+
+const socials = socialChannels.map((channel) => ({
+  label: channel.label,
+  href: channel.href,
+  icon: ICONS[channel.key],
+}));
 
 export function Footer() {
   return (
@@ -55,16 +58,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-end gap-1.5">
+        <div className="mt-3 flex items-center justify-end gap-2">
           {socials.map(({ label, href, icon: Icon }) => (
-            <Link
+            <a
               key={label}
               href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label={label}
-              className="flex size-3.5 items-center justify-center rounded-full bg-[#6e4b7c] text-white"
+              title={label}
+              className="flex size-6 items-center justify-center rounded-full bg-[#6e4b7c] text-white"
             >
-              <Icon className="h-2 w-2" />
-            </Link>
+              <Icon className="size-3.5" />
+            </a>
           ))}
         </div>
 
@@ -119,14 +125,17 @@ export function Footer() {
 
           <div className="flex items-start justify-end gap-2 lg:justify-start">
             {socials.map(({ label, href, icon: Icon }) => (
-              <Link
+              <a
                 key={label}
                 href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label={label}
-                className="flex size-7 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark"
+                title={label}
+                className="flex size-8 items-center justify-center rounded bg-brand text-white transition hover:bg-brand-dark"
               >
-                <Icon className="h-3.5 w-3.5" />
-              </Link>
+                <Icon className="size-4" />
+              </a>
             ))}
           </div>
         </div>
