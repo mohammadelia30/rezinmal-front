@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { MaterialChannels } from "@/components/MaterialChannels";
+import { MaterialChannelsPopup } from "@/components/MaterialChannelsPopup";
 import { MobileCategories } from "@/components/MobileCategories";
 import { getPublicSiteInfo, getStoreArticles } from "@/lib/api";
 import { getHomeCategories } from "@/lib/api/store-categories";
@@ -50,6 +51,9 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-[#f6f1e7] md:bg-background">
+      {/* یک بار در بدو ورود؛ بعد از آن تا پاک شدن حافظهٔ مرورگر
+          دیگر نمی‌پرد */}
+      <MaterialChannelsPopup />
       <Header />
       <main className="flex-1">
         <Hero />

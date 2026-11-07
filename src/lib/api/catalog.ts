@@ -115,6 +115,10 @@ export async function getStoreCategories(): Promise<CategoryList[]> {
 export type PublicSiteInfo = {
   shopName: string;
   metaDescription: string;
+  /** شمارهٔ تماس فروشگاه، همان‌طور که در پنل ثبت شده */
+  phone: string;
+  email: string;
+  address: string;
 };
 
 /**
@@ -127,11 +131,20 @@ export async function getPublicSiteInfo(): Promise<PublicSiteInfo | null> {
     const data = await apiFetch<{
       shop_name?: string;
       meta_description?: string;
+      phone?: string;
+      email?: string;
+      address?: string;
     }>(API_PATHS.publicSiteSettings, revalidate);
 
     return {
       shopName: data.shop_name ?? "",
       metaDescription: data.meta_description ?? "",
+      // بک‌اند این سه را از اول می‌فرستاد و ما دورشان می‌ریختیم؛ برای
+      // همین مدیر آدرس را در پنل عوض می‌کرد و سایت همان آدرس قدیمیِ
+      // داخل کد را نشان می‌داد
+      phone: data.phone ?? "",
+      email: data.email ?? "",
+      address: data.address ?? "",
     };
   } catch {
     return null;
