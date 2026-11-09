@@ -123,18 +123,54 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 /**
- * ریدایرکت به‌جای صفحهٔ خطا.
+ * صفحهٔ «دوباره وارد شوید» برای لینک‌هایی که در تب جدید باز می‌شوند.
  *
- * اول یک صفحهٔ فارسی برمی‌گرداندیم، ولی CDN جلوی سایت هر پاسخ خطادار
- * را با صفحهٔ انگلیسی خودش («Upstream Error») عوض می‌کند و آن صفحه
- * هرگز به مدیر نمی‌رسید. ریدایرکت از CDN رد می‌شود و رفتار درست هم
- * همین است: نشست تمام شده یعنی برو صفحهٔ ورود، نه اینکه خطا ببین.
+ * دو چیز این مسیر را محدود می‌کند و هر دو را امتحان کرده‌ایم:
+ * CDN جلوی سایت هر پاسخِ خطادار را با صفحهٔ انگلیسی خودش
+ * («Upstream Error») عوض می‌کند، و ریدایرکت هم به درد نمی‌خورد چون
+ * Next هدر Location را با آدرسی که کانتینر روی آن گوش می‌دهد
+ * (0.0.0.0:3000) مطلق می‌کند و مرورگر مدیر به جایی می‌رود که وجود
+ * ندارد. پس یک صفحهٔ ۲۰۰ برمی‌گردانیم که از CDN رد می‌شود.
+ *
+ * فقط برای رفت‌وآمد مرورگر است؛ درخواست‌های JSON همان ۴۰۱ واقعی را
+ * می‌گیرند.
  */
-function authRedirect(status: number, origin: string): NextResponse {
-  // ۴۰۳ یعنی وارد شده ولی این بخش مال او نیست؛ فرستادنش به صفحهٔ
-  // ورود فقط او را سردرگم می‌کند
-  const target = status === 403 ? "/admin" : "/admin/login";
-  return NextResponse.redirect(new URL(target, origin), 303);
+function authNoticePage(status: number): NextResponse {
+  const forbidden = status === 403;
+  const title = forbidden
+    ? "دسترسی لازم را ندارید"
+    : "نشست شما تمام شده است";
+  const detail = forbidden
+    ? "این بخش به دسترسی دیگری نیاز دارد. با مدیر اصلی فروشگاه هماهنگ کنید."
+    : "دوباره وارد پنل شوید و همین دکمه را بزنید.";
+  const link = forbidden ? "/admin" : "/admin/login";
+  const action = forbidden ? "بازگشت به پنل" : "ورود به پنل";
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>${title}</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+background:#fbf9f1;color:#3d2247;font-family:Vazirmatn,Tahoma,sans-serif;padding:24px}
+.box{max-width:420px;text-align:center;background:#fff;border-radius:16px;padding:28px;
+box-shadow:0 8px 30px rgba(61,36,71,.1)}
+h1{font-size:18px;margin:0 0 10px}
+p{font-size:14px;line-height:2;color:#6b5b73;margin:0 0 20px}
+a{display:inline-block;background:#5b2a63;color:#fff;text-decoration:none;
+border-radius:10px;padding:10px 22px;font-size:14px;font-weight:700}
+</style></head><body><div class="box">
+<h1>${title}</h1><p>${detail}</p><a href="${link}">${action}</a>
+</div></body></html>`;
+
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
 }
 
 async function proxy(
@@ -208,7 +244,7 @@ async function proxy(
     request.method === "GET" &&
     (request.headers.get("accept") ?? "").includes("text/html")
   ) {
-    return authRedirect(upstream.status, request.nextUrl.origin);
+    return authNoticePage(upstream.status);
   }
 
   // خواندن بدنه هم می‌تواند وسط کار قطع شود؛ بدون این، پنل یک ۵۰۰
