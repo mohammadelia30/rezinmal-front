@@ -649,6 +649,63 @@ export async function saveProductVariants(
   }
 }
 
+/**
+ * تغییر گروهی قیمت محصول‌های چند دسته.
+ *
+ * آقای کمال این را به‌شکل یک action در پنل جنگو نوشته که یک‌جا و
+ * اتمیک اجرا می‌شود، ولی اندپوینتی برایش نیست؛ پس این‌جا نسخهٔ هر
+ * نسخه یک درخواست است. یعنی اگر وسط کار قطع شود، بخشی از قیمت‌ها
+ * عوض شده‌اند — برای همین تعداد موفق و ناموفق را برمی‌گردانیم تا
+ * مدیر بداند دقیقاً کجا ایستاده است.
+ *
+ * `sale_price` را بک‌اند در API بیرون نمی‌دهد و این‌جا دست‌نخورده
+ * می‌ماند؛ امروز هیچ نسخه‌ای قیمت حراج ندارد، ولی اگر روزی داشته
+ * باشد باید از همان action جنگو استفاده شود.
+ */
+export type BulkPriceResult = {
+  updated: number;
+  failed: number;
+};
+
+export async function changeVariantPrices(
+  variants: { id: string; price: number }[],
+  percentage: number,
+  onProgress?: (done: number, total: number) => void,
+): Promise<BulkPriceResult> {
+  const multiplier = 1 + percentage / 100;
+  let updated = 0;
+  let failed = 0;
+  let done = 0;
+
+  // چند تا چند تا، نه همه با هم: ششصد درخواست هم‌زمان را نه مرورگر
+  // دوست دارد نه سرور
+  const BATCH = 4;
+
+  for (let index = 0; index < variants.length; index += BATCH) {
+    const slice = variants.slice(index, index + BATCH);
+
+    await Promise.all(
+      slice.map(async (variant) => {
+        const next = Math.round(variant.price * multiplier);
+        try {
+          await send(API_PATHS.variant(variant.id), {
+            method: "PATCH",
+            body: { price: next },
+          });
+          updated += 1;
+        } catch {
+          failed += 1;
+        } finally {
+          done += 1;
+          onProgress?.(done, variants.length);
+        }
+      }),
+    );
+  }
+
+  return { updated, failed };
+}
+
 export async function createProduct(
   input: ProductInput,
   variants: VariantInput[],

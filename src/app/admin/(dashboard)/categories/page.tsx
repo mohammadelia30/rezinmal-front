@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminCategoriesPage } from "@/components/admin/AdminCategoriesPage";
-import { getAdminCategories } from "@/lib/api/admin";
+import { getAdminCategories, getAdminProductDetails } from "@/lib/api/admin";
 import { requirePanelPermission } from "@/lib/auth/guard";
 
 export const metadata: Metadata = {
@@ -10,6 +10,13 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requirePanelPermission("panel_products");
-  const categories = await getAdminCategories();
-  return <AdminCategoriesPage categories={categories} />;
+  // فهرست محصولات برای ابزار افزایش گروهی قیمت لازم است؛ همان یک
+  // درخواستی است که صفحهٔ محصولات هم می‌زند
+  const [categories, products] = await Promise.all([
+    getAdminCategories(),
+    getAdminProductDetails(),
+  ]);
+  return (
+    <AdminCategoriesPage categories={categories} products={products} />
+  );
 }

@@ -20,7 +20,8 @@ import {
   AdminPagination,
   usePagination,
 } from "@/components/admin/AdminPagination";
-import type { AdminCategoryRow } from "@/lib/api/admin";
+import { AdminBulkPrice } from "@/components/admin/AdminBulkPrice";
+import type { AdminCategoryRow, AdminProductDetail } from "@/lib/api/admin";
 import {
   AdminActionError,
   checkImageFile,
@@ -40,8 +41,10 @@ const EMPTY = {
 
 export function AdminCategoriesPage({
   categories,
+  products = [],
 }: {
   categories: AdminCategoryRow[];
+  products?: AdminProductDetail[];
 }) {
   const router = useRouter();
   const { query, setQuery, filtered } = useSearchFilter(categories, [
@@ -217,6 +220,8 @@ export function AdminCategoriesPage({
             ))}
           </AdminTable>
           <AdminPagination pager={pager} />
+
+          <AdminBulkPrice categories={categories} products={products} />
         </>
       )}
 

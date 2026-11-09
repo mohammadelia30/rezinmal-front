@@ -122,6 +122,36 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
+function sessionExpiredPage(status: number): NextResponse {
+  const title =
+    status === 403 ? "دسترسی لازم را ندارید" : "نشست شما تمام شده است";
+  const detail =
+    status === 403
+      ? "این بخش به دسترسی دیگری نیاز دارد. با مدیر اصلی فروشگاه هماهنگ کنید."
+      : "برای ادامه دوباره وارد پنل شوید و همین دکمه را بزنید.";
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+background:#fbf9f1;color:#3d2247;font-family:Vazirmatn,Tahoma,sans-serif;padding:24px}
+.box{max-width:420px;text-align:center;background:#fff;border-radius:16px;padding:28px;
+box-shadow:0 8px 30px rgba(61,36,71,.1)}
+h1{font-size:18px;margin:0 0 10px}p{font-size:14px;line-height:2;color:#6b5b73;margin:0 0 20px}
+a{display:inline-block;background:#5b2a63;color:#fff;text-decoration:none;
+border-radius:10px;padding:10px 22px;font-size:14px;font-weight:700}
+</style></head><body><div class="box">
+<h1>${title}</h1><p>${detail}</p><a href="/admin/login">ورود به پنل</a>
+</div></body></html>`;
+
+  return new NextResponse(html, {
+    status,
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
+}
+
 async function proxy(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
@@ -152,6 +182,14 @@ async function proxy(
 
   let token = await readAccessToken();
 
+  // کوکی دسترسی و خود توکن هر دو ۳۰ دقیقه‌اند، پس لحظه‌ای می‌رسد که
+  // کوکی از مرورگر پاک شده ولی نشست هنوز زنده است. تا امروز درخواست
+  // در این فاصله بی‌هیچ توکنی فرستاده می‌شد و ۴۰۱ می‌گرفت؛ حالا پیش
+  // از فرستادن تمدید می‌شود.
+  if (!token && (await readRefreshToken())) {
+    token = await refreshAccessToken();
+  }
+
   let upstream: Response;
   try {
     upstream = await send(token);
@@ -177,7 +215,29 @@ async function proxy(
     }
   }
 
-  const responseBody = await upstream.arrayBuffer();
+  // چاپ فاکتور یک لینک معمولی است، نه fetch: اگر نشست تمام شده باشد
+  // مرورگر صفحهٔ خطای انگلیسیِ خود DRF را نشان می‌داد و مدیر فقط
+  // «۴۰۱» می‌دید. برای این حالت یک صفحهٔ فارسی برمی‌گردانیم.
+  if (
+    (upstream.status === 401 || upstream.status === 403) &&
+    request.method === "GET" &&
+    (request.headers.get("accept") ?? "").includes("text/html")
+  ) {
+    return sessionExpiredPage(upstream.status);
+  }
+
+  // خواندن بدنه هم می‌تواند وسط کار قطع شود؛ بدون این، پنل یک ۵۰۰
+  // بی‌توضیح می‌گرفت به‌جای همان پیام «ارتباط برقرار نشد»
+  let responseBody: ArrayBuffer;
+  try {
+    responseBody = await upstream.arrayBuffer();
+  } catch {
+    return NextResponse.json(
+      { detail: "ارتباط با سرور برقرار نشد." },
+      { status: 502 },
+    );
+  }
+
   return buildResponse(upstream, responseBody);
 }
 
