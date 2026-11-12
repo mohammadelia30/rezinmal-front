@@ -12,6 +12,11 @@ import {
   AdminModal,
   AdminPageHeader,
 } from "@/components/admin/AdminUI";
+import {
+  invoiceStatusLabels,
+  invoiceStatusStyles,
+  type AdminInvoice,
+} from "@/data/admin";
 import type { AdminRoleRow, AdminUserDetail } from "@/lib/api/admin";
 import {
   AdminActionError,
@@ -43,9 +48,12 @@ function Row({ label, value }: { label: string; value: string }) {
 export function AdminUserDetailPage({
   user,
   roles,
+  orders = [],
 }: {
   user: AdminUserDetail;
   roles: AdminRoleRow[];
+  /** سفارش‌های همین مشتری؛ خالی یعنی هنوز خریدی نکرده */
+  orders?: AdminInvoice[];
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -225,6 +233,44 @@ export function AdminUserDetailPage({
             تغییر رمز عبور
           </AdminButton>
         </div>
+      </AdminCard>
+
+      {/* تا امروز فقط «تعداد سفارش» این‌جا بود و برای دیدن اینکه مشتری
+          چه خریده باید در فهرست فاکتورها دنبال نامش می‌گشتی */}
+      <AdminCard className="mt-5">
+        <h2 className="mb-3 text-right text-lg font-bold text-foreground">
+          سفارش‌های این مشتری
+        </h2>
+
+        {orders.length === 0 ? (
+          <p className="py-4 text-right text-sm text-muted">
+            هنوز سفارشی ثبت نکرده است.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#efe6d4] px-4 py-3 text-right"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <AdminBadge className={invoiceStatusStyles[order.status]}>
+                    {invoiceStatusLabels[order.status]}
+                  </AdminBadge>
+                  <span className="text-sm font-bold text-brand">
+                    {formatProductPrice(order.total)}
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground">
+                    {order.orderCode}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">{order.date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </AdminCard>
 
       {open ? (

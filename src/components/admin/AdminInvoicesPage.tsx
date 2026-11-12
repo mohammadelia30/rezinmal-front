@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   invoiceStatusLabels,
@@ -19,14 +20,64 @@ import {
   usePagination,
 } from "@/components/admin/AdminPagination";
 import { API_PATHS } from "@/lib/api/config";
+import {
+  AdminActionError,
+  restoreInvoice,
+  trashInvoice,
+} from "@/lib/admin-store";
 import { formatProductPrice } from "@/lib/price";
 
-export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
-  const { query, setQuery, filtered } = useSearchFilter(invoices, [
+/**
+ * فاکتورها، با سطل زباله.
+ *
+ * حذف فاکتور پاک‌کردن نیست: بک‌اند تاریخ حذف را می‌گذارد و فاکتور به
+ * سطل زباله می‌رود. هفت روز وقت هست تا برگردانده شود؛ بعد از آن یک
+ * تسک هفتگی واقعاً پاکش می‌کند. همین را در خود صفحه هم می‌نویسیم تا
+ * مدیر نداند چرا فاکتور قدیمی از سطل غیب شده است.
+ */
+export function AdminInvoicesPage({
+  invoices,
+  trashed = [],
+}: {
+  invoices: AdminInvoice[];
+  trashed?: AdminInvoice[];
+}) {
+  const router = useRouter();
+  const [tab, setTab] = useState<"active" | "trash">("active");
+  const rows = tab === "trash" ? trashed : invoices;
+
+  const { query, setQuery, filtered } = useSearchFilter(rows, [
     "number", "orderCode", "customer",
   ]);
   const pager = usePagination(filtered);
   const [selected, setSelected] = useState<AdminInvoice | null>(null);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+
+  const run = async (id: string, action: () => Promise<void>) => {
+    setBusy(id);
+    setError("");
+    try {
+      await action();
+      router.refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof AdminActionError
+          ? actionError.message
+          : "انجام این کار ناموفق بود.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const onTrash = (invoice: AdminInvoice) => {
+    const ok = window.confirm(
+      `فاکتور ${invoice.number} به سطل زباله می‌رود.\n\n` +
+        "تا هفت روز می‌توانید برش گردانید؛ بعد از آن برای همیشه پاک می‌شود.",
+    );
+    if (ok) void run(invoice.id, () => trashInvoice(invoice.id));
+  };
 
   return (
     <div>
@@ -34,6 +85,43 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
         title="فاکتورها"
         description="مشاهده فاکتورهای صادرشده و وضعیت پرداخت"
       />
+
+      <div className="mb-4 flex flex-wrap justify-end gap-2">
+        {([
+          ["active", `فاکتورها (${invoices.length.toLocaleString("fa-IR")})`],
+          ["trash", `سطل زباله (${trashed.length.toLocaleString("fa-IR")})`],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => {
+              setTab(key);
+              setQuery("");
+              setError("");
+            }}
+            aria-pressed={tab === key}
+            className={`rounded-full border px-4 py-1.5 text-xs font-bold transition ${
+              tab === key
+                ? "border-brand bg-brand text-white"
+                : "border-[#e6dcc2] bg-white text-foreground hover:border-brand/50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "trash" ? (
+        <p className="mb-3 rounded-xl bg-[#fdf3e3] px-4 py-2.5 text-right text-xs leading-6 text-[#8a5a17]">
+          فاکتورهای این‌جا هفت روز بعد از حذف برای همیشه پاک می‌شوند.
+        </p>
+      ) : null}
+
+      {error ? (
+        <p className="mb-3 rounded-xl bg-[#fde8e8] px-4 py-2.5 text-right text-sm text-[#9b3d3d]">
+          {error}
+        </p>
+      ) : null}
 
       <AdminSearch
         value={query}
@@ -86,6 +174,27 @@ export function AdminInvoicesPage({ invoices }: { invoices: AdminInvoice[] }) {
                 >
                   چاپ
                 </a>
+                {tab === "trash" ? (
+                  <button
+                    type="button"
+                    disabled={busy === invoice.id}
+                    onClick={() =>
+                      void run(invoice.id, () => restoreInvoice(invoice.id))
+                    }
+                    className="rounded-lg border border-[#bcd9c6] px-3 py-1.5 text-xs font-medium text-[#2f6b45] transition hover:bg-[#eaf5ee] disabled:opacity-50"
+                  >
+                    {busy === invoice.id ? "…" : "بازگردانی"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={busy === invoice.id}
+                    onClick={() => onTrash(invoice)}
+                    className="rounded-lg border border-[#e8c5c0] px-3 py-1.5 text-xs font-medium text-[#9b3d3d] transition hover:bg-[#fdeceb] disabled:opacity-50"
+                  >
+                    {busy === invoice.id ? "…" : "حذف"}
+                  </button>
+                )}
               </div>
             </td>
           </tr>

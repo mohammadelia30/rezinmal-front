@@ -73,6 +73,12 @@ export const API_PATHS = {
   attributeValues: "/api/catalog/attribute-values/",
   attributeValue: (id: string | number) =>
     `/api/catalog/attribute-values/${id}/`,
+  /** سطل زبالهٔ فاکتورها: حذف‌شده‌ها تا هفت روز این‌جا می‌مانند */
+  ordersTrash: "/api/orders/orders/trash/",
+  orderRestore: (id: string | number) =>
+    `/api/orders/orders/${id}/restore/`,
+  adminUserOrders: (id: string | number) =>
+    `/api/accounts/users/${id}/orders/`,
   orderConfirm: (id: string | number) => `/api/orders/orders/${id}/confirm/`,
   orderCancel: (id: string | number) => `/api/orders/orders/${id}/cancel/`,
   orderPreparing: (id: string | number) => `/api/orders/orders/${id}/preparing/`,

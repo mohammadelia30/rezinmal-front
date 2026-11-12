@@ -301,6 +301,22 @@ export async function deleteRole(id: string): Promise<void> {
   await send(API_PATHS.adminRole(id), { method: "DELETE" });
 }
 
+// ==========================================================
+// سطل زبالهٔ فاکتورها
+// ==========================================================
+//
+// حذف فاکتور دیگر پاک‌کردن نیست: بک‌اند تاریخ حذف را می‌گذارد و فاکتور
+// از فهرست بیرون می‌رود ولی در سطل زباله می‌ماند. بعد از هفت روز یک
+// تسک زمان‌بندی‌شده واقعاً پاکش می‌کند.
+
+export async function trashInvoice(id: string): Promise<void> {
+  await send(API_PATHS.order(id), { method: "DELETE" });
+}
+
+export async function restoreInvoice(id: string): Promise<void> {
+  await send(API_PATHS.orderRestore(id), { method: "POST" });
+}
+
 export type SiteSettingsInput = {
   shop_name: string;
   phone: string;

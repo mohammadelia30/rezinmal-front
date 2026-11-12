@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminUserDetailPage } from "@/components/admin/AdminUserDetail";
-import { getAdminRoles, getAdminUser } from "@/lib/api/admin";
+import {
+  getAdminRoles,
+  getAdminUser,
+  getAdminUserOrders,
+} from "@/lib/api/admin";
 import { requirePanelPermission } from "@/lib/auth/guard";
 
 export const metadata: Metadata = {
@@ -17,12 +21,15 @@ export default async function Page({
   await requirePanelPermission("panel_users");
   const { id } = await params;
 
-  const [user, roles] = await Promise.all([
+  const [user, roles, orders] = await Promise.all([
     getAdminUser(id),
     getAdminRoles(),
+    getAdminUserOrders(id),
   ]);
 
   if (!user) notFound();
 
-  return <AdminUserDetailPage user={user} roles={roles} />;
+  return (
+    <AdminUserDetailPage user={user} roles={roles} orders={orders} />
+  );
 }

@@ -138,6 +138,36 @@ export async function getAdminInvoices(): Promise<AdminInvoice[]> {
 }
 
 /**
+ * سفارش‌های یک مشتری، برای صفحهٔ پروفایلش در پنل.
+ *
+ * تا امروز فقط «تعداد سفارش» نوشته می‌شد و برای دیدن اینکه چه خریده
+ * باید در فهرست فاکتورها دنبال نامش می‌گشتی.
+ */
+export async function getAdminUserOrders(
+  userId: string,
+): Promise<AdminInvoice[]> {
+  const data = await serverApiFetch<ApiOrder[] | { results?: ApiOrder[] }>(
+    API_PATHS.adminUserOrders(userId),
+  );
+  const orders = Array.isArray(data) ? data : (data?.results ?? []);
+  return Array.isArray(orders) ? orders.map(toAdminInvoice) : [];
+}
+
+/**
+ * فاکتورهای حذف‌شده.
+ *
+ * بک‌اند این فهرست را صفحه‌بندی هم می‌کند، پس هم آرایهٔ خام و هم
+ * پاسخ صفحه‌بندی‌شده را می‌پذیریم.
+ */
+export async function getTrashedInvoices(): Promise<AdminInvoice[]> {
+  const data = await serverApiFetch<ApiOrder[] | { results?: ApiOrder[] }>(
+    API_PATHS.ordersTrash,
+  );
+  const orders = Array.isArray(data) ? data : (data?.results ?? []);
+  return Array.isArray(orders) ? orders.map(toAdminInvoice) : [];
+}
+
+/**
  * همهٔ محصولات با جزئیاتشان، در یک درخواست.
  *
  * فهرست بک‌اند خودش تصویر، قیمت و نسخه‌ها را می‌دهد؛ قبل از آن برای

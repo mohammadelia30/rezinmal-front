@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminInvoicesPage } from "@/components/admin/AdminInvoicesPage";
-import { getAdminInvoices } from "@/lib/api/admin";
+import { getAdminInvoices, getTrashedInvoices } from "@/lib/api/admin";
 import { requirePanelPermission } from "@/lib/auth/guard";
 
 export const metadata: Metadata = {
@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requirePanelPermission("panel_invoices");
-  const invoices = await getAdminInvoices();
-  return <AdminInvoicesPage invoices={invoices} />;
+  const [invoices, trashed] = await Promise.all([
+    getAdminInvoices(),
+    getTrashedInvoices(),
+  ]);
+  return <AdminInvoicesPage invoices={invoices} trashed={trashed} />;
 }
