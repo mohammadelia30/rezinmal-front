@@ -63,7 +63,18 @@ export type AdminInvoice = {
   shippingType: ShippingType;
   total: number;
   status: InvoiceStatus;
-  items: { title: string; quantity: number; price: number }[];
+  /** موبایل گیرنده */
+  phone: string;
+  /** نشانی کامل: استان، شهر و خود آدرس */
+  address: string;
+  postalCode: string;
+  items: {
+    title: string;
+    /** ویژگی‌های نسخهٔ خریداری‌شده، مثل «رنگ: آبی» */
+    specs: string;
+    quantity: number;
+    price: number;
+  }[];
 };
 
 export type ShippingType = "standard" | "large";

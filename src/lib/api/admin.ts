@@ -29,6 +29,8 @@ type ApiOrderItem = {
   price?: number;
   title?: string;
   product_title?: string;
+  /** «رنگ: آبی، سایز: بزرگ» — همان چیزی که روی فاکتور چاپی می‌آید */
+  variant_specs?: string;
 };
 
 type ApiOrder = {
@@ -38,6 +40,10 @@ type ApiOrder = {
   status_display?: string;
   recipient_name?: string;
   recipient_phone?: string;
+  province?: string;
+  city?: string;
+  address_text?: string;
+  postal_code?: string;
   subtotal?: number;
   discount_amount?: number;
   shipping_cost?: number;
@@ -113,8 +119,17 @@ function toAdminInvoice(order: ApiOrder): AdminInvoice {
     shippingType: order.shipping_type === "large" ? "large" : "standard",
     total: order.total_amount ?? 0,
     status,
+    phone: order.recipient_phone?.trim() ?? "",
+    // استان و شهر جدا ذخیره می‌شوند؛ سفارش‌های قدیمی ندارندشان و فقط
+    // خود نشانی را نشان می‌دهند، نه ویرگول خالی
+    address: [order.province, order.city, order.address_text]
+      .map((part) => (part ?? "").trim())
+      .filter(Boolean)
+      .join("، "),
+    postalCode: order.postal_code?.trim() ?? "",
     items: (order.items ?? []).map((item) => ({
       title: item.product_title ?? item.title ?? "—",
+      specs: item.variant_specs?.trim() ?? "",
       quantity: item.quantity ?? 0,
       price: item.price ?? 0,
     })),

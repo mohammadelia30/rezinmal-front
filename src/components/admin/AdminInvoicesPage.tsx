@@ -232,17 +232,55 @@ export function AdminInvoicesPage({
                 </div>
               </div>
 
+              {/* همان چیزهایی که روی فاکتور چاپی هم هست: نشانی کامل
+                  با استان و شهر، و ویژگی نسخهٔ هر کالا. بدون این‌ها
+                  موقع بسته‌بندی معلوم نبود کدام رنگ باید برود و بسته
+                  به کدام شهر. */}
+              {selected.address || selected.phone ? (
+                <dl className="mb-4 space-y-1.5 border-b border-[#efe6d4] pb-4 text-xs leading-6">
+                  {selected.phone ? (
+                    <div className="flex justify-between gap-3">
+                      <span dir="ltr" className="text-foreground">
+                        {selected.phone}
+                      </span>
+                      <span className="shrink-0 text-muted">موبایل</span>
+                    </div>
+                  ) : null}
+                  {selected.address ? (
+                    <div className="flex justify-between gap-3">
+                      <span className="text-right text-foreground">
+                        {selected.address}
+                      </span>
+                      <span className="shrink-0 text-muted">آدرس</span>
+                    </div>
+                  ) : null}
+                  {selected.postalCode ? (
+                    <div className="flex justify-between gap-3">
+                      <span dir="ltr" className="text-foreground">
+                        {selected.postalCode}
+                      </span>
+                      <span className="shrink-0 text-muted">کد پستی</span>
+                    </div>
+                  ) : null}
+                </dl>
+              ) : null}
+
               <ul className="space-y-2 border-b border-[#efe6d4] pb-4">
-                {selected.items.map((item) => (
+                {selected.items.map((item, index) => (
                   <li
-                    key={`${selected.id}-${item.title}`}
-                    className="flex items-center justify-between gap-3 text-sm"
+                    key={`${selected.id}-${index}`}
+                    className="flex items-start justify-between gap-3 text-sm"
                   >
-                    <span className="font-bold text-brand">
+                    <span className="shrink-0 font-bold text-brand">
                       {formatProductPrice(item.price)}
                     </span>
                     <span className="text-right text-foreground">
                       {item.title} × {item.quantity.toLocaleString("fa-IR")}
+                      {item.specs ? (
+                        <span className="mt-0.5 block text-xs text-muted">
+                          {item.specs}
+                        </span>
+                      ) : null}
                     </span>
                   </li>
                 ))}
